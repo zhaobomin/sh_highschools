@@ -1,0 +1,1824 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>上海中考择校助手（目标学校跟踪 + 模考评估）</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --brand: #2563eb;
+      --brand2: #1d4ed8;
+      --good: #16a34a;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --shadow: 0 12px 30px rgba(15, 23, 42, .08);
+      --r: 18px;
+      --safeB: env(safe-area-inset-bottom, 0px);
+      --safeT: env(safe-area-inset-top, 0px);
+      --tap: rgba(37, 99, 235, .10);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --radius-sm: 12px;
+      --radius-lg: 18px;
+      --space-1: 8px;
+      --space-2: 12px;
+      --space-3: 16px;
+      --space-4: 20px;
+      --space-5: 24px;
+      --surface: rgba(255, 255, 255, 0.8);
+      --fz-1: 12px;
+      --fz-2: 13px;
+      --fz-3: 14px;
+      --fz-4: 15px;
+      --fz-5: 17px;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(1200px 500px at 50% -120px, rgba(37, 99, 235, .12), transparent 55%),
+        linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+      color: var(--text);
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", "Hiragino Sans GB", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit
+    }
+
+    .app {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column
+    }
+
+    .appbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, .9);
+      backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid var(--line);
+      padding: calc(12px + var(--safeT)) 16px 12px;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: var(--fz-5);
+      font-weight: 650;
+      letter-spacing: .2px;
+      line-height: 1.3;
+    }
+
+    .title p {
+      margin: 0;
+      font-size: var(--fz-1);
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .iconbtn {
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all .2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .iconbtn:hover {
+      border-color: rgba(37, 99, 235, 0.3);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .iconbtn:active {
+      transform: scale(.96);
+      background: var(--tap);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      display: block
+    }
+
+    .content {
+      flex: 1 1 auto;
+      padding: 18px 16px 96px;
+      max-width: 620px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .hd {
+      padding: 14px 16px 12px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(37, 99, 235, .08), rgba(37, 99, 235, 0));
+    }
+
+    .hd h2 {
+      margin: 0;
+      font-size: var(--fz-4);
+      font-weight: 650;
+      line-height: 1.3;
+    }
+
+    .sub {
+      margin-top: 4px;
+      font-size: var(--fz-1);
+      color: var(--muted);
+      line-height: 1.35
+    }
+
+    .bd {
+      padding: 16px 16px 18px;
+    }
+
+    .hint {
+      font-size: var(--fz-2);
+      color: var(--muted);
+      line-height: 1.55
+    }
+
+    .sep {
+      height: 1px;
+      background: var(--line);
+      margin: 12px 0
+    }
+
+    .grid1 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px
+    }
+
+    .grid3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px
+    }
+
+    label {
+      display: block;
+      font-size: var(--fz-1);
+      color: var(--muted);
+      margin: 0 0 6px;
+      font-weight: 600
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      outline: none;
+      font-size: var(--fz-3);
+      min-height: 38px;
+      transition: all .2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    input:hover,
+    select:hover,
+    textarea:hover {
+      border-color: rgba(37, 99, 235, 0.2);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(37, 99, 235, .6);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, .15);
+      outline: none;
+    }
+
+    .pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .pill {
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: var(--fz-1);
+      color: var(--muted);
+      background: #fff;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .pill.on {
+      border-color: rgba(37, 99, 235, .35);
+      background: rgba(37, 99, 235, .08);
+      color: var(--brand2)
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: var(--fz-1);
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .badge.good {
+      border-color: rgba(22, 163, 74, .25);
+      background: rgba(22, 163, 74, .08);
+      color: var(--good)
+    }
+
+    .badge.warn {
+      border-color: rgba(245, 158, 11, .25);
+      background: rgba(245, 158, 11, .10);
+      color: var(--warn)
+    }
+
+    .badge.bad {
+      border-color: rgba(239, 68, 68, .25);
+      background: rgba(239, 68, 68, .10);
+      color: var(--bad)
+    }
+
+    .mono {
+      font-family: var(--mono)
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: var(--fz-3);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      user-select: none;
+      transition: all .2s ease;
+      gap: 8px;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn:hover {
+      border-color: rgba(37, 99, 235, 0.3);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn:active {
+      transform: scale(.98);
+      background: var(--tap);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn.primary {
+      border-color: var(--brand);
+      background: var(--brand);
+      color: white;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn.primary:hover {
+      border-color: var(--brand2);
+      background: var(--brand2);
+      box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn.primary:active {
+      transform: scale(.98);
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn.danger {
+      border-color: var(--bad);
+      background: var(--bad);
+      color: white;
+      box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
+    }
+
+    .btn.danger:hover {
+      border-color: #dc2626;
+      background: #dc2626;
+      box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn.danger:active {
+      transform: scale(.98);
+      box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+    }
+
+    .btnrow {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .tabbar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 12px 16px calc(12px + var(--safeB));
+      background: rgba(255, 255, 255, .92);
+      backdrop-filter: saturate(180%) blur(12px);
+      border-top: 1px solid var(--line);
+      z-index: 30;
+      box-shadow: 0 -10px 22px rgba(15, 23, 42, 0.08);
+    }
+
+    .tabs {
+      max-width: 620px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .tab {
+      border-radius: 14px;
+      padding: 8px 8px;
+      text-align: center;
+      color: var(--muted);
+      font-size: var(--fz-1);
+      user-select: none;
+      cursor: pointer;
+      border: 1px solid transparent;
+      font-weight: 600;
+    }
+
+    .tab.on {
+      color: var(--brand2);
+      background: rgba(37, 99, 235, .08);
+      border-color: rgba(37, 99, 235, .18);
+    }
+
+    .school {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+      transition: all .2s ease;
+    }
+
+    .school:hover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .school .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .school h3 {
+      margin: 0;
+      font-size: var(--fz-4);
+      font-weight: 650;
+      line-height: 1.3;
+    }
+
+    .meta {
+      font-size: var(--fz-2);
+      color: var(--muted);
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+
+    .bar {
+      height: 12px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      overflow: hidden;
+      border: 1px solid #eef2f7;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .bar>div {
+      height: 100%;
+      background: linear-gradient(90deg, rgba(37, 99, 235, 0.7), rgba(37, 99, 235, 0.4));
+      border-radius: 999px;
+      transition: width .3s ease;
+    }
+
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, .45);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 80;
+      padding: 10px 10px calc(10px + var(--safeB));
+    }
+
+    .sheet {
+      width: min(560px, 100%);
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .sheet .shd {
+      padding: 14px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sheet .shd h4 {
+      margin: 0;
+      font-size: var(--fz-3)
+    }
+
+    .sheet .shd p {
+      margin: 4px 0 0;
+      font-size: var(--fz-1);
+      color: var(--muted);
+      line-height: 1.4
+    }
+
+    .sheet .sbd {
+      padding: 12px
+    }
+
+    .closebtn {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .sheet ul {
+      margin: 8px 0 0 18px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: var(--fz-1)
+    }
+
+    .sheet ol {
+      margin: 8px 0 0 18px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: var(--fz-1)
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(74px + var(--safeB));
+      transform: translateX(-50%);
+      background: rgba(17, 24, 39, .92);
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 14px;
+      display: none;
+      font-size: var(--fz-2);
+      max-width: min(560px, 92vw);
+      z-index: 90;
+    }
+
+    .miniTable {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px
+    }
+
+    .miniTable td,
+    .miniTable th {
+      font-size: var(--fz-1);
+      color: var(--muted);
+      padding: 8px 10px
+    }
+
+    .miniTable th {
+      color: #111827;
+      text-align: left
+    }
+
+    .miniRow {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff
+    }
+
+    .right {
+      text-align: right
+    }
+
+    .flex {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    .tagSelect {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: all .2s ease;
+    }
+
+    .tagSelect:hover {
+      border-color: rgba(37, 99, 235, 0.3);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    .table th,
+    .table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      font-size: var(--fz-1)
+    }
+
+    .table th {
+      text-align: left;
+      color: #111827
+    }
+
+    .table td {
+      color: var(--muted)
+    }
+
+    .add-row {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+    }
+
+    .add-row .btn {
+      padding: 8px 12px;
+      min-height: 32px;
+    }
+
+    @media (max-width: 520px) {
+      .content {
+        padding: 16px 12px 96px;
+      }
+
+      .hd {
+        padding: 14px 14px 12px;
+      }
+
+      .bd {
+        padding: 16px 14px 18px;
+      }
+
+      .tabs {
+        gap: 6px;
+      }
+
+      .tab {
+        font-size: 12px;
+        padding: 7px 6px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header class="appbar">
+      <div class="row">
+        <div class="title">
+          <h1>择校助手（目标学校跟踪 + 模考评估）</h1>
+          <p id="subtitle">目标：跟踪清单与标记</p>
+        </div>
+        <div class="flex">
+          <button class="iconbtn" id="btnHelp" aria-label="帮助">
+            <svg class="icon" viewBox="0 0 24 24" fill="none">
+              <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" stroke-width="2" />
+              <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M12 7h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+            </svg>
+          </button>
+          <button class="iconbtn" id="btnExport" aria-label="导出">
+            <svg class="icon" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M8 7l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- TARGETS (默认首页) -->
+      <section id="page-targets" class="page">
+        <div class="card">
+          <div class="hd">
+            <div>
+              <h2>上海中考志愿与录取方式（概览）</h2>
+              <div class="sub">把复杂规则“拆成三步”：先看批次，再看志愿数，再看资格（到校/体艺等）。</div>
+            </div>
+            <button class="iconbtn" id="btnExplainZKMode" aria-label="说明">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" stroke-width="2" />
+                <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M12 7h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
+          <div class="bd">
+            <div class="hint">
+              <b>1）录取按批次顺序进行：</b>先“自主招生”，再“名额分配综合评价（到区/到校）”，最后“统一招生”。<br />
+              <b>2）被前一批次录取后，后一批次志愿自动失效。</b><br />
+              <b>3）志愿填报一般在学业考试后、成绩公布前进行</b>（线上填报+线下确认）。
+            </div>
+            <div class="sep"></div>
+            <div class="hint">
+              <b>名额分配综合评价</b>分为：<b>到区</b>（面向完成中招报名的学生）与 <b>到校</b>（对“本校在籍在读满3年的应届生”等有资格限制）。<br />
+              <b>统一招生</b>通常包含多志愿（如 1-15 志愿）与征求志愿。
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd">
+            <div>
+              <h2>目标学校（跟踪清单）</h2>
+              <div class="sub">只需要维护目标学校，系统用模考更新达成概率。</div>
+            </div>
+            <button class="iconbtn" id="btnClearTargets" aria-label="清空目标">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M8 6V4h8v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
+          <div class="bd">
+            <div id="targetsSummary" class="hint"></div>
+            <div class="sep"></div>
+            <div id="targetsList" style="display:flex;flex-direction:column;gap:10px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FILTER (原首页) -->
+      <section id="page-filter" class="page" style="display:none">
+        <div class="card">
+          <div class="hd">
+            <div>
+              <h2>孩子画像（含当前初中）</h2>
+              <div class="sub">用于到校名额匹配与推荐解释（名额/分数线为真实数据）。</div>
+            </div>
+            <button class="iconbtn" id="btnExplainProfile" aria-label="说明">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" stroke-width="2" />
+                <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M12 7h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
+          <div class="bd">
+            <div class="grid2">
+              <div>
+                <label>所在区</label>
+                <select id="district"></select>
+              </div>
+              <div>
+                <label>初中类型</label>
+                <select id="juniorType">
+                  <option value="公办" selected>公办</option>
+                  <option value="民办">民办</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="grid1">
+              <div>
+                <label>当前初中学校（用于“到校”名额）</label>
+                <select id="middleSchool"></select>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="grid3">
+              <div>
+                <label>稳定分（估计）</label>
+                <input id="scoreStable" type="number" value="690" min="0" max="999" />
+              </div>
+              <div>
+                <label>上限分（估计）</label>
+                <input id="scoreHigh" type="number" value="705" min="0" max="999" />
+              </div>
+              <div>
+                <label>下限分（估计）</label>
+                <input id="scoreLow" type="number" value="675" min="0" max="999" />
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="grid2">
+              <div>
+                <label>筛选：学校类型</label>
+                <select id="schoolType">
+                  <option value="all" selected>全部</option>
+                  <option value="市重点">市重点</option>
+                  <option value="区重点">区重点</option>
+                  <option value="一般高中">一般高中</option>
+                </select>
+              </div>
+              <div>
+                <label>仅看：该初中“到校”有名额</label>
+                <div class="pills">
+                  <span class="pill" id="pillOnlyHaveQuota">过滤</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:10px" class="hint" id="kpiLine">—</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd">
+            <div>
+              <h2>推荐学校池</h2>
+              <div class="sub">点“加入目标”，在「目标」页跟踪；模考录入后显示达成概率。</div>
+            </div>
+            <button class="iconbtn" id="btnExplainScore" aria-label="说明">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M4 19V5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M8 19V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M12 19V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M16 19V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M20 19V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
+          <div class="bd">
+            <div class="hint" style="margin-bottom:10px">
+              
+            </div>
+            <div id="schoolList" style="display:flex;flex-direction:column;gap:10px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MOCKS -->
+      <section id="page-mocks" class="page" style="display:none">
+        <div class="card">
+          <div class="hd">
+            <div>
+              <h2>模考录入</h2>
+              <div class="sub">按照固定科目结构录入每次模考成绩，系统自动计算总分。</div>
+            </div>
+          </div>
+          <div class="bd">
+            <div class="grid1">
+              <div>
+                <label>科目结构（固定）</label>
+                <div class="hint" id="subjectSumLine"></div>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="grid1">
+              <div>
+                <label>新增一次模考</label>
+                <div class="grid2 add-row">
+                  <input id="mockName" placeholder="例如：一模 / 二模 / 校测…" />
+                  <button class="btn primary" id="btnAddMock">添加</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div id="mockTableWrap"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EVAL -->
+      <section id="page-eval" class="page" style="display:none">
+        <div class="card">
+          <div class="hd">
+            <div>
+              <h2>目标达成可能性</h2>
+              <div class="sub">基于模考总分分布估算达到各校“统一招生最低分”的概率估算。</div>
+            </div>
+            <button class="iconbtn" id="btnExplainEval" aria-label="说明">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" stroke-width="2" />
+                <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M12 7h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
+          <div class="bd">
+            <div id="evalSummary" class="hint"></div>
+            <div class="sep"></div>
+            <div id="evalList" style="display:flex;flex-direction:column;gap:10px"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="tabbar">
+      <div class="tabs">
+        <div class="tab on" data-page="targets">目标</div>
+        <div class="tab" data-page="filter">筛选</div>
+        <div class="tab" data-page="mocks">模考</div>
+        <div class="tab" data-page="eval">评估</div>
+      </div>
+    </nav>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="backdrop" id="backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="sheet">
+      <div class="shd">
+        <div>
+          <h4 id="sheetTitle">说明</h4>
+          <p id="sheetSub">—</p>
+        </div>
+        <button class="closebtn" id="sheetClose" aria-label="关闭">✕</button>
+      </div>
+      <div class="sbd" id="sheetBody"></div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================
+       数据（来自 data/ 目录）
+       ========================= */
+    const DISTRICTS = ["黄浦区", "徐汇区", "长宁区", "静安区", "普陀区", "虹口区", "杨浦区", "闵行区", "宝山区", "嘉定区", "浦东新区", "松江区", "青浦区", "奉贤区", "崇明区", "金山区"];
+
+    const MIDDLE_SCHOOLS = [{"id": "61001", "name": "上海市市西初级中学", "district": "静安区"}, {"id": "61002", "name": "上海市育才初级中学", "district": "静安区"}, {"id": "61003", "name": "上海市静安区协和双语培明学校", "district": "静安区"}, {"id": "61005", "name": "上海市时代中学", "district": "静安区"}, {"id": "61008", "name": "上海市五四中学", "district": "静安区"}, {"id": "61009", "name": "民办上海上外静安外国语中学", "district": "静安区"}, {"id": "61050", "name": "上海市静安区市北初级中学北校", "district": "静安区"}, {"id": "61051", "name": "上海市新中初级中学", "district": "静安区"}, {"id": "61053", "name": "上海市静安区实验中学", "district": "静安区"}, {"id": "61055", "name": "上海市朝阳中学", "district": "静安区"}, {"id": "61059", "name": "上海市市北初级中学", "district": "静安区"}, {"id": "61060", "name": "上海市风华初级中学", "district": "静安区"}, {"id": "61061", "name": "上海市彭浦初级中学", "district": "静安区"}, {"id": "61062", "name": "上海外国语大学苏河湾实验中学", "district": "静安区"}, {"id": "61066", "name": "上海市青云中学", "district": "静安区"}, {"id": "61071", "name": "上海市岭南中学", "district": "静安区"}, {"id": "61072", "name": "上海市保德中学", "district": "静安区"}, {"id": "61073", "name": "上海市彭浦第三中学", "district": "静安区"}, {"id": "61074", "name": "上海市彭浦第四中学", "district": "静安区"}, {"id": "62011", "name": "上海市回民中学", "district": "静安区"}, {"id": "63001", "name": "上海市民立中学", "district": "静安区"}, {"id": "63002", "name": "上海市第一中学", "district": "静安区"}, {"id": "63008", "name": "上海市久隆模范中学", "district": "静安区"}, {"id": "63077", "name": "上海市闸北第八中学", "district": "静安区"}, {"id": "64001", "name": "上海市华东模范中学", "district": "静安区"}, {"id": "64003", "name": "同济大学附属七一中学", "district": "静安区"}, {"id": "64007", "name": "上海市向东中学", "district": "静安区"}, {"id": "64020", "name": "上海田家炳中学", "district": "静安区"}, {"id": "64021", "name": "上海市民办扬波中学", "district": "静安区"}, {"id": "64023", "name": "上海市民办新和中学", "district": "静安区"}, {"id": "64024", "name": "上海市民办风范中学", "district": "静安区"}, {"id": "65001", "name": "上海市爱国学校", "district": "静安区"}, {"id": "65002", "name": "上海市静安区教育学院附属学校", "district": "静安区"}, {"id": "65056", "name": "上海市华灵学校", "district": "静安区"}, {"id": "65057", "name": "上海市三泉学校", "district": "静安区"}, {"id": "65058", "name": "上海戏剧学院附属静安学校", "district": "静安区"}, {"id": "65078", "name": "上海市静安区大宁国际学校", "district": "静安区"}, {"id": "131002", "name": "上海市淞谊中学", "district": "宝山区"}, {"id": "131004", "name": "上海市宝山区教育学院附属中学", "district": "宝山区"}, {"id": "131006", "name": "上海市吴淞初级中学", "district": "宝山区"}, {"id": "131008", "name": "上海市海滨第二中学", "district": "宝山区"}, {"id": "131009", "name": "上海民办宝莲中学", "district": "宝山区"}, {"id": "131010", "name": "上海市吴淞第二中学", "district": "宝山区"}, {"id": "131011", "name": "上海市虎林中学", "district": "宝山区"}, {"id": "131012", "name": "上海市泗塘中学", "district": "宝山区"}, {"id": "131013", "name": "上海市宝山区求真中学北校", "district": "宝山区"}, {"id": "131014", "name": "上海市宝山区求真中学南校", "district": "宝山区"}, {"id": "131015", "name": "上海市长江第二中学", "district": "宝山区"}, {"id": "131016", "name": "上海市宝山区求真中学", "district": "宝山区"}, {"id": "131018", "name": "上海市大场中学", "district": "宝山区"}, {"id": "131019", "name": "上海市大华中学", "district": "宝山区"}, {"id": "131020", "name": "上海市月浦中学", "district": "宝山区"}, {"id": "131023", "name": "上海市罗泾中学", "district": "宝山区"}, {"id": "131026", "name": "上海市罗南中学", "district": "宝山区"}, {"id": "131035", "name": "上海市民办交华中学", "district": "宝山区"}, {"id": "131036", "name": "上海市宝山实验学校高境分校", "district": "宝山区"}, {"id": "131038", "name": "上海市宝山区罗店第二中学", "district": "宝山区"}, {"id": "131039", "name": "上海市宝山区乐之中学", "district": "宝山区"}, {"id": "131040", "name": "上海市宝山区美兰湖中学", "district": "宝山区"}, {"id": "131041", "name": "上海市宝山区杨泰实验中学", "district": "宝山区"}, {"id": "131042", "name": "上海师范大学附属宝山经纬实验中学", "district": "宝山区"}, {"id": "133002", "name": "上海师范大学附属宝山罗店中学", "district": "宝山区"}, {"id": "134001", "name": "上海市宝山中学", "district": "宝山区"}, {"id": "134004", "name": "上海市顾村中学", "district": "宝山区"}, {"id": "134005", "name": "上海市行知实验中学", "district": "宝山区"}, {"id": "134006", "name": "上海市高境第一中学", "district": "宝山区"}, {"id": "134008", "name": "上海市盛桥中学", "district": "宝山区"}, {"id": "135001", "name": "上海市同洲模范学校", "district": "宝山区"}, {"id": "135002", "name": "上海市宝山实验学校", "district": "宝山区"}, {"id": "135003", "name": "上海金瑞学校", "district": "宝山区"}, {"id": "135004", "name": "上海市民办锦秋学校", "district": "宝山区"}, {"id": "135005", "name": "上海市月浦实验学校", "district": "宝山区"}, {"id": "135006", "name": "上海市宝钢新世纪学校", "district": "宝山区"}, {"id": "135007", "name": "上海市吴淞实验学校", "district": "宝山区"}, {"id": "135009", "name": "上海市宝山区天馨学校", "district": "宝山区"}, {"id": "135010", "name": "上海市宝山区上海大学附属中学实验学校", "district": "宝山区"}, {"id": "135011", "name": "上海市宝山区共富实验学校", "district": "宝山区"}, {"id": "135012", "name": "华东师范大学宝山实验学校", "district": "宝山区"}, {"id": "135013", "name": "上海大学附属学校", "district": "宝山区"}, {"id": "135014", "name": "上海农场学校", "district": "宝山区"}, {"id": "135018", "name": "上海市宝山区馨家园学校", "district": "宝山区"}, {"id": "135019", "name": "上海世外教育附属宝山大华实验学校", "district": "宝山区"}, {"id": "135020", "name": "上海市宝山区淞谊实验学校", "district": "宝山区"}, {"id": "135021", "name": "上海市宝山区鹿鸣学校", "district": "宝山区"}, {"id": "135022", "name": "上海市宝山区庙行实验学校", "district": "宝山区"}, {"id": "135023", "name": "上海市宝山区顾村实验学校", "district": "宝山区"}, {"id": "135024", "name": "上海市教育学会宝山实验学校", "district": "宝山区"}, {"id": "135025", "name": "上海市宝山区行知外国语学校", "district": "宝山区"}, {"id": "135026", "name": "上海市宝山区新民实验学校", "district": "宝山区"}, {"id": "135027", "name": "上海市刘行新华实验学校", "district": "宝山区"}, {"id": "135028", "name": "上海民办华曜宝山实验学校", "district": "宝山区"}, {"id": "135029", "name": "上海大学附属宝山外国语学校", "district": "宝山区"}, {"id": "135030", "name": "上海市白茅岭学校 (上海市白茅岭学校军天湖分校)", "district": "宝山区"}, {"id": "135031", "name": "上海外国语大学附属宝山双语学校", "district": "宝山区"}, {"id": "135032", "name": "上海市行知中学附属宝山实验学校", "district": "宝山区"}, {"id": "135033", "name": "上海民办至德实验学校", "district": "宝山区"}, {"id": "135034", "name": "上海宝山区世外学校", "district": "宝山区"}, {"id": "135035", "name": "上海师范大学附属宝山实验学校", "district": "宝山区"}, {"id": "135036", "name": "上海师范大学附属宝山潜溪学校", "district": "宝山区"}, {"id": "135038", "name": "上海市宝山区南大实验学校", "district": "宝山区"}, {"id": "135039", "name": "上海世外教育附属宝山美兰湖实验学校", "district": "宝山区"}, {"id": "135040", "name": "上海市存志附属宝山实验学校", "district": "宝山区"}, {"id": "135042", "name": "华东师范大学附属宝山宝杨实验学校", "district": "宝山区"}, {"id": "135043", "name": "上海市宝山区陈伯吹罗店实验学校", "district": "宝山区"}, {"id": "511002", "name": "上海市崇明区三星中学", "district": "崇明区"}, {"id": "511007", "name": "上海市崇明区建设中学", "district": "崇明区"}, {"id": "511014", "name": "上海市崇明区合兴中学", "district": "崇明区"}, {"id": "511015", "name": "上海市崇明区向化中学", "district": "崇明区"}, {"id": "511016", "name": "上海市崇明区崇东中学", "district": "崇明区"}, {"id": "511017", "name": "上海市崇明区裕安中学", "district": "崇明区"}, {"id": "511018", "name": "上海市崇明区实验中学", "district": "崇明区"}, {"id": "511019", "name": "上海市崇明中学附属东门中学", "district": "崇明区"}, {"id": "511021", "name": "上海市崇明区凌云中学", "district": "崇明区"}, {"id": "511022", "name": "上海市崇明区长兴中学", "district": "崇明区"}, {"id": "511024", "name": "上海市崇明区长明中学", "district": "崇明区"}, {"id": "511025", "name": "上海师范大学附属崇明正大中学", "district": "崇明区"}, {"id": "511026", "name": "上海市向明初级中学附属崇明区江帆中学", "district": "崇明区"}, {"id": "514000", "name": "上海市崇明区庙镇学校", "district": "崇明区"}, {"id": "514002", "name": "上海市崇明区大新中学", "district": "崇明区"}, {"id": "514003", "name": "上海市崇明区三烈中学", "district": "崇明区"}, {"id": "514005", "name": "上海市崇明区大公中学", "district": "崇明区"}, {"id": "514010", "name": "上海民办民一中学", "district": "崇明区"}, {"id": "514013", "name": "上海市崇明区横沙中学", "district": "崇明区"}, {"id": "514014", "name": "上海新纪元双语学校", "district": "崇明区"}, {"id": "514015", "name": "上海市崇明区长江学校", "district": "崇明区"}, {"id": "515003", "name": "上海市崇明区新海学校", "district": "崇明区"}, {"id": "515007", "name": "上海市实验学校附属东滩学校", "district": "崇明区"}, {"id": "201001", "name": "上海市奉贤区青少年业余体育学校", "district": "奉贤区"}, {"id": "201002", "name": "上海市奉贤区古华中学", "district": "奉贤区"}, {"id": "201003", "name": "上海市奉贤区实验中学", "district": "奉贤区"}, {"id": "201004", "name": "上海市奉贤中学附属南桥中学", "district": "奉贤区"}, {"id": "201005", "name": "上海市奉贤区汇贤中学", "district": "奉贤区"}, {"id": "201010", "name": "上海市奉贤区塘外中学", "district": "奉贤区"}, {"id": "201011", "name": "上海市奉贤区青村中学", "district": "奉贤区"}, {"id": "201012", "name": "上海市奉贤区奉城第二中学", "district": "奉贤区"}, {"id": "201013", "name": "上海市奉贤区头桥中学", "district": "奉贤区"}, {"id": "201014", "name": "上海市奉贤区洪庙中学", "district": "奉贤区"}, {"id": "201015", "name": "上海市奉贤区四团中学", "district": "奉贤区"}, {"id": "201016", "name": "上海市奉贤区青溪中学", "district": "奉贤区"}, {"id": "201017", "name": "上海市奉贤区尚同中学", "district": "奉贤区"}, {"id": "201018", "name": "上海外国语大学附属奉贤实验中学", "district": "奉贤区"}, {"id": "201019", "name": "上海市奉贤区崇实中学", "district": "奉贤区"}, {"id": "201020", "name": "上海市奉贤区待问中学", "district": "奉贤区"}, {"id": "201021", "name": "上海市奉贤中学附属初级中学", "district": "奉贤区"}, {"id": "204002", "name": "上海市奉贤区肖塘中学", "district": "奉贤区"}, {"id": "205002", "name": "上海市奉贤区育秀中学", "district": "奉贤区"}, {"id": "205003", "name": "上海市奉贤区华亭学校", "district": "奉贤区"}, {"id": "205004", "name": "上海市奉贤区西渡学校", "district": "奉贤区"}, {"id": "205005", "name": "上海市奉贤区新寺学校", "district": "奉贤区"}, {"id": "205006", "name": "上海奉贤区世外学校", "district": "奉贤区"}, {"id": "205007", "name": "上海市奉贤区胡桥学校", "district": "奉贤区"}, {"id": "205008", "name": "上海市奉贤区柘林学校", "district": "奉贤区"}, {"id": "205009", "name": "上海市奉贤区阳光外国语学校", "district": "奉贤区"}, {"id": "205010", "name": "上海市奉贤区庄行学校", "district": "奉贤区"}, {"id": "205011", "name": "上海市奉贤区邬桥学校", "district": "奉贤区"}, {"id": "205013", "name": "上海市奉贤区齐贤学校", "district": "奉贤区"}, {"id": "205014", "name": "上海市奉贤区泰日学校", "district": "奉贤区"}, {"id": "205015", "name": "上海市奉贤中学附属三官堂学校", "district": "奉贤区"}, {"id": "205016", "name": "上海市奉贤区钱桥学校", "district": "奉贤区"}, {"id": "205017", "name": "上海市奉贤区平安学校", "district": "奉贤区"}, {"id": "205018", "name": "上海市奉贤区邵厂学校", "district": "奉贤区"}, {"id": "205019", "name": "上海市奉贤区弘文学校", "district": "奉贤区"}, {"id": "205020", "name": "上海市奉贤区星火学校", "district": "奉贤区"}, {"id": "205021", "name": "上海市奉贤区五四学校", "district": "奉贤区"}, {"id": "205022", "name": "上海市奉贤区肇文学校", "district": "奉贤区"}, {"id": "205023", "name": "上海市奉贤区奉浦中学", "district": "奉贤区"}, {"id": "205024", "name": "上海大学附属奉贤实验学校", "district": "奉贤区"}, {"id": "205030", "name": "上海奉贤区世外教育附属临港外国语学校", "district": "奉贤区"}, {"id": "205099", "name": "柘林学校师大附中教学点", "district": "奉贤区"}, {"id": "91001", "name": "上海市虹口实验学校", "district": "虹口区"}, {"id": "91002", "name": "上海市曲阳第二中学", "district": "虹口区"}, {"id": "91003", "name": "上海市钟山初级中学", "district": "虹口区"}, {"id": "91004", "name": "上海市长青学校", "district": "虹口区"}, {"id": "91005", "name": "上海市公办华初", "district": "虹口区"}, {"id": "91006", "name": "上海市丰镇中学", "district": "虹口区"}, {"id": "91007", "name": "上海市北郊学校", "district": "虹口区"}, {"id": "91008", "name": "上海市江湾初级中学", "district": "虹口区"}, {"id": "91009", "name": "上海市复兴实验学校", "district": "虹口区"}, {"id": "91010", "name": "上海市上音实验学校", "district": "虹口区"}, {"id": "91011", "name": "上海市实验中学", "district": "虹口区"}, {"id": "91012", "name": "上海市继光初级中学", "district": "虹口区"}, {"id": "91013", "name": "上海市海南中学", "district": "虹口区"}, {"id": "91014", "name": "上海市鲁迅初级中学", "district": "虹口区"}, {"id": "91015", "name": "上海市第五十二中学", "district": "虹口区"}, {"id": "91016", "name": "上海市上师虹口学校", "district": "虹口区"}, {"id": "91017", "name": "上海市同济澄衷学校", "district": "虹口区"}, {"id": "91018", "name": "上海市世外欧阳学校", "district": "虹口区"}, {"id": "91019", "name": "上海市民办新华初中学", "district": "虹口区"}, {"id": "91020", "name": "上海市民办新复兴初级中学", "district": "虹口区"}, {"id": "91021", "name": "上海市民办新北郊初级中学", "district": "虹口区"}, {"id": "91022", "name": "上海市民办迅行中学", "district": "虹口区"}, {"id": "91023", "name": "上海市民办克勒外国语学校", "district": "虹口区"}, {"id": "11001", "name": "格致初级中学", "district": "黄浦区"}, {"id": "11002", "name": "大同初级中学", "district": "黄浦区"}, {"id": "11003", "name": "向明初级中学", "district": "黄浦区"}, {"id": "11004", "name": "大境初级中学", "district": "黄浦区"}, {"id": "11005", "name": "光明初级中学", "district": "黄浦区"}, {"id": "11006", "name": "敬业初级中学", "district": "黄浦区"}, {"id": "11007", "name": "卢湾中学", "district": "黄浦区"}, {"id": "11008", "name": "市八初级中学", "district": "黄浦区"}, {"id": "11009", "name": "尚文中学", "district": "黄浦区"}, {"id": "11012", "name": "交附黄浦实验学校", "district": "黄浦区"}, {"id": "11014", "name": "清华中学", "district": "黄浦区"}, {"id": "141001", "name": "上海市嘉定区启良中学", "district": "嘉定区"}, {"id": "141002", "name": "上海市嘉定区方泰中学", "district": "嘉定区"}, {"id": "141003", "name": "上海市曹杨二中附属江桥实验中学", "district": "嘉定区"}, {"id": "141004", "name": "上海市嘉定区迎园中学", "district": "嘉定区"}, {"id": "141005", "name": "上海市嘉定区南苑中学", "district": "嘉定区"}, {"id": "141006", "name": "上海市嘉定区黄渡中学", "district": "嘉定区"}, {"id": "141007", "name": "上海市嘉定区徐行中学", "district": "嘉定区"}, {"id": "141008", "name": "上海市嘉定区马陆育才联合中学", "district": "嘉定区"}, {"id": "141009", "name": "上海市民办嘉一联合中学", "district": "嘉定区"}, {"id": "141010", "name": "上海市嘉定区丰庄中学", "district": "嘉定区"}, {"id": "141011", "name": "上海市嘉定区外冈中学", "district": "嘉定区"}, {"id": "141012", "name": "上海民办华曜嘉定初级中学", "district": "嘉定区"}, {"id": "141013", "name": "上海市嘉定区震川中学", "district": "嘉定区"}, {"id": "141014", "name": "上海大学附属嘉定留云中学", "district": "嘉定区"}, {"id": "141015", "name": "交大附中附属嘉定德富中学", "district": "嘉定区"}, {"id": "141016", "name": "同济大学附属实验中学", "district": "嘉定区"}, {"id": "141017", "name": "上海市嘉定区华江中学", "district": "嘉定区"}, {"id": "141018", "name": "上海市嘉定区新城实验中学", "district": "嘉定区"}, {"id": "141019", "name": "上海市嘉定区南翔中学", "district": "嘉定区"}, {"id": "141020", "name": "上海市嘉定区疁城实验学校", "district": "嘉定区"}, {"id": "141021", "name": "上海市嘉定区戬浜学校", "district": "嘉定区"}, {"id": "141022", "name": "上海市嘉定区朱桥学校", "district": "嘉定区"}, {"id": "141023", "name": "上海市民办远东学校", "district": "嘉定区"}, {"id": "141024", "name": "上海市民办桃李园实验学校", "district": "嘉定区"}, {"id": "141025", "name": "上海市嘉定区华亭学校", "district": "嘉定区"}, {"id": "141026", "name": "上海市嘉定区娄塘学校", "district": "嘉定区"}, {"id": "141027", "name": "上海外国语大学嘉定外国语学校", "district": "嘉定区"}, {"id": "141028", "name": "上海市嘉定区练川实验学校", "district": "嘉定区"}, {"id": "141029", "name": "上海华旭双语学校", "district": "嘉定区"}, {"id": "141030", "name": "中科院上海实验学校", "district": "嘉定区"}, {"id": "141031", "name": "上海嘉定区世界外国语学校", "district": "嘉定区"}, {"id": "161001", "name": "上海市罗星中学", "district": "金山区"}, {"id": "161002", "name": "上海市松隐中学", "district": "金山区"}, {"id": "161003", "name": "上海市亭新中学", "district": "金山区"}, {"id": "161004", "name": "上海市漕泾中学", "district": "金山区"}, {"id": "161005", "name": "上海市山阳中学", "district": "金山区"}, {"id": "161006", "name": "上海市张堰第二中学", "district": "金山区"}, {"id": "161007", "name": "上海市金山区钱圩学校", "district": "金山区"}, {"id": "161008", "name": "上海市廊下中学", "district": "金山区"}, {"id": "161009", "name": "上海市蒙山中学", "district": "金山区"}, {"id": "161010", "name": "上海市金山区教育学院附属中学", "district": "金山区"}, {"id": "161011", "name": "上海市金山初级中学", "district": "金山区"}, {"id": "161012", "name": "上海市西林中学", "district": "金山区"}, {"id": "161013", "name": "上海市朱行中学", "district": "金山区"}, {"id": "161014", "name": "上海市金山区青少年业余体育学校", "district": "金山区"}, {"id": "161015", "name": "上海市同凯中学", "district": "金山区"}, {"id": "161016", "name": "华东师范大学附属枫泾中学", "district": "金山区"}, {"id": "161017", "name": "上海市金卫中学", "district": "金山区"}, {"id": "161018", "name": "上海市干巷学校", "district": "金山区"}, {"id": "161019", "name": "上海市新农学校", "district": "金山区"}, {"id": "161020", "name": "上海市金山区吕巷学校", "district": "金山区"}, {"id": "161021", "name": "上海市金山实验中学", "district": "金山区"}, {"id": "161022", "name": "上海金山区健桥实验中学", "district": "金山区"}, {"id": "161023", "name": "上海市民办金盟学校", "district": "金山区"}, {"id": "161024", "name": "上海金山杭州湾双语学校", "district": "金山区"}, {"id": "161025", "name": "上海金山区世外学校", "district": "金山区"}, {"id": "161026", "name": "上海市民办永昌中学", "district": "金山区"}, {"id": "161027", "name": "上海师范大学附属金山前京中学", "district": "金山区"}, {"id": "121002", "name": "上海市航华中学", "district": "闵行区"}, {"id": "121003", "name": "上海市闵行区上虹中学", "district": "闵行区"}, {"id": "121004", "name": "上海市龙柏中学", "district": "闵行区"}, {"id": "121005", "name": "上海市闵行区七宝第二中学", "district": "闵行区"}, {"id": "121008", "name": "上海市罗阳中学", "district": "闵行区"}, {"id": "121009", "name": "上海市闵行区莘松中学", "district": "闵行区"}, {"id": "121010", "name": "上海市七宝中学附属闵行金都实验中学", "district": "闵行区"}, {"id": "121011", "name": "上海市闵行区北桥中学", "district": "闵行区"}, {"id": "121013", "name": "上海市闵行区浦江第一中学", "district": "闵行区"}, {"id": "121014", "name": "上海市闵行区浦江第二中学", "district": "闵行区"}, {"id": "121015", "name": "上海市闵行区浦江第三中学", "district": "闵行区"}, {"id": "121016", "name": "上海市闵行第四中学", "district": "闵行区"}, {"id": "121018", "name": "上海市闵行区颛桥中学", "district": "闵行区"}, {"id": "121022", "name": "上海市实验学校西校", "district": "闵行区"}, {"id": "121024", "name": "上海市闵行区鹤北初级中学", "district": "闵行区"}, {"id": "121025", "name": "上海市闵行区龙茗中学", "district": "闵行区"}, {"id": "121026", "name": "上海市七宝实验中学", "district": "闵行区"}, {"id": "121027", "name": "上海市师资培训中心附属闵行实验中学", "district": "闵行区"}, {"id": "121030", "name": "上海市吴泾中学", "district": "闵行区"}, {"id": "121031", "name": "上海市闵行区七宝第三中学", "district": "闵行区"}, {"id": "121032", "name": "华东师范大学第二附属中学附属初级中学", "district": "闵行区"}, {"id": "121033", "name": "上海市闵行区浦航实验中学", "district": "闵行区"}, {"id": "121034", "name": "上海市闵行区马桥复旦万科实验中学", "district": "闵行区"}, {"id": "121035", "name": "上海中医药大学附属闵行晶城中学", "district": "闵行区"}, {"id": "121036", "name": "上海师范大学附属闵行第三中学", "district": "闵行区"}, {"id": "121038", "name": "上海市闵行区田园外国语中学", "district": "闵行区"}, {"id": "121039", "name": "上海市闵行中学附属实验中学", "district": "闵行区"}, {"id": "121131", "name": "上海尚师初级中学", "district": "闵行区"}, {"id": "121132", "name": "上海市骏博外国语学校", "district": "闵行区"}, {"id": "124006", "name": "上海市闵行第三中学", "district": "闵行区"}, {"id": "124008", "name": "上海交通大学附属第二中学", "district": "闵行区"}, {"id": "124009", "name": "上海市民办上宝中学", "district": "闵行区"}, {"id": "124011", "name": "上海市七宝中学附属鑫都实验中学", "district": "闵行区"}, {"id": "124108", "name": "上海市文来中学", "district": "闵行区"}, {"id": "124109", "name": "上海市民办文绮中学", "district": "闵行区"}, {"id": "124115", "name": "上海闵行区协和双语教科学校", "district": "闵行区"}, {"id": "125001", "name": "上海市闵行区诸翟学校", "district": "闵行区"}, {"id": "125002", "name": "华东师范大学附属闵行虹桥学校", "district": "闵行区"}, {"id": "125003", "name": "上海市莘光学校", "district": "闵行区"}, {"id": "125010", "name": "上海市闵行区纪王学校", "district": "闵行区"}, {"id": "125011", "name": "上海市马桥强恕学校", "district": "闵行区"}, {"id": "125013", "name": "上海市古美学校", "district": "闵行区"}, {"id": "125015", "name": "上海师范大学康城实验学校", "district": "闵行区"}, {"id": "125016", "name": "上海市莘城学校", "district": "闵行区"}, {"id": "125017", "name": "上海市闵行区明星学校", "district": "闵行区"}, {"id": "125018", "name": "上海市闵行区文来实验学校", "district": "闵行区"}, {"id": "125020", "name": "上海市闵行区君莲学校", "district": "闵行区"}, {"id": "125021", "name": "上海市闵行区华漕学校", "district": "闵行区"}, {"id": "125022", "name": "上海世外教育附属浦江外国语学校", "district": "闵行区"}, {"id": "125024", "name": "上海交通大学附属闵行马桥实验学校", "district": "闵行区"}, {"id": "125025", "name": "上海市闵行区七宝文来学校", "district": "闵行区"}, {"id": "125027", "name": "华东理工大学附属闵行梅陇实验学校", "district": "闵行区"}, {"id": "125028", "name": "华东师范大学附属闵行永德学校", "district": "闵行区"}, {"id": "125106", "name": "上海市民办德英乐实验学校", "district": "闵行区"}, {"id": "125107", "name": "上海市燎原双语学校", "district": "闵行区"}, {"id": "125109", "name": "上海市民办协和双语尚音学校", "district": "闵行区"}, {"id": "125110", "name": "上海市民办协和双语学校", "district": "闵行区"}, {"id": "125112", "name": "上海市民办万源城协和双语学校", "district": "闵行区"}, {"id": "125113", "name": "上海星河湾双语学校", "district": "闵行区"}, {"id": "125114", "name": "上海博世凯外国语学校", "district": "闵行区"}, {"id": "125115", "name": "上海闵行区万科双语学校", "district": "闵行区"}, {"id": "125116", "name": "上海闵行区民办美高双语学校", "district": "闵行区"}, {"id": "125117", "name": "上海闵行区诺达双语学校", "district": "闵行区"}, {"id": "125118", "name": "上海民办圣华紫竹双语学校", "district": "闵行区"}, {"id": "125119", "name": "上海闵行区民办德闳学校", "district": "闵行区"}, {"id": "151001", "name": "上海市建平中学西校", "district": "浦东新区"}, {"id": "151002", "name": "上海市进才中学北校", "district": "浦东新区"}, {"id": "151003", "name": "华东师范大学附属东昌中学南校", "district": "浦东新区"}, {"id": "151004", "name": "上海市洋泾中学东校", "district": "浦东新区"}, {"id": "151005", "name": "上海市上南中学东校", "district": "浦东新区"}, {"id": "151006", "name": "上海市上南中学北校", "district": "浦东新区"}, {"id": "151007", "name": "上海市三林中学北校", "district": "浦东新区"}, {"id": "151008", "name": "上海市洪山中学", "district": "浦东新区"}, {"id": "151009", "name": "上海市上南中学南校", "district": "浦东新区"}, {"id": "151010", "name": "上海市清流中学", "district": "浦东新区"}, {"id": "151011", "name": "上海市浦泾中学", "district": "浦东新区"}, {"id": "151012", "name": "上海交通大学附属浦东实验中学", "district": "浦东新区"}, {"id": "151013", "name": "上海市浦东新区教育学院附属实验中学", "district": "浦东新区"}, {"id": "151014", "name": "上海市洋泾中学南校", "district": "浦东新区"}, {"id": "151015", "name": "上海市东昌东校", "district": "浦东新区"}, {"id": "151016", "name": "上海市罗山中学", "district": "浦东新区"}, {"id": "151017", "name": "上海市金杨中学", "district": "浦东新区"}, {"id": "151018", "name": "上海市金川中学 (现上海市建平实验中学金川校区)", "district": "浦东新区"}, {"id": "151019", "name": "上海市华林中学", "district": "浦东新区"}, {"id": "151020", "name": "上海市孙桥中学", "district": "浦东新区"}, {"id": "151021", "name": "上海市育人中学", "district": "浦东新区"}, {"id": "151022", "name": "上海市东林中学", "district": "浦东新区"}, {"id": "151023", "name": "上海市施湾中学", "district": "浦东新区"}, {"id": "151024", "name": "上海市江镇中学", "district": "浦东新区"}, {"id": "151025", "name": "上海市合庆中学", "district": "浦东新区"}, {"id": "151026", "name": "上海市蔡路中学", "district": "浦东新区"}, {"id": "151027", "name": "上海市六团中学", "district": "浦东新区"}, {"id": "151028", "name": "上海戏剧学院附属浦东实验中学", "district": "浦东新区"}, {"id": "151029", "name": "上海市浦兴中学", "district": "浦东新区"}, {"id": "151030", "name": "上海浦东新区民办恒洋外国语学校", "district": "浦东新区"}, {"id": "151031", "name": "上海浦东新区民办欣竹中学", "district": "浦东新区"}, {"id": "151032", "name": "上海市新云台中学 (现上海市建平实验地杰中学博华路校区)", "district": "浦东新区"}, {"id": "151033", "name": "上海市陆行中学南校", "district": "浦东新区"}, {"id": "151034", "name": "上海市杨思中学", "district": "浦东新区"}, {"id": "151035", "name": "上海民办浦东交中初级中学", "district": "浦东新区"}, {"id": "151036", "name": "上海市建平香梅中学", "district": "浦东新区"}, {"id": "151037", "name": "上海市南汇第二中学", "district": "浦东新区"}, {"id": "151038", "name": "上海民办启能东方外国语学校", "district": "浦东新区"}, {"id": "151039", "name": "上海市民办中芯学校", "district": "浦东新区"}, {"id": "151040", "name": "上海市进才实验中学", "district": "浦东新区"}, {"id": "151041", "name": "上海市实验学校东校", "district": "浦东新区"}, {"id": "151042", "name": "上海市张江集团中学", "district": "浦东新区"}, {"id": "151043", "name": "上海浦东新区民办协和双语学校", "district": "浦东新区"}, {"id": "151044", "name": "上海市浦东新区建平南汇实验学校", "district": "浦东新区"}, {"id": "151045", "name": "上海市三灶学校", "district": "浦东新区"}, {"id": "151046", "name": "上海市黄路学校", "district": "浦东新区"}, {"id": "151047", "name": "上海市浦东新区彭镇中学", "district": "浦东新区"}, {"id": "151048", "name": "上海师范大学附属秋萍学校", "district": "浦东新区"}, {"id": "151049", "name": "上海市三墩学校", "district": "浦东新区"}, {"id": "71045", "name": "上海市洵阳中学", "district": "普陀区"}, {"id": "71046", "name": "上海市北海中学", "district": "普陀区"}, {"id": "71047", "name": "上海市延河中学", "district": "普陀区"}, {"id": "71048", "name": "上海市曹杨第二中学附属实验中学", "district": "普陀区"}, {"id": "71049", "name": "华东师范大学第四附属中学", "district": "普陀区"}, {"id": "71050", "name": "上海市怒江中学", "district": "普陀区"}, {"id": "71051", "name": "上海师范大学附属第二实验学校", "district": "普陀区"}, {"id": "71053", "name": "上海市真北中学", "district": "普陀区"}, {"id": "71054", "name": "上海市普陀区教育学院附属中学", "district": "普陀区"}, {"id": "71056", "name": "上海市梅陇中学", "district": "普陀区"}, {"id": "71060", "name": "上海兰田中学", "district": "普陀区"}, {"id": "71085", "name": "上海市普陀区梅陇实验中学", "district": "普陀区"}, {"id": "73004", "name": "上海市曹杨中学", "district": "普陀区"}, {"id": "74005", "name": "同济大学第二附属中学", "district": "普陀区"}, {"id": "74007", "name": "上海市甘泉外国语中学", "district": "普陀区"}, {"id": "74009", "name": "上海市新杨中学", "district": "普陀区"}, {"id": "74010", "name": "上海市长征中学", "district": "普陀区"}, {"id": "74011", "name": "上海市桃浦中学", "district": "普陀区"}, {"id": "74012", "name": "上海市晋元高级中学附属学校南校", "district": "普陀区"}, {"id": "74016", "name": "上海音乐学院附属安师实验中学", "district": "普陀区"}, {"id": "74018", "name": "上海华东师范大学附属进华中学", "district": "普陀区"}, {"id": "74081", "name": "上海安生学校", "district": "普陀区"}, {"id": "75013", "name": "上海培佳双语学校", "district": "普陀区"}, {"id": "75061", "name": "上海市铜川学校", "district": "普陀区"}, {"id": "75062", "name": "上海市沙田学校", "district": "普陀区"}, {"id": "75063", "name": "华东师范大学附属外国语实验学校", "district": "普陀区"}, {"id": "75064", "name": "上海市子长学校", "district": "普陀区"}, {"id": "75065", "name": "上海市洛川学校", "district": "普陀区"}, {"id": "75066", "name": "上海市宜川中学附属学校", "district": "普陀区"}, {"id": "75067", "name": "上海市曹杨中学附属学校", "district": "普陀区"}, {"id": "75068", "name": "上海市普陀区教育学院附属学校", "district": "普陀区"}, {"id": "75069", "name": "上海市晋元高级中学附属学校", "district": "普陀区"}, {"id": "75070", "name": "上海市曹杨第二中学附属学校", "district": "普陀区"}, {"id": "75071", "name": "上海市民办新黄浦实验学校", "district": "普陀区"}, {"id": "75072", "name": "上海市江宁学校", "district": "普陀区"}, {"id": "75073", "name": "上海市中远实验学校", "district": "普陀区"}, {"id": "75077", "name": "上海市金鼎学校", "district": "普陀区"}, {"id": "75078", "name": "上海外国语大学尚阳外国语学校", "district": "普陀区"}, {"id": "75079", "name": "上海市文达学校", "district": "普陀区"}, {"id": "75080", "name": "上海理工大学附属普陀实验学校", "district": "普陀区"}, {"id": "75113", "name": "上海市万里城实验学校", "district": "普陀区"}, {"id": "181001", "name": "上海市青浦区实验中学", "district": "青浦区"}, {"id": "181002", "name": "上海市青浦区东方中学", "district": "青浦区"}, {"id": "181003", "name": "上海市青浦区尚美中学", "district": "青浦区"}, {"id": "181004", "name": "上海市青浦区徐泾中学", "district": "青浦区"}, {"id": "181005", "name": "上海市青浦区凤溪中学", "district": "青浦区"}, {"id": "181006", "name": "上海市青浦区重固中学", "district": "青浦区"}, {"id": "181007", "name": "上海市青浦区豫才中学", "district": "青浦区"}, {"id": "181008", "name": "上海市青浦区华新中学", "district": "青浦区"}, {"id": "181009", "name": "上海市青浦区白鹤中学", "district": "青浦区"}, {"id": "181011", "name": "上海市青浦区珠溪中学", "district": "青浦区"}, {"id": "181012", "name": "上海市青浦区沈巷中学", "district": "青浦区"}, {"id": "181013", "name": "上海市青浦区颜安中学", "district": "青浦区"}, {"id": "181016", "name": "上海市青浦区金泽中学", "district": "青浦区"}, {"id": "181017", "name": "上海政法学院附属青浦崧淀中学", "district": "青浦区"}, {"id": "181018", "name": "上海市教育学会青浦清河湾中学", "district": "青浦区"}, {"id": "181019", "name": "上海市青浦区教育学院附属中学", "district": "青浦区"}, {"id": "184005", "name": "上海市青浦区第一中学", "district": "青浦区"}, {"id": "185001", "name": "上海市毓华学校", "district": "青浦区"}, {"id": "185003", "name": "上海市青浦区崧泽学校", "district": "青浦区"}, {"id": "185004", "name": "上海市博文学校", "district": "青浦区"}, {"id": "185005", "name": "上海市青浦区少年业余体育学校", "district": "青浦区"}, {"id": "185007", "name": "上海市毓秀学校", "district": "青浦区"}, {"id": "185008", "name": "上海宋庆龄学校", "district": "青浦区"}, {"id": "185009", "name": "上海市佳信学校", "district": "青浦区"}, {"id": "185011", "name": "上海五浦汇实验学校", "district": "青浦区"}, {"id": "185012", "name": "上海青浦区世外学校", "district": "青浦区"}, {"id": "185013", "name": "上海青浦平和双语学校", "district": "青浦区"}, {"id": "185014", "name": "上海青浦区协和双语学校", "district": "青浦区"}, {"id": "185019", "name": "上海青浦兰生学校", "district": "青浦区"}, {"id": "171001", "name": "上海市松江区第七中学", "district": "松江区"}, {"id": "171002", "name": "上海对外经贸大学附属松江实验学校花园分校", "district": "松江区"}, {"id": "171003", "name": "上海市松江区第五中学", "district": "松江区"}, {"id": "171004", "name": "上海市松江四中初级中学", "district": "松江区"}, {"id": "171006", "name": "上海市松江区九亭中学", "district": "松江区"}, {"id": "171013", "name": "上海市松江区第六中学", "district": "松江区"}, {"id": "171015", "name": "上海市松江区九亭第二中学", "district": "松江区"}, {"id": "174003", "name": "上海外国语大学附属外国语学校松江云间中学", "district": "松江区"}, {"id": "174005", "name": "上海市松江区新桥中学", "district": "松江区"}, {"id": "174007", "name": "上海市松江区民办茸一中学", "district": "松江区"}, {"id": "174008", "name": "上海市松江九峰实验学校", "district": "松江区"}, {"id": "174013", "name": "上海领科双语学校", "district": "松江区"}, {"id": "175001", "name": "上海市松江区洞泾学校", "district": "松江区"}, {"id": "175002", "name": "上海市松江区李塔汇学校", "district": "松江区"}, {"id": "175003", "name": "上海市松江区古松学校", "district": "松江区"}, {"id": "175004", "name": "上海市松江区泖港学校", "district": "松江区"}, {"id": "175005", "name": "上海市松江区民乐学校", "district": "松江区"}, {"id": "175007", "name": "上海市松江区泗泾实验学校", "district": "松江区"}, {"id": "175008", "name": "上海市松江区佘山外国语实验学校", "district": "松江区"}, {"id": "175009", "name": "上海市松江区五厍学校", "district": "松江区"}, {"id": "175010", "name": "东华大学附属实验学校松江小昆山分校", "district": "松江区"}, {"id": "175011", "name": "上海市松江区仓桥学校", "district": "松江区"}, {"id": "175012", "name": "上海市松江区佘山学校", "district": "松江区"}, {"id": "175013", "name": "上海市三新学校", "district": "松江区"}, {"id": "175014", "name": "上海市松江区车墩学校", "district": "松江区"}, {"id": "175015", "name": "上海市松江区张泽学校", "district": "松江区"}, {"id": "175016", "name": "上海市松江区天马山学校", "district": "松江区"}, {"id": "175017", "name": "上海戏剧学院附属松江实验学校", "district": "松江区"}, {"id": "175018", "name": "上海市西外外国语学校", "district": "松江区"}, {"id": "175019", "name": "上海市松江区叶榭学校", "district": "松江区"}, {"id": "175020", "name": "上海外国语大学松江外国语学校", "district": "松江区"}, {"id": "175022", "name": "上海市松江区新浜学校", "district": "松江区"}, {"id": "175023", "name": "东华大学附属实验学校", "district": "松江区"}, {"id": "175024", "name": "上海赫贤学校", "district": "松江区"}, {"id": "175026", "name": "华东政法大学附属松江实验学校", "district": "松江区"}, {"id": "175028", "name": "上海市松江区新闵学校", "district": "松江区"}, {"id": "175029", "name": "上海师范大学附属松江实验学校", "district": "松江区"}, {"id": "175030", "name": "上海工程技术大学附属松江泗泾实验学校", "district": "松江区"}, {"id": "175032", "name": "上海市三新学校松江思贤分校", "district": "松江区"}, {"id": "175037", "name": "上海市三新学校松江东部分校", "district": "松江区"}, {"id": "41302", "name": "上海市位育初级中学", "district": "徐汇区"}, {"id": "41305", "name": "上海市第二初级中学", "district": "徐汇区"}, {"id": "41306", "name": "上海市南洋模范初级中学", "district": "徐汇区"}, {"id": "41316", "name": "上海市南洋初级中学", "district": "徐汇区"}, {"id": "41318", "name": "上海市田林中学", "district": "徐汇区"}, {"id": "41319", "name": "上海市田林第二中学", "district": "徐汇区"}, {"id": "41320", "name": "上海市田林第三中学", "district": "徐汇区"}, {"id": "41326", "name": "上海市龙苑中学", "district": "徐汇区"}, {"id": "41327", "name": "上海市徐汇区教育学院附属实验中学", "district": "徐汇区"}, {"id": "41328", "name": "上海市徐汇区教育学院附属实验中学南部分校", "district": "徐汇区"}, {"id": "41329", "name": "上海市园南中学", "district": "徐汇区"}, {"id": "41331", "name": "上海市汾阳中学", "district": "徐汇区"}, {"id": "41334", "name": "上海市梅园中学", "district": "徐汇区"}, {"id": "41336", "name": "上海市紫阳中学", "district": "徐汇区"}, {"id": "41347", "name": "上海市康健外国语实验中学", "district": "徐汇区"}, {"id": "41363", "name": "上海市世外中学", "district": "徐汇区"}, {"id": "41385", "name": "上海市民办华育中学", "district": "徐汇区"}, {"id": "44103", "name": "上海市中国中学", "district": "徐汇区"}, {"id": "44107", "name": "上海市第五十四中学", "district": "徐汇区"}, {"id": "44109", "name": "上海市徐汇中学", "district": "徐汇区"}, {"id": "44110", "name": "徐汇南校", "district": "徐汇区"}, {"id": "44111", "name": "上海市第四中学", "district": "徐汇区"}, {"id": "44114", "name": "上海市零陵中学", "district": "徐汇区"}, {"id": "44133", "name": "华东理工大学附属中学", "district": "徐汇区"}, {"id": "44162", "name": "上海市西南位育中学", "district": "徐汇区"}, {"id": "44164", "name": "上海市西南模范中学", "district": "徐汇区"}, {"id": "44181", "name": "上海民办位育中学", "district": "徐汇区"}, {"id": "44182", "name": "上海民办南模中学", "district": "徐汇区"}, {"id": "45304", "name": "上海市位育实验学校", "district": "徐汇区"}, {"id": "45306", "name": "上海市徐汇区上汇实验学校", "district": "徐汇区"}, {"id": "45444", "name": "上海师范大学第三附属实验学校", "district": "徐汇区"}, {"id": "101000", "name": "上海市铁岭中学", "district": "杨浦区"}, {"id": "101001", "name": "上海市鞍山初级中学", "district": "杨浦区"}, {"id": "101002", "name": "上海市十五中学", "district": "杨浦区"}, {"id": "101003", "name": "上海市杨浦初级中学", "district": "杨浦区"}, {"id": "101004", "name": "上海市惠民中学", "district": "杨浦区"}, {"id": "101005", "name": "上海市辽阳中学", "district": "杨浦区"}, {"id": "101006", "name": "上海市新大桥中学", "district": "杨浦区"}, {"id": "101007", "name": "上海市建设初级中学", "district": "杨浦区"}, {"id": "101008", "name": "上海市东辽阳中学", "district": "杨浦区"}, {"id": "101009", "name": "上海市二十五中学", "district": "杨浦区"}, {"id": "101012", "name": "上海理工大学附属初级中学", "district": "杨浦区"}, {"id": "101014", "name": "上海市杨浦区教育学院附属中学", "district": "杨浦区"}, {"id": "101015", "name": "上海市同济初级中学", "district": "杨浦区"}, {"id": "101016", "name": "上海市三门中学 (上海财经大学附属初级中学)", "district": "杨浦区"}, {"id": "101018", "name": "上海市包头中学", "district": "杨浦区"}, {"id": "101019", "name": "上海市思源中学", "district": "杨浦区"}, {"id": "101020", "name": "上海市鞍山实验中学", "district": "杨浦区"}, {"id": "101021", "name": "上海市同济第二初级中学", "district": "杨浦区"}, {"id": "101022", "name": "上海市国和中学", "district": "杨浦区"}, {"id": "101023", "name": "上海理工大学附属实验初级中学", "district": "杨浦区"}, {"id": "101024", "name": "上海市控江初级中学", "district": "杨浦区"}, {"id": "101026", "name": "上海市存志学校", "district": "杨浦区"}, {"id": "101027", "name": "上海民办杨浦凯慧初级中学", "district": "杨浦区"}, {"id": "103012", "name": "上海市市东实验学校 (上海市市东中学)", "district": "杨浦区"}, {"id": "103075", "name": "上海市复旦实验中学", "district": "杨浦区"}, {"id": "104001", "name": "上海民办兰生中学", "district": "杨浦区"}, {"id": "104014", "name": "上海市长阳实验学校", "district": "杨浦区"}, {"id": "104067", "name": "上海民办杨浦实验学校", "district": "杨浦区"}, {"id": "104073", "name": "上海市体育学院附属中学", "district": "杨浦区"}, {"id": "105000", "name": "上海音乐学院实验学校", "district": "杨浦区"}, {"id": "105001", "name": "上海市黄兴学校", "district": "杨浦区"}, {"id": "105002", "name": "上海市昆明学校", "district": "杨浦区"}, {"id": "105003", "name": "上海市育鹰学校", "district": "杨浦区"}, {"id": "105004", "name": "上海杨浦双语学校", "district": "杨浦区"}, {"id": "105005", "name": "上海市市光学校", "district": "杨浦区"}, {"id": "105006", "name": "上海民办沪东外国语学校", "district": "杨浦区"}, {"id": "105007", "name": "上海同大实验学校", "district": "杨浦区"}, {"id": "105008", "name": "复旦大学第二附属学校", "district": "杨浦区"}, {"id": "51001", "name": "上海市第三女子初级中学", "district": "长宁区"}, {"id": "51002", "name": "上海市天山第二中学", "district": "长宁区"}, {"id": "51003", "name": "上海市姚连生中学", "district": "长宁区"}, {"id": "51004", "name": "上海市天山初级中学", "district": "长宁区"}, {"id": "51005", "name": "上海市虹桥中学", "district": "长宁区"}, {"id": "51006", "name": "上海市延安实验初级中学", "district": "长宁区"}, {"id": "51007", "name": "上海市复旦初级中学", "district": "长宁区"}, {"id": "51008", "name": "上海市泸定中学", "district": "长宁区"}, {"id": "51009", "name": "上海市娄山中学", "district": "长宁区"}, {"id": "51010", "name": "上海市西延安中学", "district": "长宁区"}, {"id": "51011", "name": "上海市新泾中学", "district": "长宁区"}, {"id": "51012", "name": "上海市民办新世纪中学", "district": "长宁区"}, {"id": "51013", "name": "上海市延安初级中学", "district": "长宁区"}, {"id": "51014", "name": "上海市建青实验学校", "district": "长宁区"}, {"id": "51015", "name": "上海市西郊学校", "district": "长宁区"}, {"id": "51016", "name": "华东政法大学附属中学", "district": "长宁区"}, {"id": "51017", "name": "上海市仙霞高级中学", "district": "长宁区"}, {"id": "51018", "name": "上海市开元学校", "district": "长宁区"}];
+
+    const SCHOOLS = [{"id": 12001, "name": "上海市格致中学", "district": "黄浦区", "type": "市重点", "tags": ["公办", "国际课程"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 696.0, "volatility": 11.0, "intro": "含国际课程班"}, {"id": 12003, "name": "上海市大同中学", "district": "黄浦区", "type": "市重点", "tags": ["公办", "国际课程"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "松江区": 50, "浦东新区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 682.0, "volatility": 0.0, "intro": "含国际课程班"}, {"id": 12005, "name": "上海市向明中学", "district": "黄浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"徐汇区": 50, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "长宁区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 675.0, "volatility": 0.0, "intro": ""}, {"id": 12007, "name": "上海外国语大学附属大境中学", "district": "黄浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "黄浦区": 50}, "baseCut": 670.0, "volatility": 4.2, "intro": ""}, {"id": 12008, "name": "上海市光明中学", "district": "黄浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 652.0, "volatility": 0.0, "intro": ""}, {"id": 12009, "name": "上海市敬业中学", "district": "黄浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "闵行区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 642.0, "volatility": 1.4, "intro": ""}, {"id": 12010, "name": "上海市卢湾高级中学", "district": "黄浦区", "type": "市重点", "tags": ["公办", "国际课程"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "徐汇区": 50, "松江区": 50, "浦东新区": 50, "闵行区": 50, "黄浦区": 50}, "baseCut": 677.5, "volatility": 15.7, "intro": "含国际课程班"}, {"id": 12002, "name": "上海市格致中学(奉贤校区)", "district": "黄浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"奉贤区": 50, "黄浦区": 50}, "baseCut": 714.0, "volatility": 14.8, "intro": ""}, {"id": 12006, "name": "上海市向明中学(浦江校区)", "district": "黄浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"闵行区": 50, "黄浦区": 50}, "baseCut": 714.0, "volatility": 14.4, "intro": ""}, {"id": 13001, "name": "上海市第八中学", "district": "黄浦区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 636.5, "volatility": 1.1, "intro": "上海市男子高中基地实验班参照市实验性示范性高中的自主招生录取方式"}, {"id": 13003, "name": "上海市第十中学", "district": "黄浦区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 13004, "name": "上海理工大学附属储能中学", "district": "黄浦区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 14001, "name": "上海市金陵中学", "district": "黄浦区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 610.5, "volatility": 1.8, "intro": ""}, {"id": 14003, "name": "上海市市南中学", "district": "黄浦区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 558.0, "volatility": 1.4, "intro": ""}, {"id": 14004, "name": "上海音乐学院附属黄浦比乐中学", "district": "黄浦区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 542.5, "volatility": 1.8, "intro": ""}, {"id": 14006, "name": "上海市同济黄浦设计创意中学", "district": "黄浦区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 42001, "name": "上海市第二中学", "district": "徐汇区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 100, "徐汇区": 100, "普陀区": 100, "杨浦区": 100, "松江区": 50, "浦东新区": 100, "虹口区": 50, "金山区": 50, "长宁区": 100, "闵行区": 50, "青浦区": 50, "静安区": 100, "黄浦区": 100}, "baseCut": 695.5, "volatility": 1.1, "intro": ""}, {"id": 42008, "name": "上海市南洋模范中学", "district": "徐汇区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 42035, "name": "上海市位育中学", "district": "徐汇区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 43015, "name": "上海市南洋中学", "district": "徐汇区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 715.0, "volatility": 8.9, "intro": ""}, {"id": 42002, "name": "上海市第二中学(梅陇校区)", "district": "徐汇区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 692.0, "volatility": 1.4, "intro": ""}, {"id": 42036, "name": "复旦大学附属中学徐汇分校", "district": "徐汇区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "闵行区": 50, "静安区": 50}, "baseCut": 754.0, "volatility": 7.8, "intro": ""}, {"id": 44109, "name": "上海市徐汇中学", "district": "徐汇区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 44223, "name": "上海市紫竹园中学", "district": "徐汇区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 44103, "name": "上海市中国中学", "district": "徐汇区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 44107, "name": "上海市第五十四中学", "district": "徐汇区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 44111, "name": "上海市第四中学", "district": "徐汇区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 44162, "name": "上海市西南位育中学", "district": "徐汇区", "type": "区重点", "tags": ["民办", "国际课程"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": "含国际课程班"}, {"id": 41363, "name": "上海市世外中学", "district": "徐汇区", "type": "一般高中", "tags": ["民办", "国际课程"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": "国际课程班"}, {"id": 44083, "name": "上海市民办西南高级中学", "district": "徐汇区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 44114, "name": "上海市零陵中学", "district": "徐汇区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 44133, "name": "华东理工大学附属中学", "district": "徐汇区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 44164, "name": "上海市西南模范中学", "district": "徐汇区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 44239, "name": "上海市徐汇区董恒甫高级中学", "district": "徐汇区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 44101, "name": "上海市位育附属徐汇科技实验中学", "district": "徐汇区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 52001, "name": "上海市第三女子中学", "district": "长宁区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 694.0, "volatility": 1.4, "intro": ""}, {"id": 52002, "name": "上海市延安中学", "district": "长宁区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 675.0, "volatility": 1.4, "intro": ""}, {"id": 53004, "name": "上海市复旦中学", "district": "长宁区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 715.5, "volatility": 10.1, "intro": ""}, {"id": 54013, "name": "华东政法大学附属中学", "district": "长宁区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 53003, "name": "华东师范大学附属天山学校", "district": "长宁区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 53005, "name": "上海市建青实验学校", "district": "长宁区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 54030, "name": "上海市仙霞高级中学", "district": "长宁区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 54010, "name": "上海市西郊学校", "district": "长宁区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 54043, "name": "上海市民办新虹桥中学", "district": "长宁区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 62001, "name": "上海市市西中学", "district": "静安区", "type": "市重点", "tags": ["公办", "国际课程"], "zhaojiao": null, "toDistrict": {}, "baseCut": 688.0, "volatility": 1.4, "intro": "含国际课程班"}, {"id": 62002, "name": "上海市育才中学", "district": "静安区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 675.0, "volatility": 1.4, "intro": ""}, {"id": 62003, "name": "上海市新中高级中学", "district": "静安区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50}, "baseCut": 601.0, "volatility": 0.7, "intro": ""}, {"id": 62004, "name": "上海市市北中学", "district": "静安区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 716.0, "volatility": 10.1, "intro": ""}, {"id": 62011, "name": "上海市回民中学", "district": "静安区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 662.0, "volatility": 12.3, "intro": ""}, {"id": 63004, "name": "上海市第六十中学", "district": "静安区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"宝山区": 50, "徐汇区": 40, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 677.8, "volatility": 9.0, "intro": ""}, {"id": 64001, "name": "上海市华东模范中学", "district": "静安区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "松江区": 50, "浦东新区": 50, "长宁区": 50, "闵行区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 602.0, "volatility": 1.4, "intro": ""}, {"id": 64004, "name": "上海戏剧学院附属高级中学", "district": "静安区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 63001, "name": "上海市民立中学", "district": "静安区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 636.0, "volatility": 1.4, "intro": ""}, {"id": 63002, "name": "上海市第一中学", "district": "静安区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 606.5, "volatility": 1.1, "intro": ""}, {"id": 63003, "name": "上海市风华中学", "district": "静安区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 649.5, "volatility": 1.1, "intro": ""}, {"id": 63007, "name": "上海市彭浦中学", "district": "静安区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 63008, "name": "上海市久隆模范中学", "district": "静安区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 63077, "name": "上海市闸北第八中学", "district": "静安区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 64003, "name": "同济大学附属七一中学", "district": "静安区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 64020, "name": "上海田家炳中学", "district": "静安区", "type": "区重点", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 64007, "name": "上海市向东中学", "district": "静安区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 64008, "name": "上海大学市北附属中学", "district": "静安区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 64021, "name": "上海市民办扬波中学", "district": "静安区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 64023, "name": "上海市民办新和中学", "district": "静安区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 64024, "name": "上海市民办风范中学", "district": "静安区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 72001, "name": "上海市晋元高级中学", "district": "普陀区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 100, "奉贤区": 100, "宝山区": 100, "徐汇区": 50, "普陀区": 100, "杨浦区": 100, "松江区": 100, "浦东新区": 100, "虹口区": 100, "金山区": 50, "长宁区": 100, "闵行区": 50, "青浦区": 100, "静安区": 100, "黄浦区": 50}, "baseCut": 701.5, "volatility": 1.8, "intro": "关键语种(俄语方向)理工人才培育试点班参照市实验性示范性高中的自主招生录取方式"}, {"id": 72002, "name": "上海市曹杨第二中学", "district": "普陀区", "type": "市重点", "tags": ["公办", "国际课程"], "zhaojiao": null, "toDistrict": {"嘉定区": 100, "宝山区": 100, "崇明区": 50, "徐汇区": 100, "普陀区": 100, "杨浦区": 100, "松江区": 100, "浦东新区": 100, "虹口区": 100, "长宁区": 50, "闵行区": 100, "青浦区": 100, "静安区": 100, "黄浦区": 100}, "baseCut": 690.0, "volatility": 1.4, "intro": "含国际课程班"}, {"id": 73003, "name": "上海市宜川中学", "district": "普陀区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 711.8, "volatility": 12.6, "intro": ""}, {"id": 73082, "name": "华东师范大学第二附属中学(普陀校区)", "district": "普陀区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 73004, "name": "上海市曹杨中学", "district": "普陀区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 74005, "name": "同济大学第二附属中学", "district": "普陀区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 74007, "name": "上海市甘泉外国语中学", "district": "普陀区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 74016, "name": "上海音乐学院附属安师实验中学", "district": "普陀区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 74010, "name": "上海市长征中学", "district": "普陀区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 74011, "name": "上海市桃浦中学", "district": "普陀区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 74018, "name": "上海华东师范大学附属进华中学", "district": "普陀区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 74081, "name": "上海安生学校", "district": "普陀区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 74085, "name": "上海市曹杨第二中学东校", "district": "普陀区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 75013, "name": "上海培佳双语学校", "district": "普陀区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 92001, "name": "复旦大学附属复兴中学", "district": "虹口区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "静安区": 50}, "baseCut": 690.0, "volatility": 1.4, "intro": ""}, {"id": 92002, "name": "华东师范大学第一附属中学", "district": "虹口区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 100, "奉贤区": 100, "宝山区": 100, "崇明区": 50, "徐汇区": 50, "普陀区": 100, "杨浦区": 100, "松江区": 100, "浦东新区": 100, "虹口区": 100, "金山区": 100, "长宁区": 100, "闵行区": 100, "青浦区": 100, "静安区": 100, "黄浦区": 100}, "baseCut": 680.0, "volatility": 1.4, "intro": ""}, {"id": 93001, "name": "上海财经大学附属北郊高级中学", "district": "虹口区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "闵行区": 50, "静安区": 50}, "baseCut": 650.0, "volatility": 1.4, "intro": ""}, {"id": 94005, "name": "上海师范大学附属虹口中学", "district": "虹口区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 93003, "name": "上海音乐学院虹口区北虹高级中学", "district": "虹口区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 93004, "name": "上海市继光高级中学", "district": "虹口区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 94006, "name": "同济大学附属澄衷中学", "district": "虹口区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 94001, "name": "上海市鲁迅中学", "district": "虹口区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 610.0, "volatility": 1.4, "intro": ""}, {"id": 94003, "name": "上海市第五十二中学", "district": "虹口区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 94004, "name": "上海市友谊中学", "district": "虹口区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 94049, "name": "上海外国语大学附属外国语学校东校", "district": "虹口区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 102004, "name": "上海市杨浦高级中学", "district": "杨浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 102032, "name": "上海市控江中学", "district": "杨浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 103002, "name": "同济大学第一附属中学", "district": "杨浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "虹口区": 50, "闵行区": 50, "静安区": 50}, "baseCut": 648.0, "volatility": 1.4, "intro": ""}, {"id": 103039, "name": "上海理工大学附属中学", "district": "杨浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 103012, "name": "上海市市东实验学校(上海市市东中学)", "district": "杨浦区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 103026, "name": "上海财经大学附属中学", "district": "杨浦区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 103049, "name": "上海市同济中学", "district": "杨浦区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 103061, "name": "上海市中原中学", "district": "杨浦区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 103075, "name": "上海市复旦实验中学", "district": "杨浦区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 104050, "name": "上海理工大学附属杨浦少云中学", "district": "杨浦区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 104066, "name": "上海市民星中学", "district": "杨浦区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 104073, "name": "上海市体育学院附属中学", "district": "杨浦区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 102058, "name": "复旦大学第二附属中学", "district": "杨浦区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 104021, "name": "上海市民办上实剑桥外国语中学", "district": "杨浦区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 122001, "name": "上海市七宝中学", "district": "闵行区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 100, "宝山区": 50, "徐汇区": 100, "普陀区": 100, "杨浦区": 100, "松江区": 100, "浦东新区": 100, "虹口区": 50, "金山区": 50, "长宁区": 100, "闵行区": 100, "青浦区": 100, "静安区": 100, "黄浦区": 50}, "baseCut": 695.0, "volatility": 1.4, "intro": ""}, {"id": 123001, "name": "上海市闵行中学", "district": "闵行区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 660.0, "volatility": 1.4, "intro": ""}, {"id": 122002, "name": "华东师范大学第二附属中学闵行紫竹分校", "district": "闵行区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 692.0, "volatility": 1.4, "intro": ""}, {"id": 122003, "name": "上海师范大学附属中学闵行分校", "district": "闵行区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 100, "奉贤区": 100, "宝山区": 100, "崇明区": 100, "徐汇区": 100, "普陀区": 100, "杨浦区": 100, "松江区": 100, "浦东新区": 100, "虹口区": 100, "金山区": 100, "长宁区": 100, "闵行区": 100, "青浦区": 100, "静安区": 100, "黄浦区": 100}, "baseCut": 698.0, "volatility": 1.4, "intro": ""}, {"id": 122004, "name": "上海交通大学附属中学闵行分校", "district": "闵行区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 685.5, "volatility": 1.4, "intro": ""}, {"id": 124006, "name": "上海市闵行第三中学", "district": "闵行区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 123002, "name": "上海市莘庄中学", "district": "闵行区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 123003, "name": "上海外国语大学闵行外国语中学", "district": "闵行区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124005, "name": "华东理工大学附属闵行科技高级中学", "district": "闵行区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124022, "name": "北京外国语大学附属上海闵行田园高级中学", "district": "闵行区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124108, "name": "上海市文来中学", "district": "闵行区", "type": "区重点", "tags": ["民办", "国际课程"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": "含国际课程班"}, {"id": 125028, "name": "华东师范大学附属闵行永德学校", "district": "闵行区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124010, "name": "上海市第二体育运动学校(上海市体育中学)", "district": "闵行区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124011, "name": "上海市七宝中学附属鑫都实验中学", "district": "闵行区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124012, "name": "上海市闵行中学东校", "district": "闵行区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124013, "name": "上海市闵行区实验高级中学", "district": "闵行区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124015, "name": "上海市七宝中学浦江分校", "district": "闵行区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124019, "name": "上海中医药大学附属浦江高级中学", "district": "闵行区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124020, "name": "上海市金汇高级中学", "district": "闵行区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124024, "name": "上海市古美高级中学", "district": "闵行区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124109, "name": "上海市民办文绮中学", "district": "闵行区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124111, "name": "上海协和双语高级中学", "district": "闵行区", "type": "一般高中", "tags": ["民办", "国际课程"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": "国际课程班"}, {"id": 124114, "name": "上海市闵行区教育学院附属中学", "district": "闵行区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124115, "name": "上海闵行区协和双语教科学校", "district": "闵行区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 124116, "name": "上海市民办燎原双语高级中学", "district": "闵行区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 125008, "name": "上海交通大学附属闵行实验学校", "district": "闵行区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 125113, "name": "上海星河湾双语学校", "district": "闵行区", "type": "一般高中", "tags": ["民办", "国际课程"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": "国际课程班"}, {"id": 125115, "name": "上海闵行区万科双语学校", "district": "闵行区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 125117, "name": "上海闵行区诺达双语学校", "district": "闵行区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 125119, "name": "上海闵行区民办德闳学校", "district": "闵行区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 128100, "name": "上海七宝德怀特高级中学", "district": "闵行区", "type": "一般高中", "tags": ["中外合作"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 132001, "name": "上海市行知中学", "district": "宝山区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 696.0, "volatility": 1.4, "intro": ""}, {"id": 132002, "name": "上海大学附属中学", "district": "宝山区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 666.0, "volatility": 1.4, "intro": ""}, {"id": 133001, "name": "上海市吴淞中学", "district": "宝山区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 649.5, "volatility": 1.4, "intro": ""}, {"id": 132003, "name": "上海师范大学附属中学宝山分校", "district": "宝山区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "静安区": 50}, "baseCut": 685.0, "volatility": 1.4, "intro": ""}, {"id": 133003, "name": "华东师范大学第二附属中学(宝山校区)", "district": "宝山区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 133002, "name": "上海师范大学附属宝山罗店中学", "district": "宝山区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 134001, "name": "上海市宝山中学", "district": "宝山区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 558.0, "volatility": 1.4, "intro": ""}, {"id": 134002, "name": "上海市通河中学", "district": "宝山区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 662.5, "volatility": 1.4, "intro": ""}, {"id": 134004, "name": "上海市顾村中学", "district": "宝山区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 134005, "name": "上海市行知实验中学", "district": "宝山区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 134003, "name": "上海市淞浦中学", "district": "宝山区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 134006, "name": "上海市高境第一中学", "district": "宝山区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 134009, "name": "上海市宝山区海滨中学", "district": "宝山区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 134010, "name": "上海民办行中中学", "district": "宝山区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 134012, "name": "上海存志高级中学", "district": "宝山区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 134013, "name": "上海宝山区民办维尚高级中学", "district": "宝山区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 134014, "name": "上海创艺高级中学", "district": "宝山区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 134015, "name": "上海市宝山华曜高级中学", "district": "宝山区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 135001, "name": "上海市同洲模范学校", "district": "宝山区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 135034, "name": "上海宝山区世外学校", "district": "宝山区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 142001, "name": "上海市嘉定区第一中学", "district": "嘉定区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 743.5, "volatility": 14.1, "intro": ""}, {"id": 142002, "name": "上海交通大学附属中学嘉定分校", "district": "嘉定区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 142004, "name": "上海师范大学附属中学嘉定新城分校", "district": "嘉定区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 143001, "name": "上海市嘉定区第二中学", "district": "嘉定区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 142003, "name": "上海市嘉定区嘉一实验高级中学", "district": "嘉定区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 722.2, "volatility": 11.6, "intro": ""}, {"id": 143002, "name": "上海师范大学附属嘉定高级中学", "district": "嘉定区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 143003, "name": "上海市嘉定区安亭高级中学", "district": "嘉定区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 144011, "name": "上海大学附属嘉定高级中学", "district": "嘉定区", "type": "区重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50}, "baseCut": 717.5, "volatility": 7.8, "intro": ""}, {"id": 144010, "name": "上海市嘉定区中光高级中学", "district": "嘉定区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 144006, "name": "上海市嘉定区封浜高级中学", "district": "嘉定区", "type": "一般高中", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 145007, "name": "上海市民办远东学校", "district": "嘉定区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 145018, "name": "上海华旭双语学校", "district": "嘉定区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 145030, "name": "上海嘉定区民办华盛怀少学校", "district": "嘉定区", "type": "一般高中", "tags": ["民办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 152001, "name": "上海市建平中学", "district": "浦东新区", "type": "市重点", "tags": ["公办", "国际课程"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 740.0, "volatility": 18.7, "intro": "含国际课程班"}, {"id": 152002, "name": "上海市进才中学", "district": "浦东新区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 735.0, "volatility": 15.5, "intro": ""}, {"id": 152004, "name": "上海南汇中学", "district": "浦东新区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 703.5, "volatility": 1.4, "intro": ""}, {"id": 153001, "name": "上海市洋泾中学", "district": "浦东新区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "黄浦区": 50}, "baseCut": 673.0, "volatility": 1.4, "intro": ""}, {"id": 153004, "name": "上海市高桥中学", "district": "浦东新区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 709.5, "volatility": 14.8, "intro": ""}, {"id": 153005, "name": "上海市川沙中学", "district": "浦东新区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 720.5, "volatility": 16.0, "intro": ""}, {"id": 151078, "name": "上海中学东校", "district": "浦东新区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "徐汇区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "静安区": 50}, "baseCut": 729.2, "volatility": 14.9, "intro": ""}, {"id": 152005, "name": "上海市浦东复旦附中分校", "district": "浦东新区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "虹口区": 50, "闵行区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 700.0, "volatility": 1.4, "intro": ""}, {"id": 155004, "name": "上海外国语大学附属浦东外国语学校", "district": "浦东新区", "type": "市重点", "tags": ["公办", "国际课程"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": "含国际课程班"}, {"id": 12002, "name": "上海市格致中学（奉贤校区）", "district": "黄浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"奉贤区": 50, "黄浦区": 50}, "baseCut": 714.0, "volatility": 14.8, "intro": ""}, {"id": 12006, "name": "上海市向明中学（浦江校区）", "district": "黄浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"闵行区": 50, "黄浦区": 50}, "baseCut": 714.0, "volatility": 14.4, "intro": ""}, {"id": 144011, "name": "上海师范大学附属中学嘉定新城分校", "district": "嘉定区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50}, "baseCut": 717.5, "volatility": 7.8, "intro": ""}, {"id": 174004, "name": "上海师范大学附属中学松江分校", "district": "松江区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"徐汇区": 50, "松江区": 50, "浦东新区": 50}, "baseCut": 725.5, "volatility": 17.3, "intro": ""}, {"id": 174003, "name": "上海外国语大学附属外国语学校松江云间中学", "district": "松江区", "type": "市重点", "tags": ["公办", "国际课程"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 730.0, "volatility": 6.8, "intro": "含国际课程班"}, {"id": 154013, "name": "华东师范大学第二附属中学前滩学校", "district": "浦东新区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 64001, "name": "上海市久隆模范中学", "district": "静安区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "松江区": 50, "浦东新区": 50, "长宁区": 50, "闵行区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 602.0, "volatility": 1.4, "intro": ""}, {"id": 24001, "name": "上海外国语大学附属外国语学校", "district": "虹口区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 155001, "name": "上海市实验学校", "district": "浦东新区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"浦东新区": 50}, "baseCut": 737.8, "volatility": 12.7, "intro": ""}, {"id": 142001, "name": "上海交通大学附属中学嘉定分校", "district": "嘉定区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 743.5, "volatility": 14.1, "intro": ""}, {"id": 122001, "name": "上海交通大学附属中学闵行分校", "district": "闵行区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 100, "宝山区": 50, "徐汇区": 100, "普陀区": 100, "杨浦区": 100, "松江区": 100, "浦东新区": 100, "虹口区": 50, "金山区": 50, "长宁区": 100, "闵行区": 100, "青浦区": 100, "静安区": 100, "黄浦区": 50}, "baseCut": 695.0, "volatility": 1.4, "intro": ""}, {"id": 182001, "name": "复旦大学附属中学青浦分校", "district": "青浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 689.5, "volatility": 1.4, "intro": ""}, {"id": 122002, "name": "华东师范大学第二附属中学紫竹校区", "district": "闵行区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 692.0, "volatility": 1.4, "intro": ""}, {"id": 92001, "name": "华东师范大学第二附属中学宝山校区", "district": "宝山区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "静安区": 50}, "baseCut": 690.0, "volatility": 1.4, "intro": ""}, {"id": 143001, "name": "上海市曹杨第二中学附属江桥实验中学", "district": "嘉定区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 62006, "name": "上海市市北中学新校", "district": "静安区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 52001, "name": "上海市复兴高级中学（复旦大学附属复兴中学）", "district": "虹口区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 694.0, "volatility": 1.4, "intro": ""}, {"id": 142002, "name": "上海大学附属嘉定高级中学", "district": "嘉定区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 122005, "name": "上海师范大学附属闵行第三中学", "district": "闵行区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 212002, "name": "上海市奉贤中学临港分校", "district": "奉贤区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 222002, "name": "上海师范大学附属崇明中学", "district": "崇明区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 172002, "name": "上海市松江一中", "district": "松江区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 675.0, "volatility": 1.4, "intro": ""}, {"id": 182002, "name": "上海市青浦高级中学", "district": "青浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 668.5, "volatility": 1.4, "intro": ""}, {"id": 182003, "name": "上海市朱家角中学", "district": "青浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 688.2, "volatility": 14.4, "intro": ""}, {"id": 222001, "name": "上海市崇明中学", "district": "崇明区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 690.0, "volatility": 15.4, "intro": ""}, {"id": 212001, "name": "上海市奉贤中学", "district": "奉贤区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 670.0, "volatility": 1.4, "intro": ""}, {"id": 202001, "name": "上海市金山中学", "district": "金山区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 673.0, "volatility": 1.4, "intro": ""}, {"id": 172001, "name": "上海市松江二中", "district": "松江区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 690.0, "volatility": 1.4, "intro": ""}, {"id": 142003, "name": "上海市嘉定区第一中学", "district": "嘉定区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 722.2, "volatility": 11.6, "intro": ""}, {"id": 122003, "name": "上海市闵行中学", "district": "闵行区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 100, "奉贤区": 100, "宝山区": 100, "崇明区": 100, "徐汇区": 100, "普陀区": 100, "杨浦区": 100, "松江区": 100, "浦东新区": 100, "虹口区": 100, "金山区": 100, "长宁区": 100, "闵行区": 100, "青浦区": 100, "静安区": 100, "黄浦区": 100}, "baseCut": 698.0, "volatility": 1.4, "intro": ""}, {"id": 92002, "name": "上海市吴淞中学", "district": "宝山区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 100, "奉贤区": 100, "宝山区": 100, "崇明区": 50, "徐汇区": 50, "普陀区": 100, "杨浦区": 100, "松江区": 100, "浦东新区": 100, "虹口区": 100, "金山区": 100, "长宁区": 100, "闵行区": 100, "青浦区": 100, "静安区": 100, "黄浦区": 100}, "baseCut": 680.0, "volatility": 1.4, "intro": ""}, {"id": 92003, "name": "上海市行知中学", "district": "宝山区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 670.0, "volatility": 1.4, "intro": ""}, {"id": 72001, "name": "上海市杨浦高级中学", "district": "杨浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 100, "奉贤区": 100, "宝山区": 100, "徐汇区": 50, "普陀区": 100, "杨浦区": 100, "松江区": 100, "浦东新区": 100, "虹口区": 100, "金山区": 50, "长宁区": 100, "闵行区": 50, "青浦区": 100, "静安区": 100, "黄浦区": 50}, "baseCut": 701.5, "volatility": 1.8, "intro": ""}, {"id": 72002, "name": "上海市控江中学", "district": "杨浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 100, "宝山区": 100, "崇明区": 50, "徐汇区": 100, "普陀区": 100, "杨浦区": 100, "松江区": 100, "浦东新区": 100, "虹口区": 100, "长宁区": 50, "闵行区": 100, "青浦区": 100, "静安区": 100, "黄浦区": 100}, "baseCut": 690.0, "volatility": 1.4, "intro": ""}, {"id": 32001, "name": "上海市南洋模范中学", "district": "徐汇区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 743.0, "volatility": 7.3, "intro": ""}, {"id": 32002, "name": "上海市位育中学", "district": "徐汇区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 734.8, "volatility": 6.7, "intro": ""}, {"id": 42001, "name": "上海市市西中学", "district": "静安区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 100, "徐汇区": 100, "普陀区": 100, "杨浦区": 100, "松江区": 50, "浦东新区": 100, "虹口区": 50, "金山区": 50, "长宁区": 100, "闵行区": 50, "青浦区": 50, "静安区": 100, "黄浦区": 100}, "baseCut": 695.5, "volatility": 1.1, "intro": ""}, {"id": 42002, "name": "上海市延安中学", "district": "长宁区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 692.0, "volatility": 1.4, "intro": ""}, {"id": 12003, "name": "上海市大同中学", "district": "黄浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "松江区": 50, "浦东新区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 682.0, "volatility": 0.0, "intro": ""}, {"id": 12001, "name": "上海市格致中学", "district": "黄浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "长宁区": 50, "闵行区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 696.0, "volatility": 11.0, "intro": ""}, {"id": 12005, "name": "上海市向明中学", "district": "黄浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"徐汇区": 50, "普陀区": 50, "杨浦区": 50, "浦东新区": 50, "长宁区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 675.0, "volatility": 0.0, "intro": ""}, {"id": 42032, "name": "上海市上海中学", "district": "徐汇区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 707.0, "volatility": 1.4, "intro": "全部寄宿，全市招生"}, {"id": 214002, "name": "华东师范大学第二附属中学临港奉贤分校", "district": "奉贤区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"奉贤区": 50, "宝山区": 50, "徐汇区": 50, "杨浦区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 731.0, "volatility": 7.5, "intro": "全部寄宿"}, {"id": 64013, "name": "华东师范大学第二附属中学普陀分校", "district": "普陀区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": null, "volatility": 6, "intro": ""}, {"id": 174005, "name": "华东师范大学第二附属中学松江分校", "district": "松江区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"奉贤区": 50, "徐汇区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "闵行区": 50}, "baseCut": 748.0, "volatility": 10.4, "intro": ""}, {"id": 162001, "name": "华东师范大学第三附属中学", "district": "金山区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 670.0, "volatility": 1.4, "intro": ""}, {"id": 42032, "name": "上海市上海中学", "district": "徐汇区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 707.0, "volatility": 1.4, "intro": "全部寄宿，全市招生"}, {"id": 102057, "name": "复旦大学附属中学", "district": "杨浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 707.5, "volatility": 1.1, "intro": "部分寄宿，全市招生"}, {"id": 102056, "name": "上海交通大学附属中学", "district": "杨浦区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "宝山区": 50, "崇明区": 50, "徐汇区": 50, "普陀区": 50, "杨浦区": 50, "松江区": 50, "浦东新区": 50, "虹口区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50, "静安区": 50, "黄浦区": 50}, "baseCut": 707.0, "volatility": 1.4, "intro": "部分寄宿，全市招生"}, {"id": 152003, "name": "华东师范大学第二附属中学（主校区）", "district": "浦东新区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {}, "baseCut": 709.5, "volatility": 1.1, "intro": "部分寄宿，全市招生"}, {"id": 152006, "name": "上海师范大学附属中学", "district": "闵行区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"嘉定区": 50, "奉贤区": 50, "徐汇区": 50, "普陀区": 50, "松江区": 50, "浦东新区": 50, "金山区": 50, "长宁区": 50, "闵行区": 50, "青浦区": 50}, "baseCut": 699.5, "volatility": 1.4, "intro": "部分寄宿，全市招生"}, {"id": 155001, "name": "上海市实验学校", "district": "浦东新区", "type": "市重点", "tags": ["公办"], "zhaojiao": null, "toDistrict": {"浦东新区": 50}, "baseCut": 737.8, "volatility": 12.7, "intro": "部分寄宿，全市招生"}];
+
+    // 初中 -> 高中 到校名额
+    const TO_SCHOOL_SEATS = {"61001": {"62001": 10, "62002": 9, "62003": 9, "62004": 10, "62011": 5, "63004": 7, "64001": 5}, "61002": {"62001": 5, "62002": 5, "62003": 5, "62004": 5, "62011": 3, "63004": 4, "64001": 3}, "61003": {"62001": 2, "62002": 2, "62003": 2, "62004": 2, "62011": 2, "63004": 2, "64001": 2, "152003": 1}, "61005": {"62001": 2, "62002": 2, "62003": 2, "62004": 2, "62011": 2, "63004": 2, "64001": 2, "102057": 1}, "61008": {"62001": 3, "62002": 2, "62003": 2, "62004": 3, "62011": 2, "63004": 2, "64001": 2}, "61009": {"62001": 4, "62002": 4, "62003": 4, "62004": 4, "62011": 3, "63004": 3, "64001": 3}, "61050": {"62001": 7, "62002": 6, "62003": 6, "62004": 7, "62011": 4, "63004": 5, "64001": 4}, "61051": {"62001": 8, "62002": 8, "62003": 8, "62004": 9, "62011": 5, "63004": 6, "64001": 5}, "61053": {"62001": 3, "62002": 3, "62003": 3, "62004": 3, "62011": 2, "63004": 2, "64001": 2, "102057": 1}, "61055": {"62001": 1, "62002": 1, "62003": 1, "62004": 1, "62011": 1, "63004": 1, "64001": 1, "102056": 1}, "61059": {"62001": 10, "62002": 9, "62003": 9, "62004": 11, "62011": 6, "63004": 7, "64001": 6}, "61060": {"62001": 20, "62002": 19, "62003": 19, "62004": 22, "62011": 11, "63004": 14, "64001": 11}, "61061": {"62001": 7, "62002": 6, "62003": 6, "62004": 7, "62011": 4, "63004": 5, "64001": 4}, "61062": {"62001": 3, "62002": 3, "62003": 3, "62004": 3, "62011": 2, "63004": 2, "64001": 2}, "61066": {"62001": 6, "62002": 6, "62003": 6, "62004": 7, "62011": 4, "63004": 5, "64001": 4, "102056": 1}, "61071": {"62001": 3, "62002": 3, "62003": 3, "62004": 4, "62011": 2, "63004": 3, "64001": 2}, "61072": {"62001": 2, "62002": 2, "62003": 2, "62004": 2, "62011": 2, "63004": 2, "64001": 2}, "61073": {"62001": 5, "62002": 5, "62003": 5, "62004": 5, "62011": 3, "63004": 4, "64001": 3}, "61074": {"62001": 3, "62002": 3, "62003": 3, "62004": 3, "62011": 2, "63004": 2, "64001": 2, "42032": 1}, "62011": {"62001": 3, "62002": 3, "62003": 3, "62004": 3, "62011": 21, "63004": 2, "64001": 2}, "63001": {"62001": 3, "62002": 2, "62003": 2, "62004": 3, "62011": 2, "63004": 2, "64001": 2}, "63002": {"62001": 3, "62002": 3, "62003": 3, "62004": 4, "62011": 2, "63004": 3, "64001": 2, "102057": 1}, "63008": {"62001": 4, "62002": 4, "62003": 4, "62004": 4, "62011": 3, "63004": 3, "64001": 3}, "63077": {"62001": 4, "62002": 4, "62003": 4, "62004": 4, "62011": 3, "63004": 3, "64001": 2}, "64001": {"62001": 3, "62002": 3, "62003": 3, "62004": 3, "62011": 2, "63004": 2, "64001": 2, "102056": 1}, "64003": {"62001": 5, "62002": 5, "62003": 5, "62004": 6, "62011": 3, "63004": 4, "64001": 3, "102056": 1}, "64007": {"62001": 2, "62002": 2, "62003": 2, "62004": 2, "62011": 1, "63004": 2, "64001": 1, "102057": 1}, "64020": {"62001": 4, "62002": 4, "62003": 4, "62004": 4, "62011": 3, "63004": 3, "64001": 2}, "64021": {"62001": 6, "62002": 5, "62003": 5, "62004": 6, "62011": 3, "63004": 4, "64001": 3, "42032": 1}, "64023": {"62001": 4, "62002": 4, "62003": 4, "62004": 5, "62011": 3, "63004": 3, "64001": 3, "102057": 1}, "64024": {"62001": 2, "62002": 2, "62003": 2, "62004": 2, "62011": 2, "63004": 2, "64001": 2, "102056": 1}, "65001": {"62001": 2, "62002": 2, "62003": 2, "62004": 2, "62011": 1, "63004": 2, "64001": 2}, "65002": {"62001": 5, "62002": 4, "62003": 4, "62004": 5, "62011": 3, "63004": 3, "64001": 3, "102057": 1}, "65056": {"62001": 2, "62002": 2, "62003": 2, "62004": 2, "62011": 2, "63004": 2, "64001": 2, "102056": 1}, "65057": {"62001": 3, "62002": 3, "62003": 3, "62004": 3, "62011": 2, "63004": 2, "64001": 2}, "65058": {"62001": 2, "62002": 2, "62003": 2, "62004": 2, "62011": 1, "63004": 2, "64001": 1}, "65078": {"62001": 3, "62002": 3, "62003": 3, "62004": 3, "62011": 2, "63004": 2, "64001": 2, "102056": 1}, "131002": {"92003": 8, "92002": 8, "132002": 8, "133003": 2}, "131004": {"92003": 6, "92002": 6, "132002": 6, "133003": 3, "132003": 2}, "131006": {"92003": 1, "92002": 1, "132002": 1, "133003": 1, "132003": 1}, "131008": {"92003": 1, "92002": 2, "132002": 1, "133003": 1, "132003": 1}, "131009": {"92003": 10, "92002": 7, "132002": 7, "133003": 3, "132003": 2}, "131010": {"92003": 2, "92002": 2, "132002": 3, "133003": 2, "132003": 1}, "131011": {"92003": 3, "92002": 3, "132002": 4, "133003": 1, "132003": 1}, "131012": {"92003": 3, "92002": 4, "132002": 4, "133003": 1, "132003": 1}, "131013": {"92003": 1, "92002": 1, "132002": 2, "133003": 2, "132003": 1}, "131014": {"92003": 3, "92002": 3, "132002": 1, "132003": 1}, "131015": {"92003": 5, "92002": 6, "132002": 6, "133003": 3, "132003": 1}, "131016": {"92003": 6, "92002": 7, "132002": 7, "133003": 3, "132003": 2}, "131018": {"92003": 4, "92002": 3, "132002": 3, "132003": 2}, "131019": {"92003": 2, "92002": 3, "132002": 2, "133003": 2, "132003": 1}, "131020": {"92003": 3, "92002": 4, "132002": 3, "133003": 2, "132003": 1}, "131023": {"92003": 4, "92002": 4, "132002": 3, "133003": 2, "132003": 1}, "131026": {"92003": 4, "92002": 3, "132002": 3, "133003": 2, "132003": 1}, "131035": {"92003": 6, "92002": 6, "132002": 7, "133003": 2, "132003": 2}, "131036": {"92003": 3, "92002": 4, "132002": 3, "133003": 1, "132003": 2}, "131038": {"92003": 3, "92002": 3, "132002": 4, "133003": 2, "132003": 1}, "131039": {"92003": 2, "92002": 3, "132002": 2, "133003": 2, "132003": 1}, "131040": {"92003": 2, "92002": 3, "132002": 2, "133003": 1, "132003": 1}, "131041": {"92003": 9, "92002": 8, "132002": 8, "133003": 4, "132003": 2}, "131042": {"92003": 8, "92002": 6, "132002": 7, "133003": 3, "132003": 2, "102057": 1}, "133002": {"92003": 2, "92002": 2, "132002": 2, "133003": 1, "132003": 1}, "134001": {"92003": 1, "92002": 2, "132002": 1, "133003": 1, "132003": 1}, "134004": {"92003": 7, "92002": 6, "132002": 6, "133003": 2, "132003": 1}, "134005": {"92003": 3, "92002": 2, "132002": 2, "133003": 1, "132003": 1, "102057": 1}, "134006": {"92003": 1, "92002": 1, "132002": 1, "133003": 1, "132003": 1}, "134008": {"92003": 1, "92002": 2, "132002": 2, "133003": 1, "132003": 1}, "135001": {"92003": 3, "92002": 3, "132002": 4, "133003": 1, "132003": 1}, "135002": {"92003": 10, "92002": 9, "132002": 10, "133003": 4, "132003": 3}, "135003": {"92003": 1, "92002": 1, "132002": 1}, "135004": {"92003": 1, "92002": 1, "132002": 1, "133003": 1, "132003": 1}, "135005": {"92003": 7, "92002": 4, "132002": 4, "133003": 2, "132003": 1}, "135006": {"92003": 4, "92002": 4, "132002": 3, "133003": 2, "132003": 1}, "135007": {"92003": 3, "92002": 4, "132002": 4, "133003": 1, "132003": 1}, "135009": {"92003": 3, "92002": 2, "132002": 3, "133003": 2, "132003": 1}, "135010": {"92003": 5, "92002": 5, "132002": 5, "133003": 3, "132003": 1}, "135011": {"92003": 8, "92002": 9, "132002": 8, "133003": 3, "132003": 2}, "135012": {"92003": 4, "92002": 3, "132002": 4, "133003": 2, "132003": 1}, "135013": {"92003": 9, "92002": 9, "132002": 8, "133003": 4, "132003": 2}, "135014": {"92002": 1, "132002": 1, "133003": 1, "132003": 1, "102056": 1}, "135018": {"92003": 3, "92002": 3, "132002": 3, "133003": 1, "132003": 1}, "135019": {"92003": 1, "92002": 1, "132002": 2, "133003": 2, "132003": 1}, "135020": {"92003": 2, "92002": 2, "132002": 2, "133003": 1, "132003": 1}, "135021": {"92003": 4, "92002": 3, "132002": 4, "133003": 1, "132003": 1}, "135022": {"92003": 4, "92002": 4, "132002": 4, "133003": 2, "132003": 2}, "135023": {"92003": 3, "92002": 4, "132002": 3, "133003": 1, "132003": 1}, "135024": {"92003": 2, "92002": 3, "132002": 3, "133003": 1, "132003": 1}, "135025": {"92003": 3, "92002": 2, "132002": 2, "133003": 1, "132003": 1}, "135026": {"92003": 3, "92002": 3, "132002": 3, "133003": 1, "132003": 1}, "135027": {"92003": 6, "92002": 4, "132002": 6, "133003": 3, "132003": 1}, "135028": {"92003": 5, "92002": 6, "132002": 6, "133003": 3, "132003": 1}, "135029": {"92003": 5, "92002": 5, "132002": 5, "133003": 2, "132003": 1}, "135030": {"132002": 1}, "135031": {"92003": 2, "92002": 3, "132002": 3, "133003": 1, "132003": 1, "102057": 1}, "135032": {"92003": 1, "92002": 1, "133003": 1, "132003": 1, "102057": 1}, "135033": {"92003": 7, "92002": 6, "132002": 8, "133003": 3, "132003": 2, "73082": 1}, "135034": {"92003": 2, "92002": 2, "132002": 2, "133003": 1, "132003": 1}, "135035": {"92003": 1, "92002": 1, "132002": 1, "133003": 1, "132003": 1}, "135036": {"92003": 1, "92002": 1, "133003": 1, "132003": 1, "102056": 1}, "135038": {"92003": 1, "92002": 1, "132002": 2, "133003": 1, "132003": 1}, "135039": {"92003": 1, "92002": 1, "132002": 1, "133003": 1, "132003": 1}, "135040": {"92003": 1, "92002": 1, "132002": 1, "133003": 1, "132003": 1}, "135042": {"92003": 5, "92002": 3, "132002": 3, "133003": 1, "132003": 1}, "135043": {"92003": 2, "92002": 1, "132002": 2, "133003": 1, "132003": 1}, "511002": {"512000": 2, "512001": 1}, "511007": {"512000": 2, "512001": 1, "102057": 1}, "511014": {"512000": 3}, "511015": {"512000": 2, "512001": 1}, "511016": {"512000": 2, "512001": 2}, "511017": {"512000": 11, "512001": 7}, "511018": {"512000": 20, "512001": 6}, "511019": {"512000": 33, "512001": 8}, "511021": {"512000": 1, "512001": 1}, "511022": {"512000": 8, "512001": 5}, "511024": {"512000": 4, "512001": 2}, "511025": {"512000": 16, "512001": 9, "42032": 1}, "511026": {"512000": 8, "512001": 3}, "514000": {"512000": 3, "512001": 1}, "514002": {"512000": 3, "512001": 1}, "514003": {"512000": 1, "512001": 1}, "514005": {"512000": 4, "512001": 3, "152003": 1}, "514010": {"512000": 11, "512001": 4}, "514013": {"512000": 4, "512001": 1}, "514014": {"512000": 3, "512001": 1}, "514015": {"512000": 1, "512001": 1}, "515003": {"512000": 1, "512001": 1}, "515007": {"512000": 3, "512001": 12}, "201001": {"12002": 1, "202001": 1, "202002": 1}, "201002": {"12002": 1, "202001": 7, "202002": 1}, "201003": {"12002": 2, "202001": 16, "202002": 2}, "201004": {"12002": 1, "202001": 9, "152003": 1, "202002": 2}, "201005": {"12002": 2, "202001": 13, "202002": 2}, "201010": {"12002": 1, "202001": 2, "202002": 1}, "201011": {"12002": 1, "202001": 2, "202002": 1}, "201012": {"12002": 1, "202001": 6, "202002": 1}, "201013": {"12002": 1, "202001": 2, "202002": 1}, "201014": {"12002": 1, "202001": 3, "202002": 1}, "201015": {"12002": 2, "202001": 3, "202002": 1}, "201016": {"12002": 1, "202001": 10, "202002": 2}, "201017": {"12002": 1, "202001": 5, "202002": 1}, "201018": {"12002": 1, "202001": 5, "202002": 1}, "201019": {"12002": 2, "202001": 11, "102056": 1, "202002": 2}, "201020": {"12002": 1, "202001": 7, "202002": 1}, "201021": {"12002": 1, "202002": 1}, "204002": {"12002": 1, "202001": 3, "202002": 1}, "205002": {"12002": 2, "202001": 15, "42032": 1, "102057": 1, "202002": 2}, "205003": {"12002": 1, "202001": 9, "152006": 1, "202002": 2}, "205004": {"12002": 1, "202001": 6, "202002": 1}, "205005": {"12002": 1, "202001": 2, "202002": 1}, "205006": {"12002": 1, "202001": 2, "202002": 1}, "205007": {"202001": 1, "202002": 1}, "205008": {"12002": 1, "202001": 2, "202002": 1}, "205009": {"12002": 1, "202001": 7, "202002": 2}, "205010": {"12002": 1, "202001": 3, "202002": 1}, "205011": {"12002": 1, "202001": 2, "202002": 1}, "205013": {"12002": 1, "202001": 3, "202002": 1}, "205014": {"12002": 1, "202001": 5, "202002": 1}, "205015": {"12002": 1, "202001": 1}, "205016": {"12002": 1, "202001": 1, "202002": 1}, "205017": {"12002": 1, "202001": 4, "202002": 1}, "205018": {"12002": 1, "202001": 2, "202002": 1}, "205019": {"12002": 1, "202001": 7, "202002": 2}, "205020": {"12002": 1, "202001": 3, "202002": 1}, "205021": {"12002": 1, "202001": 2, "202002": 1}, "205022": {"12002": 1, "202001": 4, "202002": 1}, "205023": {"12002": 1, "202001": 4, "102056": 1, "202002": 1}, "205024": {"12002": 1, "202001": 2, "202002": 1}, "205030": {"12002": 1, "202001": 2, "202002": 1}, "205099": {"12002": 1, "202001": 1, "202002": 1}, "91001": {"92001": 14, "92002": 13, "93001": 10}, "91002": {"92001": 12, "92002": 11}, "91003": {"92001": 8, "92002": 7, "93001": 6}, "91004": {"92001": 9, "92002": 8, "93001": 7}, "91005": {"92001": 11, "92002": 10, "93001": 9}, "91006": {"92001": 5, "92002": 4, "93001": 3}, "91007": {"92001": 7, "92002": 6, "93001": 5}, "91008": {"92001": 6, "92002": 5, "93001": 4}, "91009": {"92001": 8, "92002": 7, "93001": 6}, "91010": {"92001": 7, "92002": 6, "93001": 5}, "91011": {"92001": 9, "92002": 8, "93001": 7}, "91012": {"92001": 4, "92002": 3, "93001": 2}, "91013": {"92001": 3, "92002": 2, "93001": 1}, "91014": {"92001": 5, "92002": 4, "93001": 3}, "91015": {"92001": 2, "92002": 2, "93001": 2}, "91016": {"92001": 6, "92002": 5, "93001": 4}, "91017": {"92001": 2, "92002": 2, "93001": 2}, "91018": {"92001": 2, "92002": 2, "93001": 2}, "91019": {"92001": 17, "92002": 15, "93001": 11}, "91020": {"92001": 17, "92002": 15, "93001": 12}, "91021": {"92001": 17, "92002": 15, "93001": 12}, "91022": {"92001": 7, "92002": 5, "93001": 4}, "91023": {"92001": 10, "92002": 10, "93001": 8}, "11001": {"12001": 21, "12002": 8, "12003": 14, "12005": 12, "12006": 3, "12007": 15, "12008": 15, "12009": 15, "12010": 16}, "11002": {"12001": 10, "12002": 2, "12003": 15, "12005": 9, "12006": 2, "12007": 10, "12008": 10, "12009": 10, "12010": 10}, "11003": {"12001": 10, "12002": 2, "12003": 10, "12005": 14, "12006": 7, "12007": 11, "12008": 11, "12009": 10, "12010": 11}, "11004": {"12001": 9, "12002": 2, "12003": 9, "12005": 7, "12006": 2, "12007": 13, "12008": 9, "12009": 10, "12010": 9}, "11005": {"12001": 3, "12002": 1, "12003": 4, "12005": 3, "12006": 1, "12007": 3, "12008": 4, "12009": 3, "12010": 3, "102057": 1}, "11006": {"12001": 5, "12002": 2, "12003": 5, "12005": 4, "12006": 1, "12007": 5, "12008": 6, "12009": 7, "12010": 6, "42032": 1}, "11007": {"12001": 7, "12002": 2, "12003": 8, "12005": 6, "12006": 1, "12007": 7, "12008": 7, "12009": 7, "12010": 9, "42032": 1}, "11008": {"12001": 4, "12002": 1, "12003": 4, "12005": 3, "12006": 1, "12007": 4, "12008": 4, "12009": 5, "12010": 4}, "11009": {"12001": 4, "12002": 2, "12003": 5, "12005": 4, "12006": 1, "12007": 5, "12008": 5, "12009": 5, "12010": 5, "152003": 1}, "11012": {"12001": 6, "12002": 2, "12003": 5, "12005": 4, "12006": 1, "12007": 5, "12008": 7, "12009": 5, "12010": 5, "102056": 1}, "11014": {"12001": 2, "12002": 1, "12003": 1, "12005": 2, "12006": 3, "12007": 1, "12008": 1, "12009": 1, "12010": 1}, "141001": {"142001": 6, "142002": 7, "142004": 2}, "141002": {"152003": 1, "142001": 1, "142002": 2, "142004": 1}, "141003": {"142001": 8, "142002": 10, "142004": 3}, "141004": {"142001": 11, "142002": 13, "142004": 4}, "141005": {"142001": 4, "142002": 5, "142004": 1}, "141006": {"152003": 1, "142001": 6, "142002": 6, "142004": 2}, "141007": {"142001": 2, "142002": 2, "142004": 1}, "141008": {"152003": 1, "142001": 4, "142002": 4, "142004": 2}, "141009": {"42032": 1, "142001": 8, "142002": 11, "142004": 3}, "141010": {"42032": 1, "142001": 6, "142002": 6, "142004": 2}, "141011": {"142001": 3, "142002": 4, "142004": 1}, "141012": {"142001": 7, "142002": 8, "142004": 3}, "141013": {"142001": 12, "142002": 14, "142004": 5}, "141014": {"142001": 5, "142002": 6, "142004": 2}, "141015": {"142001": 8, "142002": 9, "142004": 3}, "141016": {"142001": 7, "142002": 9, "142004": 3}, "141017": {"142001": 5, "142002": 6, "142004": 2}, "141018": {"142001": 7, "142002": 9, "142004": 3}, "141019": {"142001": 6, "142002": 8, "142004": 2}, "141020": {"102056": 1, "142001": 8, "142002": 11, "142004": 4}, "141021": {"42032": 1, "142001": 1, "142002": 1, "142004": 1}, "141022": {"102056": 1, "142001": 2, "142002": 1, "142004": 1}, "141023": {"142001": 4, "142002": 5, "142004": 1}, "141024": {"102057": 1, "142001": 11, "142002": 12, "142004": 4}, "141025": {"142001": 1, "142002": 1, "142004": 1}, "141026": {"142001": 1, "142002": 1, "142004": 1}, "141027": {"142001": 8, "142002": 10, "142004": 3}, "141028": {"102057": 1, "142001": 5, "142002": 6, "142004": 1}, "141029": {"152006": 1, "142001": 1, "142002": 1, "142004": 1}, "141030": {"142001": 10, "142002": 13, "142004": 4}, "141031": {"142001": 4, "142002": 4, "142004": 1}, "161001": {"202001": 19, "162001": 20}, "161002": {"202001": 1, "162001": 1}, "161003": {"202001": 8, "162001": 8}, "161004": {"202001": 2, "162001": 2}, "161005": {"202001": 3, "162001": 4}, "161006": {"202001": 4, "162001": 4}, "161007": {"202001": 1, "162001": 1}, "161008": {"202001": 3, "162001": 2}, "161009": {"202001": 24, "162001": 24}, "161010": {"202001": 5, "162001": 5}, "161011": {"202001": 16, "162001": 17}, "161012": {"202001": 20, "162001": 21}, "161013": {"202001": 3, "162001": 4}, "161014": {"202001": 1, "162001": 1}, "161015": {"202001": 10, "162001": 10}, "161016": {"202001": 11, "162001": 10}, "161017": {"202001": 7, "162001": 8}, "161018": {"202001": 2, "162001": 2}, "161019": {"202001": 1, "162001": 1}, "161020": {"202001": 2, "162001": 1}, "161021": {"202001": 10, "162001": 9}, "161022": {"202001": 6}, "161023": {"202001": 6}, "161024": {"202001": 2}, "161025": {"202001": 4}, "161026": {"202001": 1}, "161027": {"202001": 8}, "121002": {"122001": 5, "123001": 3, "122002": 2, "122003": 2, "122004": 2, "42002": 1, "152006": 1}, "121003": {"122001": 3, "123001": 2, "122002": 2, "122003": 2, "122004": 1, "42032": 1, "102056": 1}, "121004": {"122001": 1, "123001": 1, "122002": 1, "122003": 1, "122004": 1, "102057": 2}, "121005": {"122001": 16, "123001": 19, "122002": 10, "122003": 11, "122004": 11, "42002": 5, "102057": 6}, "121008": {"122001": 2, "123001": 2, "122002": 1, "122003": 2, "122004": 1, "42002": 1, "102056": 1}, "121009": {"122001": 28, "123001": 28, "122002": 15, "122003": 20, "122004": 17, "42002": 2, "102057": 12, "152006": 1}, "121010": {"122001": 2, "123001": 2, "122002": 1, "122003": 2, "122004": 1, "42002": 1, "152006": 1}, "121011": {"122001": 3, "123001": 3, "122002": 1, "122003": 3, "122004": 1, "102057": 2, "152006": 1}, "121013": {"122001": 5, "123001": 5, "122002": 3, "122003": 3, "122004": 3, "102057": 3}, "121014": {"122001": 4, "123001": 4, "122002": 2, "122003": 2, "122004": 2, "102057": 1, "102056": 1}, "121015": {"122001": 4, "123001": 4, "122002": 3, "122003": 4, "122004": 3, "102057": 2, "152006": 1}, "121016": {"122001": 3, "123001": 3, "122002": 3, "122003": 3, "122004": 2, "12006": 1, "152006": 1}, "121018": {"122001": 4, "123001": 4, "122002": 4, "122003": 3, "122004": 2, "12006": 1, "152003": 1}, "121022": {"122001": 8, "123001": 9, "122002": 6, "122003": 5, "122004": 5, "12006": 2, "42002": 2, "102056": 1}, "121024": {"122001": 5, "123001": 4, "122002": 3, "122003": 2, "122004": 2, "102057": 1, "152003": 1}, "121025": {"122001": 4, "123001": 4, "122002": 2, "122003": 4, "122004": 2, "12006": 2}, "121026": {"122001": 6, "123001": 6, "122002": 2, "122003": 3, "122004": 3, "102057": 2, "102056": 1}, "121027": {"122001": 3, "123001": 3, "122002": 2, "122003": 4, "122004": 2, "12006": 1}, "121030": {"122001": 2, "123001": 3, "122002": 1, "122003": 1, "122004": 1, "102057": 1, "152006": 1}, "121031": {"122001": 7, "123001": 7, "122002": 5, "122003": 6, "122004": 6, "12006": 3, "102056": 1}, "121032": {"122001": 7, "123001": 6, "122002": 4, "122003": 5, "122004": 4, "12006": 1, "102057": 2, "102056": 1}, "121033": {"122001": 4, "123001": 5, "122002": 3, "122003": 4, "122004": 2, "12006": 1, "102057": 1, "152003": 1}, "121034": {"122001": 3, "123001": 3, "122002": 2, "122003": 2, "122004": 3, "102057": 2}, "121035": {"122001": 4, "123001": 4, "122002": 2, "122003": 4, "122004": 3, "12006": 3, "152003": 1}, "121036": {"122001": 3, "123001": 3, "122002": 1, "122003": 2, "122004": 1, "42002": 1, "102056": 1}, "121038": {"122001": 4, "123001": 6, "122002": 2, "122003": 4, "122004": 2, "42002": 2, "102056": 1}, "121039": {"122001": 3, "123001": 4, "122002": 3, "122003": 2, "122004": 2, "12006": 1, "152003": 1}, "121131": {"122001": 3, "123001": 2, "122002": 1, "122003": 1, "122004": 1, "12006": 1, "42002": 1, "152003": 1}, "121132": {"122001": 7, "123001": 4, "122002": 2, "122003": 3, "122004": 2, "12006": 1, "42002": 1, "152003": 1}, "124006": {"122001": 3, "123001": 3, "122002": 2, "122003": 2, "122004": 2, "42002": 1, "102056": 1}, "124008": {"122001": 8, "123001": 7, "122002": 5, "122003": 6, "122004": 5, "12006": 1, "42002": 2, "102056": 1}, "124009": {"122001": 8, "123001": 7, "122002": 3, "122003": 4, "122004": 4, "12006": 2, "42002": 1, "152006": 1}, "124011": {"122001": 10, "123001": 11, "122002": 6, "122003": 7, "122004": 7, "12006": 3, "42002": 3, "42032": 1}, "124108": {"122001": 9, "123001": 10, "122002": 5, "122003": 6, "122004": 4, "12006": 1, "42002": 2, "102056": 1}, "124109": {"122001": 10, "123001": 7, "122002": 4, "122003": 6, "122004": 4, "12006": 2, "42002": 1}, "124115": {"122001": 4, "123001": 3, "122002": 1, "122003": 2, "122004": 1, "12006": 1, "42002": 1}, "125001": {"122001": 3, "123001": 3, "122002": 1, "122003": 4, "122004": 1, "12006": 1}, "125002": {"122001": 2, "123001": 1, "122002": 1, "122003": 1, "122004": 1, "12006": 1, "152003": 1}, "125003": {"122001": 11, "123001": 12, "122002": 6, "122003": 8, "122004": 6, "12006": 3, "42002": 1, "42032": 1}, "125010": {"122001": 2, "123001": 3, "122002": 1, "122003": 1, "122004": 1, "102057": 1, "102056": 1}, "125011": {"122001": 4, "123001": 3, "122002": 2, "122003": 2, "122004": 1, "102057": 1, "152003": 1}, "125013": {"122001": 1, "123001": 1, "122002": 2, "122003": 1, "122004": 1, "102057": 1}, "125015": {"122001": 6, "123001": 9, "122002": 3, "122003": 4, "122004": 4, "12006": 1, "42002": 1, "102056": 1}, "125016": {"122001": 7, "123001": 7, "122002": 4, "122003": 4, "122004": 4, "102057": 2}, "125017": {"122001": 2, "123001": 2, "122002": 2, "122003": 1, "122004": 1, "12006": 1, "42002": 1, "152003": 1}, "125018": {"122001": 2, "123001": 2, "122002": 1, "122003": 2, "122004": 2, "12006": 1, "152003": 1}, "125020": {"122001": 2, "123001": 3, "122002": 2, "122003": 1, "122004": 1, "102057": 1, "102056": 1}, "125021": {"122001": 3, "123001": 4, "122002": 1, "122003": 2, "122004": 2, "12006": 1, "102057": 1}, "125022": {"122001": 2, "123001": 2, "122002": 2, "122003": 1, "122004": 1, "12006": 1}, "125024": {"122001": 2, "123001": 2, "122002": 1, "122003": 1, "122004": 1, "12006": 1, "42002": 2}, "125025": {"122001": 4, "123001": 4, "122002": 2, "122003": 4, "122004": 3, "102057": 1}, "125027": {"122001": 2, "123001": 1, "122002": 1, "122003": 1, "122004": 1, "152006": 1}, "125028": {"122001": 4, "123001": 3, "122002": 1, "122003": 2, "122004": 2, "12006": 1, "102056": 1}, "125106": {"122001": 3, "123001": 2, "122002": 1, "122003": 2, "122004": 1, "12006": 1, "42002": 1}, "125107": {"122001": 1, "123001": 1, "122002": 1, "122003": 1, "122004": 1, "102057": 1, "102056": 1}, "125109": {"122001": 2, "123001": 2, "122002": 1, "122003": 2, "122004": 1, "152006": 1}, "125110": {"122001": 1, "123001": 1, "122002": 1, "122003": 1, "122004": 1}, "125112": {"122001": 1, "123001": 1, "122002": 1, "122003": 2, "122004": 1, "102057": 1}, "125113": {"122001": 1, "123001": 1, "122002": 1, "122003": 1, "122004": 1}, "125114": {"122001": 1, "123001": 2, "122002": 1, "122003": 1, "122004": 1, "12006": 1, "102056": 1}, "125115": {"122001": 1, "123001": 1, "122002": 1, "122003": 1, "122004": 1}, "125116": {"122001": 1, "123001": 1, "122002": 1, "122003": 1, "122004": 1}, "125117": {"122001": 1, "123001": 1, "122002": 1, "122003": 1, "122004": 1}, "125118": {"122001": 2, "123001": 3, "122002": 1, "122003": 3, "122004": 1, "12006": 1}, "125119": {"122001": 1, "123001": 1, "122002": 1, "122003": 1, "122004": 1}, "151001": {"73082": 1, "152001": 10, "152002": 10, "153001": 9, "153005": 7, "152004": 15, "153004": 8, "151078": 7}, "151002": {"42032": 1, "152001": 8, "152002": 7, "153001": 7, "153005": 6, "152004": 10, "153004": 6, "152005": 1, "151078": 6}, "151003": {"155001": 1, "152001": 3, "152002": 2, "153001": 2, "153005": 1, "152004": 3, "153004": 2, "152005": 1, "151078": 1}, "151004": {"152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "151078": 1}, "151005": {"73082": 1, "152001": 3, "152002": 4, "153001": 3, "153005": 2, "152004": 5, "153004": 2, "152005": 1, "151078": 2}, "151006": {"73082": 1, "152001": 1, "152002": 2, "153001": 1, "153005": 1, "152004": 2, "153004": 1, "152005": 1, "151078": 1}, "151007": {"42032": 1, "152001": 2, "152002": 2, "153001": 3, "153005": 3, "152004": 3, "153004": 3, "152005": 1, "151078": 3}, "151008": {"102057": 1, "152001": 2, "152002": 1, "153001": 1, "153005": 2, "152004": 2, "153004": 2, "152005": 1, "151078": 2}, "151009": {"102056": 1, "152001": 1, "152002": 2, "153001": 2, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 2}, "151010": {"42032": 1, "152001": 4, "152002": 3, "153001": 4, "153005": 2, "152004": 4, "153004": 2, "152005": 1, "151078": 2}, "151011": {"155001": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151012": {"102056": 1, "152001": 2, "152002": 1, "153001": 2, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151013": {"73082": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151014": {"102056": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 2, "153004": 1, "152005": 1, "151078": 1}, "151015": {"152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151016": {"73082": 1, "152001": 3, "152002": 3, "153001": 3, "153005": 1, "152004": 3, "153004": 1, "152005": 1, "151078": 1}, "151017": {"152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 2, "153004": 1, "152005": 1, "151078": 1}, "151018": {"152006": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151019": {"155001": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151020": {"73082": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151021": {"73082": 1, "152001": 1, "152002": 2, "153001": 2, "153005": 2, "152004": 3, "153004": 1, "152005": 1, "151078": 2}, "151022": {"73082": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151023": {"152006": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151024": {"152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151025": {"152006": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151026": {"102056": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151027": {"152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151028": {"152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151029": {"73082": 1, "152001": 2, "152002": 1, "153001": 1, "153005": 1, "152004": 2, "153004": 2, "152005": 1, "151078": 1}, "151030": {"102056": 1, "152001": 2, "152002": 1, "153001": 1, "153005": 2, "152004": 2, "153004": 2, "152005": 1, "151078": 1}, "151031": {"102056": 1, "152001": 4, "152002": 3, "153001": 3, "153005": 3, "152004": 4, "153004": 3, "152005": 1, "151078": 3}, "151032": {"42032": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151033": {"102056": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 2, "152005": 1}, "151034": {"102056": 1, "152001": 2, "152002": 3, "153001": 2, "153005": 2, "152004": 4, "153004": 2, "152005": 1, "151078": 2}, "151035": {"152006": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 2, "152004": 1, "153004": 2, "152005": 1, "151078": 2}, "151036": {"42032": 1, "152001": 2, "152002": 3, "153001": 2, "153005": 2, "152004": 4, "153004": 2, "152005": 1, "151078": 2}, "151037": {"73082": 1, "152001": 5, "152002": 5, "153001": 6, "153005": 4, "152004": 7, "153004": 3, "152005": 1, "151078": 4}, "151038": {"102057": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151039": {"73082": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151040": {"152006": 1, "152001": 3, "152002": 4, "153001": 4, "153005": 3, "152004": 5, "153004": 3, "152005": 1, "151078": 4}, "151041": {"152001": 2, "152002": 3, "153001": 3, "153005": 2, "152004": 5, "153004": 2, "152005": 1, "151078": 3}, "151042": {"102057": 1, "152001": 3, "152002": 3, "153001": 2, "153005": 1, "152004": 3, "153004": 2, "152005": 1, "151078": 1}, "151043": {"42032": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151044": {"152001": 1, "152002": 2, "153001": 1, "153005": 1, "152004": 2, "153004": 1, "152005": 1, "151078": 1}, "151045": {"152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151046": {"73082": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 2, "153004": 1, "152005": 1, "151078": 1}, "151047": {"73082": 1, "152001": 1, "152002": 2, "153001": 2, "153005": 1, "152004": 3, "153004": 1, "152005": 1, "151078": 2}, "151048": {"102056": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "151049": {"152006": 1, "152001": 1, "152002": 1, "153001": 1, "153005": 1, "152004": 1, "153004": 1, "152005": 1, "151078": 1}, "71045": {"64013": 1, "42001": 2, "72001": 2, "73003": 2}, "71046": {"102056": 1, "64013": 1, "42001": 4, "72001": 3, "73003": 4}, "71047": {"64013": 1, "42001": 4, "72001": 3, "73003": 3}, "71048": {"64013": 1, "42001": 5, "72001": 4, "73003": 4}, "71049": {"64013": 2, "42001": 8, "72001": 7, "73003": 8}, "71050": {"64013": 1, "42001": 1, "72001": 1, "73003": 1}, "71051": {"64013": 2, "42001": 4, "72001": 5, "73003": 4}, "71053": {"42032": 1, "64013": 1, "42001": 3, "72001": 3, "73003": 3}, "71054": {"64013": 3, "42001": 8, "72001": 7, "73003": 8}, "71056": {"152003": 1, "64013": 6, "42001": 18, "72001": 18, "73003": 18}, "71060": {"42032": 1, "64013": 2, "42001": 7, "72001": 7, "73003": 8}, "71085": {"102057": 1, "64013": 2, "42001": 5, "72001": 4, "73003": 5}, "73004": {"64013": 2, "42001": 6, "72001": 7, "73003": 6}, "74005": {"102057": 1, "64013": 3, "42001": 8, "72001": 8, "73003": 9}, "74007": {"64013": 1, "42001": 1, "72001": 1, "73003": 1}, "74009": {"102056": 1, "64013": 2, "42001": 8, "72001": 8, "73003": 7}, "74010": {"102056": 1, "64013": 2, "42001": 7, "72001": 7, "73003": 6}, "74011": {"64013": 1, "42001": 2, "72001": 3, "73003": 3}, "74012": {"152003": 1, "64013": 1, "42001": 1, "72001": 2, "73003": 2}, "74016": {"102056": 1, "64013": 1, "42001": 1, "72001": 1, "73003": 1}, "74018": {"102056": 1, "64013": 3, "42001": 8, "72001": 9, "73003": 8}, "74081": {"64013": 1, "42001": 1, "72001": 1, "73003": 1}, "75013": {"102057": 1, "64013": 2, "42001": 7, "72001": 7, "73003": 6}, "75061": {"64013": 2, "42001": 2, "72001": 3, "73003": 2}, "75062": {"64013": 1, "42001": 2, "72001": 3, "73003": 2}, "75063": {"64013": 1, "42001": 6, "72001": 5, "73003": 6}, "75064": {"102056": 1, "64013": 1, "42001": 2, "72001": 2, "73003": 1}, "75065": {"64013": 1, "42001": 2, "72001": 2, "73003": 2}, "75066": {"64013": 1, "42001": 3, "72001": 4, "73003": 4}, "75067": {"64013": 1, "42001": 4, "72001": 4, "73003": 5}, "75068": {"64013": 1, "42001": 1, "72001": 2, "73003": 2}, "75069": {"102057": 1, "64013": 4, "42001": 12, "72001": 12, "73003": 12}, "75070": {"64013": 3, "42001": 8, "72001": 9, "73003": 8}, "75071": {"42032": 1, "64013": 1, "42001": 3, "72001": 3, "73003": 3}, "75072": {"64013": 3, "42001": 5, "72001": 6, "73003": 6}, "75073": {"152006": 1, "64013": 3, "42001": 5, "72001": 5, "73003": 6}, "75077": {"64013": 1, "42001": 1, "72001": 1, "73003": 1}, "75078": {"64013": 1, "42001": 5, "72001": 5, "73003": 5}, "75079": {"64013": 1, "42001": 4, "72001": 4, "73003": 4}, "75080": {"64013": 1, "42001": 2, "72001": 1, "73003": 2}, "75113": {"64013": 2, "42001": 6, "72001": 7, "73003": 7}, "181001": {"182002": 15, "182001": 35, "183002": 35}, "181002": {"182002": 11, "182001": 25, "183002": 25}, "181003": {"182002": 2, "182001": 5, "183002": 5}, "181004": {"182002": 7, "182001": 15, "183002": 15}, "181005": {"102057": 1, "182002": 3, "182001": 7, "183002": 7}, "181006": {"182002": 3, "182001": 6, "183002": 6}, "181007": {"182002": 6, "182001": 14, "183002": 14}, "181008": {"152006": 1, "182002": 7, "182001": 15, "183002": 15}, "181009": {"42032": 1, "182002": 3, "182001": 7, "183002": 7}, "181011": {"102056": 1, "182002": 4, "182001": 10, "183002": 10}, "181012": {"182002": 1, "182001": 3, "183002": 3}, "181013": {"182002": 3, "182001": 7, "183002": 7}, "181016": {"182002": 1, "182001": 3, "183002": 3}, "181017": {"182002": 2, "182001": 4, "183002": 4}, "181018": {"182002": 7, "182001": 16, "183002": 16}, "181019": {"182002": 4, "182001": 9, "183002": 9}, "184005": {"182002": 7, "182001": 15, "183002": 15}, "185001": {"182002": 1, "182001": 1, "183002": 1}, "185003": {"182002": 4, "182001": 9, "183002": 9}, "185004": {"182002": 1, "182001": 3, "183002": 3}, "185005": {"182002": 1, "182001": 1, "183002": 1}, "185007": {"182002": 8, "182001": 18, "183002": 18}, "185008": {"182002": 1, "182001": 3, "183002": 3}, "185009": {"182002": 1, "182001": 1, "183002": 1}, "185011": {"182002": 5, "182001": 11, "183002": 11}, "185012": {"182002": 2, "182001": 4, "183002": 4}, "185013": {"182002": 2, "182001": 4, "183002": 4}, "185014": {"182002": 1, "182001": 3, "183002": 3}, "185019": {"152003": 1, "182002": 2, "182001": 6, "183002": 6}, "171001": {"172001": 15, "172002": 14, "174003": 15, "174005": 6, "174004": 1}, "171002": {"172001": 10, "172002": 10, "174003": 10, "174005": 4, "174004": 1}, "171003": {"172001": 5, "172002": 6, "174003": 5, "174005": 2, "174004": 1}, "171004": {"172001": 5, "172002": 5, "174003": 5, "174005": 2, "174004": 1}, "171006": {"172001": 13, "172002": 14, "174003": 14, "174005": 5, "174004": 1}, "171013": {"172001": 8, "172002": 7, "174003": 8, "174005": 2, "174004": 1}, "171015": {"172001": 4, "172002": 5, "174003": 5, "174005": 2, "174004": 1}, "174003": {"172001": 7, "172002": 6, "174003": 6, "174005": 2, "174004": 1}, "174005": {"172001": 3, "172002": 3, "174003": 3, "174005": 1, "174004": 1}, "174007": {"172001": 7, "172002": 7, "174003": 6, "174005": 2, "174004": 1}, "174008": {"172001": 7, "172002": 6, "174003": 7, "174005": 2, "174004": 1}, "174013": {"172001": 2, "172002": 2, "174003": 2, "174005": 1, "174004": 1}, "175001": {"172001": 5, "172002": 5, "174003": 5, "174005": 1, "174004": 1}, "175002": {"172001": 1, "172002": 1, "174003": 1, "174005": 1, "174004": 1}, "175003": {"172001": 1, "172002": 1, "174003": 1, "174005": 1, "174004": 1}, "175004": {"172001": 1, "172002": 1, "174003": 1, "174005": 1, "174004": 1}, "175005": {"172001": 7, "172002": 7, "174003": 6, "174005": 3, "174004": 2}, "175007": {"172001": 3, "172002": 3, "174003": 3, "174005": 1, "174004": 1}, "175008": {"172001": 2, "172002": 2, "174003": 2, "174005": 1, "174004": 1}, "175009": {"172001": 1, "172002": 1, "174003": 1, "174005": 1, "174004": 1}, "175010": {"172001": 2, "172002": 2, "174003": 3, "174005": 1, "174004": 1}, "175011": {"172001": 6, "172002": 5, "174003": 6, "174005": 2, "174004": 1}, "175012": {"172001": 2, "172002": 2, "174003": 2, "174005": 1, "174004": 1}, "175013": {"172001": 8, "172002": 8, "174003": 8, "174005": 3, "174004": 1}, "175014": {"172001": 2, "172002": 2, "174003": 2, "174005": 1, "174004": 1}, "175015": {"172001": 1, "172002": 1, "174003": 1, "174005": 1, "174004": 1}, "175016": {"172001": 1, "172002": 1, "174003": 1, "174005": 1, "174004": 1}, "175017": {"172001": 1, "172002": 1, "174003": 1, "174005": 1, "174004": 1}, "175018": {"172001": 7, "172002": 7, "174003": 6, "174005": 3, "174004": 1}, "175019": {"172001": 1, "172002": 1, "174003": 1, "174005": 1, "174004": 1}, "175020": {"172001": 12, "172002": 13, "174003": 13, "174005": 4, "174004": 1}, "175022": {"172001": 1, "172002": 1, "174003": 1, "174005": 1, "174004": 1}, "175023": {"172001": 10, "172002": 10, "174003": 10, "174005": 3, "174004": 1}, "175024": {"172001": 1, "172002": 1, "174003": 1, "174005": 1, "174004": 1}, "175026": {"172001": 9, "172002": 9, "174003": 9, "174005": 4, "174004": 1}, "175028": {"172001": 5, "172002": 5, "174003": 5, "174005": 2, "174004": 1}, "175029": {"172001": 4, "172002": 5, "174003": 4, "174005": 1, "174004": 1}, "175030": {"172001": 3, "172002": 3, "174003": 3, "174005": 1, "174004": 1}, "175032": {"172001": 1, "172002": 2, "174003": 2, "174005": 1, "174004": 1}, "175037": {"172001": 7, "172002": 6, "174003": 6, "174005": 2, "174004": 1}, "41302": {"42008": 10, "42035": 9, "42001": 8, "43015": 8, "42036": 3}, "41305": {"42008": 6, "42035": 6, "42001": 5, "43015": 5, "42036": 3, "42032": 2}, "41306": {"42008": 10, "42035": 10, "42001": 10, "43015": 9, "42036": 3}, "41316": {"42008": 7, "42035": 7, "42001": 7, "43015": 6, "42036": 3}, "41318": {"42008": 6, "42035": 4, "42001": 3, "43015": 3}, "41319": {"42008": 4, "42035": 3, "42001": 3, "43015": 4}, "41320": {"42008": 12, "42035": 11, "42001": 11, "43015": 10, "42036": 4, "42032": 1}, "41326": {"42008": 1, "42035": 2, "43015": 1}, "41327": {"42008": 10, "42035": 10, "42001": 7, "43015": 9, "42036": 3, "42032": 2}, "41328": {"42008": 4, "42035": 4, "42001": 3, "43015": 4, "42036": 1}, "41329": {"42008": 9, "42035": 9, "42001": 7, "43015": 7, "42036": 4}, "41331": {"42008": 2, "42035": 3, "43015": 2, "42036": 2}, "41334": {"42008": 2, "42035": 3, "42001": 2, "43015": 2, "42036": 2}, "41336": {"42008": 6, "42035": 6, "42001": 4, "43015": 4, "42036": 1, "42032": 1}, "41347": {"42008": 7, "42035": 7, "42001": 6, "43015": 8, "42036": 2}, "41363": {"42008": 9, "42035": 9, "42001": 10, "43015": 8, "42036": 4, "42032": 1}, "41385": {"42008": 10, "42035": 9, "42001": 8, "43015": 8, "42036": 2, "42032": 2}, "44103": {"42008": 8, "42035": 9, "42001": 8, "43015": 7, "42036": 4}, "44107": {"42008": 4, "42035": 3, "42001": 2, "43015": 4, "42036": 1}, "44109": {"42008": 12, "42035": 13, "42001": 10, "43015": 11, "42036": 4, "42032": 2}, "44110": {"42008": 9, "42035": 7, "42001": 6, "43015": 6, "42036": 2}, "44111": {"42008": 11, "42035": 11, "42001": 9, "43015": 10, "42036": 1, "42032": 1}, "44114": {"42008": 4, "42035": 3, "42001": 3, "43015": 5, "42036": 1}, "44133": {"42008": 7, "42035": 7, "42001": 7, "43015": 6, "42036": 2}, "44162": {"42008": 12, "42035": 13, "42001": 10, "43015": 13, "42036": 4}, "44164": {"42008": 13, "42035": 13, "42001": 10, "43015": 11, "42036": 4, "42032": 2}, "44181": {"42008": 2, "42035": 3, "42001": 2, "43015": 3, "42036": 2}, "44182": {"42008": 3, "42035": 4, "42001": 2, "43015": 3, "42036": 1}, "45304": {"42008": 3, "42035": 2, "42001": 3, "43015": 2, "42036": 2}, "45306": {"42008": 2, "42035": 2, "43015": 2, "42036": 2}, "45444": {"42008": 4, "42035": 5, "42001": 3, "43015": 4, "42036": 3, "42032": 1}, "101000": {"102032": 16, "102004": 16, "103002": 13, "102056": 1}, "101001": {"102032": 9, "102004": 9, "103002": 7, "102056": 1}, "101002": {"102032": 5, "102004": 5, "103002": 4, "102056": 1}, "101003": {"102032": 3, "102004": 3, "103002": 2, "102057": 1}, "101004": {"102032": 4, "102004": 4, "103002": 4, "102057": 1}, "101005": {"102032": 8, "102004": 8, "103002": 7, "102056": 1}, "101006": {"102032": 4, "102004": 4, "103002": 3}, "101007": {"102032": 2, "102004": 2, "103002": 2}, "101008": {"102032": 1, "102004": 1, "103002": 1}, "101009": {"102032": 4, "102004": 4, "103002": 3}, "101012": {"102032": 10, "102004": 10, "103002": 8, "152003": 1}, "101014": {"102032": 3, "102004": 3, "103002": 2, "102057": 1}, "101015": {"102032": 7, "102004": 7, "103002": 6, "152003": 1}, "101016": {"102032": 9, "102004": 9, "103002": 8, "102056": 1}, "101018": {"102032": 3, "102004": 3, "103002": 3}, "101019": {"102032": 5, "102004": 5, "103002": 4, "102056": 1}, "101020": {"102032": 5, "102004": 5, "103002": 4}, "101021": {"102032": 6, "102004": 6, "103002": 5, "102057": 1}, "101022": {"102032": 10, "102004": 10, "103002": 8, "102057": 1}, "101023": {"102032": 6, "102004": 6, "103002": 5, "102057": 1}, "101024": {"102032": 11, "102004": 11, "103002": 9, "42032": 1}, "101026": {"102032": 8, "102004": 8, "103002": 6, "102056": 1}, "101027": {"102032": 5, "102004": 5, "103002": 4, "102056": 1}, "103012": {"102032": 5, "102004": 5, "103002": 5, "102057": 1}, "103075": {"102032": 11, "102004": 11, "103002": 9, "102057": 1}, "104001": {"102032": 7, "102004": 7, "103002": 6, "102056": 1}, "104014": {"102032": 4, "102004": 4, "103002": 4}, "104067": {"102032": 5, "102004": 5, "103002": 4, "102057": 1}, "104073": {"102032": 1, "102004": 1, "103002": 1}, "105000": {"102032": 13, "102004": 13, "103002": 11, "42032": 1}, "105001": {"102032": 4, "102004": 4, "103002": 4}, "105002": {"102032": 6, "102004": 6, "103002": 5, "102057": 1}, "105003": {"102032": 3, "102004": 3, "103002": 2}, "105004": {"102032": 8, "102004": 8, "103002": 7, "102056": 1}, "105005": {"102032": 7, "102004": 7, "103002": 6}, "105006": {"102032": 2, "102004": 2, "103002": 2, "102056": 1}, "105007": {"102032": 4, "102004": 4, "103002": 3}, "105008": {"102032": 11, "102004": 11, "103002": 9, "102057": 1}, "51001": {"52002": 10, "53004": 7, "52001": 14}, "51002": {"52002": 4, "53004": 3, "52001": 2}, "51003": {"52002": 7, "53004": 5, "52001": 4}, "51004": {"52002": 10, "53004": 7, "52001": 7}, "51005": {"52002": 4, "53004": 3, "52001": 3}, "51006": {"52002": 9, "53004": 7, "52001": 7, "42032": 1}, "51007": {"52002": 9, "53004": 7, "52001": 5, "42032": 1, "102057": 1}, "51008": {"52002": 3, "53004": 2, "52001": 2, "152006": 1}, "51009": {"52002": 18, "53004": 13, "52001": 13, "102056": 1}, "51010": {"52002": 15, "53004": 11, "52001": 11}, "51011": {"52002": 7, "53004": 5, "52001": 5}, "51012": {"52002": 8, "53004": 6, "52001": 5, "102057": 1}, "51013": {"52002": 28, "53004": 21, "52001": 16, "102056": 1}, "51014": {"52002": 8, "53004": 5, "52001": 6}, "51015": {"52002": 3, "53004": 2, "52001": 2, "152003": 1}, "51016": {"52002": 8, "53004": 6, "52001": 5, "152003": 1}, "51017": {"52002": 10, "53004": 7, "52001": 6}, "51018": {"52002": 8, "53004": 6, "52001": 5}};
+
+    // 历史录取分数线（统一招生最低分）
+    const HIST_SCORELINES = {"12001": [{"year": 2025, "min": 696.0}, {"year": 2024, "min": 680.5}], "12003": [{"year": 2025, "min": 682.0}, {"year": 2024, "min": 682.0}], "12005": [{"year": 2025, "min": 675.0}, {"year": 2024, "min": 675.0}], "12007": [{"year": 2025, "min": 670.0}, {"year": 2024, "min": 664.0}], "12008": [{"year": 2025, "min": 652.0}, {"year": 2024, "min": 652.0}], "12009": [{"year": 2025, "min": 642.0}, {"year": 2024, "min": 640.0}], "13001": [{"year": 2025, "min": 636.5}, {"year": 2024, "min": 635.0}], "13002": [{"year": 2025, "min": 600.0}, {"year": 2024, "min": 598.0}], "14001": [{"year": 2025, "min": 610.5}, {"year": 2024, "min": 608.0}], "14002": [{"year": 2025, "min": 574.0}, {"year": 2024, "min": 572.0}], "14003": [{"year": 2025, "min": 558.0}, {"year": 2024, "min": 556.0}], "14004": [{"year": 2025, "min": 542.5}, {"year": 2024, "min": 540.0}], "42032": [{"year": 2025, "min": 707.0}, {"year": 2024, "min": 705.0}], "152003": [{"year": 2025, "min": 709.5}, {"year": 2024, "min": 708.0}], "102057": [{"year": 2025, "min": 707.5}, {"year": 2024, "min": 706.0}], "102056": [{"year": 2025, "min": 707.0}, {"year": 2024, "min": 705.0}], "42001": [{"year": 2025, "min": 695.5}, {"year": 2024, "min": 694.0}], "42002": [{"year": 2025, "min": 692.0}, {"year": 2024, "min": 690.0}], "42003": [{"year": 2025, "min": 682.5}, {"year": 2024, "min": 681.0}], "43001": [{"year": 2025, "min": 678.0}, {"year": 2024, "min": 676.0}], "43002": [{"year": 2025, "min": 675.0}, {"year": 2024, "min": 673.0}], "43003": [{"year": 2025, "min": 655.0}, {"year": 2024, "min": 653.0}], "44001": [{"year": 2025, "min": 645.0}, {"year": 2024, "min": 643.0}], "44002": [{"year": 2025, "min": 610.0}, {"year": 2024, "min": 608.0}], "44003": [{"year": 2025, "min": 668.0}, {"year": 2024, "min": 666.0}], "44004": [{"year": 2025, "min": 655.0}, {"year": 2024, "min": 653.0}], "52001": [{"year": 2025, "min": 694.0}, {"year": 2024, "min": 692.0}], "52002": [{"year": 2025, "min": 675.0}, {"year": 2024, "min": 673.0}], "53001": [{"year": 2025, "min": 652.0}, {"year": 2024, "min": 650.0}], "53002": [{"year": 2025, "min": 638.0}, {"year": 2024, "min": 636.0}], "54001": [{"year": 2025, "min": 625.0}, {"year": 2024, "min": 623.0}], "54002": [{"year": 2025, "min": 608.0}, {"year": 2024, "min": 606.0}], "62001": [{"year": 2025, "min": 688.0}, {"year": 2024, "min": 686.0}], "62002": [{"year": 2025, "min": 675.0}, {"year": 2024, "min": 673.0}], "62003": [{"year": 2025, "min": 601.0}, {"year": 2024, "min": 600.0}], "63001": [{"year": 2025, "min": 636.0}, {"year": 2024, "min": 634.0}], "63002": [{"year": 2025, "min": 606.5}, {"year": 2024, "min": 605.0}], "63003": [{"year": 2025, "min": 649.5}, {"year": 2024, "min": 648.0}], "64001": [{"year": 2025, "min": 602.0}, {"year": 2024, "min": 600.0}], "64002": [{"year": 2025, "min": 550.0}, {"year": 2024, "min": 548.0}], "72001": [{"year": 2025, "min": 701.5}, {"year": 2024, "min": 699.0}], "72002": [{"year": 2025, "min": 690.0}, {"year": 2024, "min": 688.0}], "72003": [{"year": 2025, "min": 677.0}, {"year": 2024, "min": 675.0}], "72004": [{"year": 2025, "min": 685.0}, {"year": 2024, "min": 683.0}], "73001": [{"year": 2025, "min": 566.0}, {"year": 2024, "min": 564.0}], "73002": [{"year": 2025, "min": 660.0}, {"year": 2024, "min": 658.0}], "74001": [{"year": 2025, "min": 620.0}, {"year": 2024, "min": 618.0}], "74002": [{"year": 2025, "min": 580.0}, {"year": 2024, "min": 578.0}], "74003": [{"year": 2025, "min": 630.0}, {"year": 2024, "min": 628.0}], "92001": [{"year": 2025, "min": 690.0}, {"year": 2024, "min": 688.0}], "92002": [{"year": 2025, "min": 680.0}, {"year": 2024, "min": 678.0}], "92003": [{"year": 2025, "min": 670.0}, {"year": 2024, "min": 668.0}], "93001": [{"year": 2025, "min": 650.0}, {"year": 2024, "min": 648.0}], "93002": [{"year": 2025, "min": 625.0}, {"year": 2024, "min": 623.0}], "94001": [{"year": 2025, "min": 610.0}, {"year": 2024, "min": 608.0}], "94002": [{"year": 2025, "min": 598.0}, {"year": 2024, "min": 596.0}], "102001": [{"year": 2025, "min": 690.0}, {"year": 2024, "min": 688.0}], "102002": [{"year": 2025, "min": 685.0}, {"year": 2024, "min": 683.0}], "102003": [{"year": 2025, "min": 677.5}, {"year": 2024, "min": 675.0}], "103001": [{"year": 2025, "min": 661.0}, {"year": 2024, "min": 659.0}], "103002": [{"year": 2025, "min": 648.0}, {"year": 2024, "min": 646.0}], "104001": [{"year": 2025, "min": 635.0}, {"year": 2024, "min": 633.0}], "104002": [{"year": 2025, "min": 695.0}, {"year": 2024, "min": 693.0}], "122001": [{"year": 2025, "min": 695.0}, {"year": 2024, "min": 693.0}], "122002": [{"year": 2025, "min": 692.0}, {"year": 2024, "min": 690.0}], "122003": [{"year": 2025, "min": 698.0}, {"year": 2024, "min": 696.0}], "122004": [{"year": 2025, "min": 685.5}, {"year": 2024, "min": 683.5}], "123001": [{"year": 2025, "min": 660.0}, {"year": 2024, "min": 658.0}], "124001": [{"year": 2025, "min": 635.0}, {"year": 2024, "min": 633.0}], "124002": [{"year": 2025, "min": 664.5}, {"year": 2024, "min": 662.5}], "132001": [{"year": 2025, "min": 696.0}, {"year": 2024, "min": 694.0}], "132002": [{"year": 2025, "min": 666.0}, {"year": 2024, "min": 664.0}], "132003": [{"year": 2025, "min": 685.0}, {"year": 2024, "min": 683.0}], "132004": [{"year": 2025, "min": 675.0}, {"year": 2024, "min": 673.0}], "133001": [{"year": 2025, "min": 649.5}, {"year": 2024, "min": 647.5}], "134001": [{"year": 2025, "min": 558.0}, {"year": 2024, "min": 556.0}], "134002": [{"year": 2025, "min": 662.5}, {"year": 2024, "min": 660.5}], "112001": [{"year": 2025, "min": 689.0}, {"year": 2024, "min": 687.0}], "112002": [{"year": 2025, "min": 679.0}, {"year": 2024, "min": 677.0}], "112003": [{"year": 2025, "min": 677.0}, {"year": 2024, "min": 675.0}], "113001": [{"year": 2025, "min": 595.5}, {"year": 2024, "min": 593.5}], "152004": [{"year": 2025, "min": 703.5}, {"year": 2024, "min": 701.5}], "152005": [{"year": 2025, "min": 700.0}, {"year": 2024, "min": 698.0}], "152006": [{"year": 2025, "min": 699.5}, {"year": 2024, "min": 697.5}], "152007": [{"year": 2025, "min": 696.5}, {"year": 2024, "min": 694.5}], "152008": [{"year": 2025, "min": 695.5}, {"year": 2024, "min": 693.5}], "152009": [{"year": 2025, "min": 685.0}, {"year": 2024, "min": 683.0}], "153001": [{"year": 2025, "min": 673.0}, {"year": 2024, "min": 671.0}], "154001": [{"year": 2025, "min": 675.0}, {"year": 2024, "min": 673.0}], "162001": [{"year": 2025, "min": 670.0}, {"year": 2024, "min": 668.0}], "162002": [{"year": 2025, "min": 650.0}, {"year": 2024, "min": 648.0}], "163001": [{"year": 2025, "min": 630.0}, {"year": 2024, "min": 628.0}], "172001": [{"year": 2025, "min": 690.0}, {"year": 2024, "min": 688.0}], "172002": [{"year": 2025, "min": 675.0}, {"year": 2024, "min": 673.0}], "182001": [{"year": 2025, "min": 689.5}, {"year": 2024, "min": 687.5}], "182002": [{"year": 2025, "min": 668.5}, {"year": 2024, "min": 666.5}], "183001": [{"year": 2025, "min": 656.0}, {"year": 2024, "min": 654.0}], "184001": [{"year": 2025, "min": 603.5}, {"year": 2024, "min": 601.5}], "202001": [{"year": 2025, "min": 673.0}, {"year": 2024, "min": 671.0}], "202002": [{"year": 2025, "min": 679.5}, {"year": 2024, "min": 677.5}], "203001": [{"year": 2025, "min": 650.0}, {"year": 2024, "min": 648.0}], "212001": [{"year": 2025, "min": 670.0}, {"year": 2024, "min": 668.0}], "213001": [{"year": 2025, "min": 630.0}, {"year": 2024, "min": 628.0}], "214001": [{"year": 2025, "min": 605.0}, {"year": 2024, "min": 603.0}]};
+
+    // 科目结构模板
+    const DEFAULT_SUBJECTS = [
+      { key: "语文", max: 150 },
+      { key: "数学", max: 150 },
+      { key: "英语", max: 150 },
+      { key: "物理", max: 70 },
+      { key: "化学", max: 50 },
+      { key: "道法", max: 30 },
+      { key: "历史", max: 30 },
+    ];
+
+    /* =========================
+       本地存储模型
+       ========================= */
+    const LS_KEY = "zk_targets_v1";
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    }
+    function saveState() {
+      localStorage.setItem(LS_KEY, JSON.stringify(appState));
+    }
+    function uid(prefix = "id") {
+      return prefix + "_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+    }
+
+    /* =========================
+       App State（默认页=targets）
+       ========================= */
+    const appState = loadState() || {
+      page: "targets",
+      onlyHaveQuota: false,
+      profile: {
+        district: "黄浦区",
+        juniorType: "公办",
+        middleSchoolId: "11001",
+        stable: 690,
+        high: 705,
+        low: 675
+      },
+      targets: [],
+      subjects: DEFAULT_SUBJECTS,
+      mocks: []
+    };
+
+    /* =========================
+       Helpers
+       ========================= */
+    const $ = (id) => document.getElementById(id);
+    const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+    const formatCount = (n) => {
+      const v = Number(n);
+      return Number.isFinite(v) && v > 0 ? v : "—";
+    };
+
+    function toast(msg) {
+      const el = $("toast");
+      el.textContent = msg;
+      el.style.display = "block";
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.style.display = "none", 2200);
+    }
+    function openSheet(title, sub, html) {
+      $("sheetTitle").textContent = title;
+      $("sheetSub").textContent = sub || "";
+      $("sheetBody").innerHTML = html || "";
+      $("backdrop").style.display = "flex";
+      $("backdrop").setAttribute("aria-hidden", "false");
+    }
+    function closeSheet() {
+      $("backdrop").style.display = "none";
+      $("backdrop").setAttribute("aria-hidden", "true");
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]));
+    }
+    function escapeAttr(s) {
+      return escapeHtml(s).replace(/"/g, "&quot;");
+    }
+
+    function getToSchoolSeats(middleSchoolId, highSchoolId) {
+      const map = TO_SCHOOL_SEATS[middleSchoolId] || {};
+      return Number(map[String(highSchoolId)] || 0);
+    }
+    function getToDistrictSeats(district, school) {
+      if (!school?.toDistrict) return 0;
+      return Number(school.toDistrict[district] ?? school.toDistrict["全市"] ?? 0);
+    }
+
+    function subjectMaxSum() {
+      return (appState.subjects || []).reduce((a, b) => a + (Number(b.max) || 0), 0);
+    }
+
+    /* =========================
+       模考总分与统计
+       ========================= */
+    function computeMockTotals() {
+      const subs = appState.subjects || [];
+      appState.mocks.forEach(m => {
+        let total = 0;
+        subs.forEach(s => {
+          const v = Number((m.scores || {})[s.key] || 0);
+          total += v;
+        });
+        m.total = Math.round(total);
+      });
+    }
+    function mockStats() {
+      computeMockTotals();
+      const totals = appState.mocks.map(m => Number(m.total || 0)).filter(x => Number.isFinite(x));
+      if (totals.length === 0) {
+        return { n: 0, mean: null, std: null, min: null, max: null };
+      }
+      const mean = totals.reduce((a, b) => a + b, 0) / totals.length;
+      let variance = 0;
+      if (totals.length >= 2) {
+        variance = totals.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (totals.length - 1);
+      } else {
+        variance = 64; // default 8^2
+      }
+      const std = Math.sqrt(variance) || 8;
+      return {
+        n: totals.length,
+        mean,
+        std: clamp(std, 4, 40),
+        min: Math.min(...totals),
+        max: Math.max(...totals),
+      };
+    }
+
+    /* =========================
+       概率模型
+       threshold = baseCut + floor(volatility/3)
+       ========================= */
+    function erf(x) {
+      const sign = x >= 0 ? 1 : -1;
+      x = Math.abs(x);
+      const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429;
+      const p = 0.3275911;
+      const t = 1.0 / (1.0 + p * x);
+      const y = 1.0 - (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t) * Math.exp(-x * x);
+      return sign * y;
+    }
+    function normalCdf(z) {
+      return 0.5 * (1 + erf(z / Math.SQRT2));
+    }
+    function probMeetThreshold(mean, std, threshold) {
+      if (mean === null || std === null) return null;
+      if (std <= 0) std = 8;
+      const z = (threshold - mean) / std;
+      const p = 1 - normalCdf(z);
+      return clamp(p, 0, 1);
+    }
+    function schoolThreshold(school) {
+      const base = Number(school?.baseCut);
+      if (!Number.isFinite(base) || base <= 0) return null;
+      const volAdj = Math.floor((Number(school.volatility) || 0) / 3);
+      return base + volAdj;
+    }
+    function probBadge(p) {
+      if (p === null || p === undefined) return `<span class="badge">—</span>`;
+      const pct = Math.round(p * 100);
+      if (pct >= 75) return `<span class="badge good">${pct}%</span>`;
+      if (pct >= 40) return `<span class="badge warn">${pct}%</span>`;
+      return `<span class="badge bad">${pct}%</span>`;
+    }
+
+    /* =========================
+       Render selects
+       ========================= */
+    function renderDistrictSelect() {
+      $("district").innerHTML = DISTRICTS.map(d => `<option value="${d}">${d}</option>`).join("");
+    }
+    function renderMiddleSchools() {
+      const d = $("district").value || appState.profile.district;
+      const list = MIDDLE_SCHOOLS.filter(x => x.district === d);
+      const fallback = [{ id: `${d}_na`, name: `${d}区暂无初中数据`, district: d }];
+      const options = list.length ? list : fallback;
+      $("middleSchool").innerHTML = options.map(s => `<option value="${s.id}">${s.name}</option>`).join("");
+      const current = appState.profile.middleSchoolId;
+      const exists = options.some(x => x.id === current);
+      $("middleSchool").value = exists ? current : options[0]?.id;
+      appState.profile.middleSchoolId = $("middleSchool").value;
+    }
+
+    /* =========================
+       Filter（原首页）
+       ========================= */
+    function renderFilter() {
+      $("district").value = appState.profile.district;
+      $("juniorType").value = appState.profile.juniorType;
+      $("scoreStable").value = appState.profile.stable;
+      $("scoreHigh").value = appState.profile.high;
+      $("scoreLow").value = appState.profile.low;
+      $("pillOnlyHaveQuota").classList.toggle("on", appState.onlyHaveQuota);
+
+      renderMiddleSchools();
+
+      const msName = $("middleSchool").selectedOptions?.[0]?.textContent || "未选择";
+      const st = mockStats();
+      const stLine = st.n === 0
+        ? `模考：<span class="badge">未录入</span>`
+        : `模考：<span class="badge good">${st.n} 次</span> · 均值 <span class="mono">${Math.round(st.mean)}</span> · 波动 <span class="mono">${st.std.toFixed(1)}</span>`;
+      $("kpiLine").innerHTML = `目标学校数：<b>${appState.targets.length}</b> · 当前初中：<b>${escapeHtml(msName)}</b> · ${stLine}`;
+
+      const schoolType = $("schoolType").value;
+      const msId = appState.profile.middleSchoolId;
+      const district = appState.profile.district;
+
+      const st2 = mockStats();
+      const targetSet = new Set(appState.targets.map(t => Number(t.schoolId)));
+
+      let items = SCHOOLS
+        .filter(s => (schoolType === "all" ? true : s.type === schoolType))
+        .map(s => {
+          const toSchool = getToSchoolSeats(msId, s.id);
+          const toDistrict = getToDistrictSeats(district, s);
+          const thr = schoolThreshold(s);
+          const pMeet = (st2.n === 0 || thr === null) ? null : probMeetThreshold(st2.mean, st2.std, thr);
+          return { s, toSchool, toDistrict, thr, pMeet, targeted: targetSet.has(s.id) };
+        })
+        .filter(x => appState.onlyHaveQuota ? x.toSchool > 0 : true)
+        .sort((a, b) => ((b.pMeet ?? -1) - (a.pMeet ?? -1)) || ((b.s.baseCut || 0) - (a.s.baseCut || 0)));
+
+      const wrap = $("schoolList");
+      if (items.length === 0) {
+        wrap.innerHTML = `<div class="hint">没有符合筛选条件的学校。</div>`;
+        return;
+      }
+
+      wrap.innerHTML = items.map(({ s, toSchool, toDistrict, thr, pMeet, targeted }) => {
+        const probChip = (pMeet === null)
+          ? `<span class="badge">模考概率：—</span>`
+          : `<span class="badge">模考概率：${Math.round(pMeet * 100)}%</span>`;
+        const barPct = clamp(Math.round((pMeet ?? 0) * 100), 0, 100);
+        const baseCutText = Number.isFinite(Number(s.baseCut)) ? s.baseCut : "—";
+        const volText = Number.isFinite(Number(s.volatility)) ? s.volatility : "—";
+        const thrText = (thr === null) ? "—" : thr;
+
+        return `
+      <div class="school">
+        <div class="row">
+          <div>
+            <h3>${escapeHtml(s.name)}</h3>
+            <div class="meta">
+              类型：${escapeHtml(s.type)} · 区域：${escapeHtml(s.district)}<br/>
+              统一最低分：${baseCutText} · 波动：${volText} · 评估门槛：<span class="mono">${thrText}</span>
+            </div>
+          </div>
+          <div class="flex" style="justify-content:flex-end;flex-direction:column;align-items:flex-end">
+            ${probChip}
+            ${targeted ? `<span class="badge good">已加入目标</span>` : ``}
+          </div>
+        </div>
+
+        <div class="pills" style="gap:6px">
+          ${(s.tags || []).map(t => `<span class="badge">${escapeHtml(t)}</span>`).join("")}
+          <span class="badge good">自招：<span class="mono">${formatCount(s.zhaojiao)}</span></span>
+          <span class="badge warn">到区：<span class="mono">${Number(toDistrict || 0)}</span></span>
+          <span class="badge">到校：<span class="mono">${Number(toSchool || 0)}</span></span>
+        </div>
+
+        <div>
+          <div class="bar"><div style="width:${barPct}%;"></div></div>
+          <div class="hint" style="margin-top:8px">“模考概率”为统计估算，建议结合位次/排名建模。</div>
+        </div>
+
+        <div class="btnrow">
+          <button class="btn" data-act="detail" data-id="${s.id}">详情</button>
+          <button class="btn primary" data-act="target" data-id="${s.id}">${targeted ? "已在目标" : "加入目标"}</button>
+        </div>
+      </div>
+    `;
+      }).join("");
+
+      wrap.querySelectorAll('button[data-act]').forEach(btn => {
+        btn.addEventListener("click", () => {
+          const act = btn.getAttribute("data-act");
+          const id = Number(btn.getAttribute("data-id"));
+          const school = SCHOOLS.find(x => x.id === id);
+          if (!school) return;
+
+          const st = mockStats();
+          const thr = schoolThreshold(school);
+          const pMeet = (st.n === 0 || thr === null) ? null : probMeetThreshold(st.mean, st.std, thr);
+          const toSchool = getToSchoolSeats(appState.profile.middleSchoolId, id);
+          const toDistrict = getToDistrictSeats(appState.profile.district, school);
+          const hist = HIST_SCORELINES[String(id)] || [];
+
+          if (act === "detail") {
+            const histRows = hist.length ? hist.map(x => `<tr><td>${x.year}</td><td class="right"><span class="mono">${x.min}</span></td></tr>`).join("")
+              : `<tr><td colspan="2">—</td></tr>`;
+            openSheet(
+              "学校详情",
+              `${school.name}`,
+              `
+            <p class="hint"><b>学校介绍：</b><br/>${escapeHtml(school.intro || "—")}</p>
+
+            <div class="sep"></div>
+
+            <div class="hint"><b>名额数量：</b></div>
+            <ul>
+              <li>自招：<span class="mono">${formatCount(school.zhaojiao)}</span></li>
+              <li>到区（${escapeHtml(appState.profile.district)}）：<span class="mono">${Number(toDistrict || 0)}</span></li>
+              <li>到校（${escapeHtml($("middleSchool").selectedOptions?.[0]?.textContent || "当前初中")}）：<span class="mono">${Number(toSchool || 0)}</span></li>
+            </ul>
+
+            <div class="sep"></div>
+
+            <div class="hint"><b>历史录取分数线（统一招生最低分）：</b></div>
+            <table class="table">
+              <thead><tr><th>年份</th><th class="right">最低分</th></tr></thead>
+              <tbody>${histRows}</tbody>
+            </table>
+
+            <div class="sep"></div>
+
+            <p class="hint">
+              <b>评估门槛：</b><span class="mono">${thr === null ? "—" : thr}</span><br/>
+              <b>模考达成概率估算：</b>${pMeet === null ? "—（请先录入模考）" : `<span class="mono">${Math.round(pMeet * 100)}%</span>`}
+            </p>
+          `
+            );
+          }
+
+          if (act === "target") {
+            const exists = appState.targets.some(t => Number(t.schoolId) === id);
+            if (exists) {
+              toast("已在目标清单");
+              return;
+            }
+            appState.targets.unshift({ id: uid("t"), schoolId: id, tag: "未标记", note: "", createdAt: Date.now() });
+            saveState();
+            toast("已加入目标");
+            renderAll();
+          }
+        });
+      });
+    }
+
+    /* =========================
+       Targets
+       ========================= */
+    function renderTargetsPage() {
+      const st = mockStats();
+      const sum = subjectMaxSum();
+      const msName = MIDDLE_SCHOOLS.find(x => x.id === appState.profile.middleSchoolId)?.name || "未选择";
+      const d = appState.profile.district;
+
+      $("targetsSummary").innerHTML =
+        `当前初中：<b>${escapeHtml(msName)}</b> · 目标数：<b>${appState.targets.length}</b><br/>` +
+        (st.n === 0
+          ? `模考：<span class="badge">未录入</span>（去「模考」页录入后可看到达成概率）`
+          : `模考：<span class="badge good">${st.n}次</span>（总分满分 <span class="mono">${sum}</span>），均值 <span class="mono">${Math.round(st.mean)}</span>，波动 <span class="mono">${st.std.toFixed(1)}</span>`);
+
+      const wrap = $("targetsList");
+      if (appState.targets.length === 0) {
+        wrap.innerHTML = `<div class="hint">还没有目标学校。去「筛选」页点“加入目标”。</div>`;
+        return;
+      }
+
+      const rows = appState.targets.map(t => {
+        const s = SCHOOLS.find(x => x.id === Number(t.schoolId));
+        if (!s) return null;
+        const thr = schoolThreshold(s);
+        const p = (st.n === 0 || thr === null) ? null : probMeetThreshold(st.mean, st.std, thr);
+        const toSchool = getToSchoolSeats(appState.profile.middleSchoolId, s.id);
+        const toDistrict = getToDistrictSeats(d, s);
+        return { t, s, thr, p, toSchool, toDistrict };
+      }).filter(Boolean);
+
+      rows.sort((a, b) => {
+        if (st.n > 0) return (a.p ?? 0) - (b.p ?? 0);
+        return (b.s.baseCut || 0) - (a.s.baseCut || 0);
+      });
+
+      wrap.innerHTML = rows.map(({ t, s, thr, p, toSchool, toDistrict }) => {
+        const barPct = clamp(Math.round((p ?? 0) * 100), 0, 100);
+        const baseCutText = Number.isFinite(Number(s.baseCut)) ? s.baseCut : "—";
+        const thrText = (thr === null) ? "—" : thr;
+        return `
+      <div class="school">
+        <div class="row">
+          <div>
+            <h3>${escapeHtml(s.name)}</h3>
+            <div class="meta">类型：${escapeHtml(s.type)} · 统一最低分：${baseCutText} · 评估门槛：<span class="mono">${thrText}</span></div>
+          </div>
+          <div class="flex" style="justify-content:flex-end">
+            <span class="badge">达成</span> ${probBadge(p)}
+          </div>
+        </div>
+
+        <div class="pills" style="gap:6px">
+          <span class="badge">标记：<b>${escapeHtml(t.tag || "未标记")}</b></span>
+          <span class="badge good">自招：<span class="mono">${formatCount(s.zhaojiao)}</span></span>
+          <span class="badge warn">到区：<span class="mono">${Number(toDistrict || 0)}</span></span>
+          <span class="badge">到校：<span class="mono">${Number(toSchool || 0)}</span></span>
+        </div>
+
+        <div>
+          <div class="bar"><div style="width:${barPct}%;"></div></div>
+          <div class="hint" style="margin-top:8px">${t.note ? ("备注：" + escapeHtml(t.note)) : ""}</div>
+        </div>
+
+        <div class="btnrow">
+          <button class="btn" data-act="detail" data-sid="${s.id}">详情</button>
+          <button class="btn danger" data-act="rmTarget" data-id="${t.id}">移除</button>
+        </div>
+      </div>
+    `;
+      }).join("");
+
+      wrap.querySelectorAll('button[data-act]').forEach(btn => {
+        btn.addEventListener("click", () => {
+          const act = btn.getAttribute("data-act");
+          if (act === "rmTarget") {
+            const id = btn.getAttribute("data-id");
+            appState.targets = appState.targets.filter(x => x.id !== id);
+            saveState();
+            toast("已移除目标");
+            renderAll();
+            return;
+          }
+          if (act === "detail") {
+            const sid = Number(btn.getAttribute("data-sid"));
+            const school = SCHOOLS.find(x => x.id === sid);
+            if (!school) return;
+
+            const st = mockStats();
+            const thr = schoolThreshold(school);
+            const pMeet = (st.n === 0 || thr === null) ? null : probMeetThreshold(st.mean, st.std, thr);
+            const toSchool = getToSchoolSeats(appState.profile.middleSchoolId, sid);
+            const toDistrict = getToDistrictSeats(appState.profile.district, school);
+            const hist = HIST_SCORELINES[String(sid)] || [];
+            const histRows = hist.length ? hist.map(x => `<tr><td>${x.year}</td><td class="right"><span class="mono">${x.min}</span></td></tr>`).join("")
+              : `<tr><td colspan="2">—</td></tr>`;
+
+            openSheet(
+              "学校详情",
+              `${school.name}`,
+              `
+            <p class="hint"><b>学校介绍：</b><br/>${escapeHtml(school.intro || "—")}</p>
+
+            <div class="sep"></div>
+
+            <div class="hint"><b>名额数量：</b></div>
+            <ul>
+              <li>自招：<span class="mono">${formatCount(school.zhaojiao)}</span></li>
+              <li>到区（${escapeHtml(appState.profile.district)}）：<span class="mono">${Number(toDistrict || 0)}</span></li>
+              <li>到校（${escapeHtml(msName)}）：<span class="mono">${Number(toSchool || 0)}</span></li>
+            </ul>
+
+            <div class="sep"></div>
+
+            <div class="hint"><b>历史录取分数线（统一招生最低分）：</b></div>
+            <table class="table">
+              <thead><tr><th>年份</th><th class="right">最低分</th></tr></thead>
+              <tbody>${histRows}</tbody>
+            </table>
+
+            <div class="sep"></div>
+
+            <p class="hint">
+              <b>评估门槛：</b><span class="mono">${thr === null ? "—" : thr}</span><br/>
+              <b>模考达成概率估算：</b>${pMeet === null ? "—（请先录入模考）" : `<span class="mono">${Math.round(pMeet * 100)}%</span>`}
+            </p>
+          `
+            );
+          }
+        });
+      });
+    }
+
+    /* =========================
+       Mocks
+       ========================= */
+    function updateSubjectSumLine() {
+      $("subjectSumLine").innerHTML = `当前总分：<span class="mono">${subjectMaxSum()}</span> · 模考会按此结构计算总分`;
+    }
+    function addMock() {
+      const name = ($("mockName").value || "").trim() || ("模考" + (appState.mocks.length + 1));
+      const id = uid("mock");
+      const scores = {};
+      (appState.subjects || []).forEach(s => scores[s.key] = 0);
+      appState.mocks.unshift({ id, name, scores, total: 0 });
+      $("mockName").value = "";
+      saveState();
+      toast("已添加");
+      renderAll();
+    }
+    function renderMocksPage() {
+      updateSubjectSumLine();
+
+      computeMockTotals();
+      const subs = appState.subjects || [];
+      const mocks = appState.mocks || [];
+      const wrap = $("mockTableWrap");
+
+      if (mocks.length === 0) {
+        wrap.innerHTML = `<div class="hint">还没有模考。上方输入名称后点“添加”。</div>`;
+        return;
+      }
+
+      wrap.innerHTML = `
+    <div class="hint" style="margin-bottom:12px">填写各科分数（自动算总分）。建议录入 ≥3 次，概率估计更稳定。</div>
+    <div style="overflow:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:var(--r);padding:8px;background:#f9fafb">
+      <table class="miniTable" style="width:100%">
+        <thead>
+          <tr style="background:#f3f4f6;">
+            <th style="min-width:140px;padding:10px 12px;border-radius:8px 0 0 8px">模考</th>
+            ${subs.map(s => `<th class="right" style="min-width:90px;padding:10px 12px">${escapeHtml(s.key)}<div class="muted">/${s.max}</div></th>`).join("")}
+            <th class="right" style="min-width:90px;padding:10px 12px">总分</th>
+            <th style="min-width:90px;padding:10px 12px;border-radius:0 8px 8px 0">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${mocks.map(m => {
+        return `
+              <tr class="miniRow" style="margin-bottom:6px">
+                <td style="padding:10px 12px"><b>${escapeHtml(m.name)}</b></td>
+                ${subs.map(s => {
+          const v = Number((m.scores || {})[s.key] || 0);
+          return `<td class="right" style="padding:10px 12px">
+                    <input data-mock="${m.id}" data-sub="${escapeAttr(s.key)}" type="number" min="0" max="${s.max}" value="${v}" style="padding:8px 12px;text-align:right;border-radius:8px;border:1px solid var(--line);width:100%;background:#fff"/>
+                  </td>`;
+        }).join("")}
+                <td class="right" style="padding:10px 12px"><span class="mono" style="font-weight:500">${m.total || 0}</span></td>
+                <td style="padding:10px 12px"><button class="btn danger" data-act="delMock" data-id="${m.id}" style="padding:8px 12px;border-radius:8px">删除</button></td>
+              </tr>
+            `;
+      }).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+      const st = mockStats();
+      const sum = subjectMaxSum();
+      const statLine = (st.n === 0) ? "" : `
+    <div class="sep" style="margin-top:12px"></div>
+    <div class="hint" style="padding:10px;border-radius:8px;background:#f8fafc;border:1px solid var(--line)">
+      统计（总分 / 满分 ${sum}）：均值 <span class="mono">${Math.round(st.mean)}</span> · 波动 <span class="mono">${st.std.toFixed(1)}</span> · 区间 <span class="mono">${st.min}~${st.max}</span>
+    </div>
+  `;
+      wrap.innerHTML += statLine;
+
+      wrap.querySelectorAll("input[data-mock]").forEach(inp => {
+        inp.addEventListener("input", () => {
+          const mid = inp.getAttribute("data-mock");
+          const sub = inp.getAttribute("data-sub");
+          const m = appState.mocks.find(x => x.id === mid);
+          if (!m) return;
+          const max = Number(appState.subjects.find(s => s.key === sub)?.max || 999);
+          const v = clamp(Number(inp.value || 0), 0, max);
+          m.scores = m.scores || {};
+          m.scores[sub] = v;
+          saveState();
+          renderAll();
+        });
+      });
+
+      wrap.querySelectorAll('button[data-act="delMock"]').forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-id");
+          appState.mocks = appState.mocks.filter(x => x.id !== id);
+          saveState();
+          toast("已删除");
+          renderAll();
+        });
+      });
+    }
+
+    /* =========================
+       Eval
+       ========================= */
+    function renderEvalPage() {
+      const st = mockStats();
+      const sum = subjectMaxSum();
+
+      $("evalSummary").innerHTML = st.n === 0
+        ? `尚未录入模考：请先去「模考」页录入。`
+        : `基于 <span class="badge good">${st.n} 次模考</span>（满分 <span class="mono">${sum}</span>），均值 <span class="mono">${Math.round(st.mean)}</span>，波动 <span class="mono">${st.std.toFixed(1)}</span>，区间 <span class="mono">${st.min}~${st.max}</span>。`;
+
+      const wrap = $("evalList");
+      if (appState.targets.length === 0) {
+        wrap.innerHTML = `<div class="hint">没有目标学校可评估。去「筛选」/「目标」添加。</div>`;
+        return;
+      }
+
+      const rows = appState.targets.map(t => {
+        const s = SCHOOLS.find(x => x.id === Number(t.schoolId));
+        if (!s) return null;
+        const thr = schoolThreshold(s);
+        const p = (st.n === 0 || thr === null) ? null : probMeetThreshold(st.mean, st.std, thr);
+        return { t, s, thr, p };
+      }).filter(Boolean);
+
+      let atLeastOne = null;
+      if (st.n > 0) {
+        atLeastOne = 1;
+        rows.forEach(x => {
+          atLeastOne *= (1 - (x.p ?? 0));
+        });
+        atLeastOne = 1 - atLeastOne;
+      }
+
+      rows.sort((a, b) => {
+        if (st.n > 0) return (a.p ?? 0) - (b.p ?? 0);
+        return (b.thr - a.thr);
+      });
+
+      const header = st.n === 0 ? "" : `
+    <div class="school">
+      <div class="row">
+        <div>
+          <h3>整体指标</h3>
+          <div class="meta">独立性假设下的“至少达成一所目标”的合成概率（仅用于展示）。</div>
+        </div>
+        <div class="flex" style="justify-content:flex-end">
+          <span class="badge">至少一所</span> ${probBadge(atLeastOne)}
+        </div>
+      </div>
+    </div>
+    <div class="sep"></div>
+  `;
+
+      const list = rows.map(x => {
+        const pct = (x.p === null) ? 0 : Math.round(x.p * 100);
+        const barPct = clamp(pct, 0, 100);
+        return `
+      <div class="school">
+        <div class="row">
+          <div>
+            <h3>${escapeHtml(x.s.name)}</h3>
+            <div class="meta">标记：<b>${escapeHtml(x.t.tag || "未标记")}</b> · 评估门槛：<span class="mono">${x.thr === null ? "—" : x.thr}</span></div>
+          </div>
+          <div class="flex" style="justify-content:flex-end">
+            <span class="badge">达成</span> ${probBadge(x.p)}
+          </div>
+        </div>
+        <div>
+          <div class="bar"><div style="width:${barPct}%;"></div></div>
+          <div class="hint" style="margin-top:8px">${x.t.note ? ("备注：" + escapeHtml(x.t.note)) : ""}</div>
+        </div>
+      </div>
+    `;
+      }).join("");
+
+      wrap.innerHTML = header + list;
+    }
+
+    /* =========================
+       Navigation
+       ========================= */
+    function setPage(page) {
+      appState.page = page;
+      document.querySelectorAll(".tab").forEach(t => {
+        t.classList.toggle("on", t.getAttribute("data-page") === page);
+      });
+      ["targets", "filter", "mocks", "eval"].forEach(p => {
+        document.getElementById("page-" + p).style.display = (p === page) ? "" : "none";
+      });
+
+      $("subtitle").textContent =
+        page === "targets" ? "目标：跟踪清单与标记"
+          : page === "filter" ? "筛选：推荐学校池（加入目标）"
+            : page === "mocks" ? "模考：科目结构与多次录入"
+              : "评估：目标达成可能性";
+
+      if (page === "targets") renderTargetsPage();
+      if (page === "filter") renderFilter();
+      if (page === "mocks") renderMocksPage();
+      if (page === "eval") renderEvalPage();
+
+      saveState();
+    }
+
+    /* =========================
+       Bind
+       ========================= */
+    function bind() {
+      $("sheetClose").addEventListener("click", closeSheet);
+      $("backdrop").addEventListener("click", (e) => { if (e.target === $("backdrop")) closeSheet(); });
+      window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet(); });
+
+      document.querySelectorAll(".tab").forEach(t => {
+        t.addEventListener("click", () => setPage(t.getAttribute("data-page")));
+      });
+
+      $("btnHelp").addEventListener("click", () => {
+        openSheet("使用方式", "目标学校跟踪 + 模考评估", `
+      <ol>
+        <li>先在「目标」页明确：你要追踪哪些学校（冲/稳/保）。</li>
+        <li>去「筛选」页调整区/初中等条件，把学校加入目标。</li>
+        <li>去「模考」页录入多次模考。</li>
+        <li>在「评估」页查看每个目标的达成概率估算。</li>
+      </ol>
+      <div class="sep"></div>
+      <p class="hint"><b>说明：</b>名额与分数线为真实数据；概率模型建议按位次/排名建模并做批次规则模拟。</p>
+    `);
+      });
+
+      $("btnExplainZKMode").addEventListener("click", () => {
+        openSheet("上海中考模式（大致逻辑）", "用于产品引导文案（概览）", `
+      <p class="hint">
+        <b>核心思路：</b>把“复杂规则”拆成「批次顺序 + 志愿数量 + 资格条件」三件事。
+      </p>
+      <div class="sep"></div>
+      <div class="hint"><b>一、三大录取批次（按顺序）</b></div>
+      <ul>
+        <li><b>自主招生：</b>市实验/市特色等自招；体艺骨干等（需资格）；国际课程/合作办学通常另有流程；中职校自主招生（中本贯通/五年一贯制/中高职贯通/提前招生等）。</li>
+        <li><b>名额分配综合评价：</b>包含<b>到区</b>与<b>到校</b>（到校通常对“本校在籍在读满3年的应届生”等有资格限制）。</li>
+        <li><b>统一招生：</b>面向完成中招报名的学生，通常设置多志愿（如 1-15 志愿）+ 征求志愿。</li>
+      </ul>
+      <div class="sep"></div>
+      <div class="hint"><b>二、志愿填报节奏（常见）</b></div>
+      <ul>
+        <li>一般在学业考试后、成绩发布前：线上填报 + 线下确认。</li>
+        <li>若在前一批次已被录取，后一批次志愿将自然失效。</li>
+      </ul>
+      <div class="sep"></div>
+      <p class="hint">
+        <b>产品落地建议：</b>把每个目标学校拆成“可参与的批次/志愿栏位/资格限制/历史分数线/名额数量”，让家长一眼看懂“我能报什么、怎么报、概率如何”。
+      </p>
+    `);
+      });
+
+      $("btnExplainProfile").addEventListener("click", () => {
+        openSheet("为什么要选当前初中？", "到校名额依赖初中维度", `
+      <ul>
+        <li>“到校”名额按<b>初中</b>分配到高中。</li>
+        <li>同区同分，不同初中可冲的目标不同。</li>
+      </ul>
+    `);
+      });
+
+      $("btnExplainScore").addEventListener("click", () => {
+        openSheet("概率与门槛说明", "模型口径", `
+      <ul>
+        <li>用模考总分样本估计均值/波动。</li>
+        <li>评估门槛 = 统一最低分 + 波动修正。</li>
+        <li>估算 P(总分 ≥ 评估门槛)。</li>
+      </ul>
+    `);
+      });
+
+      $("btnExplainEval").addEventListener("click", () => {
+        openSheet("评估页说明", "怎么用它？", `
+      <ul>
+        <li>单校：看“达成概率”随模考变化。</li>
+        <li>整体：给“至少一所目标达成”的合成概率。</li>
+      </ul>
+    `);
+      });
+
+      $("btnExport").addEventListener("click", () => {
+        const text = JSON.stringify(appState, null, 2);
+        navigator.clipboard?.writeText(text).then(() => {
+          toast("已复制当前数据 JSON（含目标与模考）");
+        }).catch(() => {
+          openSheet("导出数据（JSON）", "浏览器不允许自动复制，手动复制即可。", `<textarea class="mono" style="width:100%;height:280px">${text}</textarea>`);
+        });
+      });
+
+      // filter inputs
+      $("district").addEventListener("change", () => {
+        appState.profile.district = $("district").value;
+        renderMiddleSchools();
+        saveState();
+        renderAll();
+      });
+      $("juniorType").addEventListener("change", () => {
+        appState.profile.juniorType = $("juniorType").value;
+        saveState(); renderAll();
+      });
+      $("middleSchool").addEventListener("change", () => {
+        appState.profile.middleSchoolId = $("middleSchool").value;
+        saveState(); renderAll();
+      });
+      ["scoreStable", "scoreHigh", "scoreLow"].forEach(id => {
+        $(id).addEventListener("input", () => {
+          appState.profile.stable = Number($("scoreStable").value || 0);
+          appState.profile.high = Number($("scoreHigh").value || 0);
+          appState.profile.low = Number($("scoreLow").value || 0);
+          saveState(); renderAll();
+        });
+      });
+
+      $("schoolType").addEventListener("change", () => { saveState(); renderAll(); });
+
+      $("pillOnlyHaveQuota").addEventListener("click", () => {
+        appState.onlyHaveQuota = !appState.onlyHaveQuota;
+        $("pillOnlyHaveQuota").classList.toggle("on", appState.onlyHaveQuota);
+        saveState();
+        renderAll();
+      });
+
+      // targets clear
+      $("btnClearTargets").addEventListener("click", () => {
+        if (appState.targets.length === 0) { toast("目标清单为空"); return; }
+        openSheet("清空目标学校？", "将移除全部目标（本地存储）", `
+      <p class="hint">当前目标数：<b>${appState.targets.length}</b></p>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn" id="btnCancel">取消</button>
+        <button class="btn danger" id="btnOK">确认清空</button>
+      </div>
+    `);
+        setTimeout(() => {
+          $("btnCancel").onclick = closeSheet;
+          $("btnOK").onclick = () => {
+            appState.targets = [];
+            saveState();
+            closeSheet();
+            toast("已清空");
+            renderAll();
+          };
+        }, 0);
+      });
+
+      // mocks
+      $("btnAddMock").addEventListener("click", addMock);
+    }
+
+    /* =========================
+       Render all
+       ========================= */
+    function renderAll() {
+      // filter页面依赖select渲染
+      if ($("district")) renderDistrictSelect();
+      if (appState.page === "targets") renderTargetsPage();
+      if (appState.page === "filter") renderFilter();
+      if (appState.page === "mocks") renderMocksPage();
+      if (appState.page === "eval") renderEvalPage();
+    }
+
+    /* =========================
+       Init
+       ========================= */
+    (function init() {
+      // filter controls init (即使不在筛选页也先初始化，避免切换时报错)
+      renderDistrictSelect();
+      $("district").value = appState.profile.district;
+      updateSubjectSumLine();
+      renderMiddleSchools();
+
+      bind();
+      setPage(appState.page || "targets");
+      renderAll();
+    })();
+  </script>
+</body>
+
+</html>
