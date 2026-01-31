@@ -5,77 +5,200 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { Info, User, School } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { District, HighSchool, HighSchoolType, MiddleSchool, StudentProfile, TargetSchool } from '@/lib/types';
 import { districts, highSchoolTypes } from '@/mocks/data';
-import { createId, loadStudentProfile, loadTargets, saveStudentProfile, saveTargets } from '@/lib/appData';
-import { listMiddleSchools, listSchools } from '@/lib/dataClient';
+import { createId, loadStudentProfile, loadTargets, saveStudentProfile, saveTargets, loadMiddleSchools, saveMiddleSchools, loadFilterSelects, saveFilterSelects } from '@/lib/appData';
+import type { FilterSelectCache } from '@/lib/appData';
+import { listSchools, getStudentProfile, saveStudentProfile as saveStudentProfileApi, getFilterOptions } from '@/lib/dataClient';
+import { levelFromProbability } from '@/lib/evaluation';
 
 export default function FilterPage() {
 
-  const [profile, setProfile] = useState<StudentProfile>(() => {
-    const p = loadStudentProfile();
-    // Validate/Fix district if it contains "区" or "县" which might be legacy data
-    if (p.district && !districts.includes(p.district)) {
-      const clean = p.district.replace(/[区县]/g, '') as District;
-      if (districts.includes(clean)) {
-        p.district = clean;
-        saveStudentProfile(p);
+  // 获取学生画像数据
+  const { data: profileData } = useQuery({
+    queryKey: ['studentProfile'],
+    queryFn: getStudentProfile,
+    retry: false,
+    refetchOnMount: true, // 页面刷新时重新获取数据
+    refetchOnWindowFocus: false, // 窗口聚焦时不重新获取数据
+    staleTime: 300000, // 5分钟内数据视为新鲜
+  });
+
+  // 加载缓存的初中学校列表
+  const [cachedMiddleSchools, setCachedMiddleSchools] = useState<MiddleSchool[]>(() => {
+    return loadMiddleSchools();
+  });
+
+  // 初始化一个空的学生画像
+  const [profile, setProfile] = useState<StudentProfile>(() => ({
+    district: null,
+    juniorType: null,
+    middleSchoolId: null,
+    stableScore: null,
+    highScore: null,
+    lowScore: null,
+  }));
+
+  const [filterSelects, setFilterSelects] = useState<FilterSelectCache>(() => loadFilterSelects());
+
+  // 当从后端获取到学生画像数据时，更新本地状态和缓存
+  useEffect(() => {
+    if (profileData?.data) {
+      const backendProfile = profileData.data;
+      const updatedProfile: StudentProfile = {
+        district: backendProfile.district || null,
+        juniorType: backendProfile.junior_type || null,
+        middleSchoolId: backendProfile.middle_school_id || null,
+        stableScore: backendProfile.stable_score || null,
+        highScore: backendProfile.high_score || null,
+        lowScore: backendProfile.low_score || null,
+      };
+      setProfile(updatedProfile);
+      saveStudentProfile(updatedProfile);
+    } else {
+      // 如果后端没有数据，从本地存储加载
+      const localProfile = loadStudentProfile();
+      // Validate/Fix district if it contains "区" or "县" which might be legacy data
+      if (localProfile.district && !districts.includes(localProfile.district)) {
+        const clean = localProfile.district.replace(/[区县]/g, '') as District;
+        if (districts.includes(clean)) {
+          localProfile.district = clean;
+          saveStudentProfile(localProfile);
+        }
+      }
+      setProfile(localProfile);
+    }
+  }, [profileData]);
+
+  const {
+    data: filterOptionsResp,
+  } = useQuery({
+    queryKey: ['filter:options'],
+    queryFn: getFilterOptions,
+    retry: false,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 3600000,
+  });
+
+  useEffect(() => {
+    if (filterOptionsResp?.data) {
+      const { districts: districtsFromApi, junior_types: juniorTypesFromApi, middle_schools: middleSchoolsFromApi } = filterOptionsResp.data;
+      const normalizedSelects: FilterSelectCache = {
+        districts: districtsFromApi ?? [],
+        juniorTypes: juniorTypesFromApi ?? [],
+      };
+
+      setFilterSelects(normalizedSelects);
+      saveFilterSelects(normalizedSelects);
+
+      if (middleSchoolsFromApi) {
+        saveMiddleSchools(middleSchoolsFromApi);
+        setCachedMiddleSchools(middleSchoolsFromApi);
       } else {
-        // If still invalid, reset or keep (but it won't match anything)
-        // For safety, let's keep it but it will likely show no results until user changes it.
-        // Or we could reset it:
-        // p.district = null;
+        // Clear cache when backend explicitly reports no middle schools
+        saveMiddleSchools([]);
+        setCachedMiddleSchools([]);
       }
     }
-    return p;
+  }, [filterOptionsResp?.data]);
+
+
+
+  // 保存学生画像数据到后端的mutation
+  const saveProfileMutation = useMutation({
+    mutationFn: saveStudentProfileApi,
+    onSuccess: (data) => {
+      console.log('Student profile saved successfully:', data);
+    },
+    onError: (error) => {
+      console.error('Error saving student profile:', error);
+    },
   });
   const [targets, setTargets] = useState<TargetSchool[]>(() => loadTargets());
   const [filters, setFilters] = useState<{ q: string; type: HighSchoolType | '全部' }>(() => ({
     q: '',
     type: '全部',
   }));
+  const [middleSchoolSearch, setMiddleSchoolSearch] = useState('');
 
-  const schoolFilters: {
-    q: string;
-    district: District | '全部';
-    type: HighSchoolType | '全部';
-    studentDistrict: District | null;
-    middleSchoolId: string | null;
-  } = {
+  const schoolFilters = useMemo(() => ({
     q: filters.q,
-    type: filters.type,
     district: (profile.district ?? '全部') as District | '全部',
+    type: filters.type,
     studentDistrict: profile.district,
     middleSchoolId: profile.middleSchoolId,
-  };
+  }), [filters, profile.district, profile.middleSchoolId]);
+
+  const schoolFiltersRef = useRef(schoolFilters);
+  schoolFiltersRef.current = schoolFilters;
 
   const updateProfile = (patch: Partial<StudentProfile>) => {
     setProfile((prev) => {
       const next = { ...prev, ...patch };
       saveStudentProfile(next);
+
+      // 保存到后端
+      saveProfileMutation.mutate({
+        district: next.district || '',
+        junior_type: next.juniorType || '',
+        middle_school_id: next.middleSchoolId || null,
+        stable_score: next.stableScore || 0,
+        high_score: next.highScore || 0,
+        low_score: next.lowScore || 0,
+      });
+
       return next;
     });
   };
 
   const {
     data: schoolsResp,
+    refetch: refetchSchools,
   } = useQuery({
-    queryKey: ['schools:list', schoolFilters],
-    queryFn: () => listSchools(schoolFilters),
+    queryKey: ['schools:list'],
+    queryFn: () => listSchools(schoolFiltersRef.current),
     retry: false,
+    enabled: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
-  const { data: middleSchoolsResp } = useQuery({
-    queryKey: ['middleSchools:list', { district: profile.district, type: profile.juniorType }],
-    queryFn: () => listMiddleSchools({ district: profile.district, type: profile.juniorType }),
-    enabled: Boolean(profile.district) && Boolean(profile.juniorType),
-  });
+  useEffect(() => {
+    if (refetchSchools) {
+      refetchSchools();
+    }
+  }, [refetchSchools]);
+
+  // 根据当前筛选条件从缓存中获取初中学校列表
+  const filteredMiddleSchools = useMemo(() => {
+    // 首先从缓存的完整列表中筛选
+    let filtered = cachedMiddleSchools;
+
+    // 根据当前的区县和初中类型进行筛选
+    if (profile.district) {
+      filtered = filtered.filter(ms => ms.district === profile.district);
+    }
+    if (profile.juniorType) {
+      filtered = filtered.filter(ms => ms.type === profile.juniorType);
+    }
+
+    // 根据搜索词进行筛选
+    if (middleSchoolSearch) {
+      const searchTerm = middleSchoolSearch.toLowerCase();
+      filtered = filtered.filter(ms =>
+        ms.name.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return filtered;
+  }, [cachedMiddleSchools, profile.district, profile.juniorType, middleSchoolSearch]);
 
   const schools = (schoolsResp?.data ?? []) as HighSchool[];
-  const middleSchools = (middleSchoolsResp?.data ?? []) as MiddleSchool[];
   const targetIdSet = useMemo(() => new Set(targets.map((x) => x.schoolId)), [targets]);
 
   const addTarget = (schoolId: string) => {
@@ -98,16 +221,16 @@ export default function FilterPage() {
         <SectionCard gap="xs" className="profile-card" contentClassName="px-4 pb-4">
           <div className="flex items-start justify-between pb-0">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50">
-                <User className="h-3.5 w-3.5 text-foreground" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50">
+                <User className="h-4 w-4 text-foreground" />
               </div>
               <div>
                 <div className="font-bold text-base">孩子画像（含当前初中）</div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">用于到校名额匹配与推荐解释。</div>
+
               </div>
             </div>
-            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full text-muted-foreground">
-              <Info className="h-3 w-3" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground">
+              <Info className="h-4 w-4" />
             </Button>
           </div>
 
@@ -129,11 +252,15 @@ export default function FilterPage() {
                   <SelectValue placeholder="请选择所在区" />
                 </SelectTrigger>
                 <SelectContent>
-                  {districts.map((d) => (
-                    <SelectItem key={d} value={d}>
-                      {d}
-                    </SelectItem>
-                  ))}
+                  {filterSelects.districts.length === 0 ? (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">选项加载中</div>
+                  ) : (
+                    filterSelects.districts.map((d) => (
+                      <SelectItem key={d} value={d}>
+                        {d}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </FormField>
@@ -151,8 +278,15 @@ export default function FilterPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="公办">公办</SelectItem>
-                  <SelectItem value="民办">民办</SelectItem>
+                  {filterSelects.juniorTypes.length === 0 ? (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">选项加载中</div>
+                  ) : (
+                    filterSelects.juniorTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </FormField>
@@ -161,6 +295,7 @@ export default function FilterPage() {
                 value={profile.middleSchoolId ?? ''}
                 onValueChange={(v) => {
                   updateProfile({ middleSchoolId: v });
+                  setMiddleSchoolSearch('');
                 }}
                 disabled={!profile.district || !profile.juniorType}
               >
@@ -168,11 +303,27 @@ export default function FilterPage() {
                   <SelectValue placeholder="请选择当前初中学校" />
                 </SelectTrigger>
                 <SelectContent>
-                  {middleSchools.map((ms) => (
-                    <SelectItem key={ms.id} value={ms.id}>
-                      {ms.name}
-                    </SelectItem>
-                  ))}
+                  <div className="p-2">
+                    <Input
+                      placeholder="搜索初中学校"
+                      value={middleSchoolSearch}
+                      onChange={(e) => setMiddleSchoolSearch(e.target.value)}
+                      className="w-full"
+                      inputMode="search"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                    />
+                  </div>
+                  {filteredMiddleSchools.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground">没有找到匹配的初中学校</div>
+                  ) : (
+                    filteredMiddleSchools.map((ms) => (
+                      <SelectItem key={ms.id} value={ms.id}>
+                        {ms.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </FormField>
@@ -239,6 +390,12 @@ export default function FilterPage() {
                 </SelectContent>
               </Select>
             </FormField>
+
+            <div className="pt-1.5">
+              <Button className="w-full" size="default" onClick={() => refetchSchools()}>
+                搜索推荐
+              </Button>
+            </div>
           </div>
         </SectionCard>
 
@@ -246,19 +403,19 @@ export default function FilterPage() {
           <SectionCard gap="xs" className="profile-card" contentClassName="px-4 pb-4">
             <div className="flex items-start justify-between pb-0">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50">
-                  <School className="h-3.5 w-3.5 text-foreground" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50">
+                  <School className="h-4 w-4 text-foreground" />
                 </div>
                 <div>
                   <div className="font-bold text-base">推荐学校池</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">"加入目标"跟踪达成概率</div>
+
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full text-muted-foreground">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="12"
-                  height="12"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -279,63 +436,68 @@ export default function FilterPage() {
               {schools.map((s) => {
                 const inTargets = targetIdSet.has(s.id);
                 const stats = s.stats;
+                const probability = stats?.probability ?? 0;
+                const p = probability / 100;
+                const level = levelFromProbability(p);
                 return (
                   <Card key={s.id} className="shadow-sm">
                     <CardContent className="p-2 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div className="font-semibold text-base truncate">{s.name}</div>
-                          <div className="text-[10px] text-muted-foreground mt-0.5">
-                            区域：{s.district} · 类型：{s.type}
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {s.district} · {s.type}
+                            {s.accommodation && ` · ${s.accommodation}`}
                           </div>
                         </div>
                         {stats?.probability && (
-                          <div className="px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] font-medium whitespace-nowrap flex-shrink-0">
-                            模考概率 {stats.probability}%
+                          <div className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${level === 'high' ? 'bg-green-100 text-green-700' : level === 'mid' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {level === 'high' ? '稳' : level === 'mid' ? '冲' : '保'}
                           </div>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-1.5">
+                      <div className="grid grid-cols-3 gap-1.5">
                         <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">{profile.district ? `${profile.district}到区` : '到区分数'}</span>
-                          <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreToDistrict ?? '无数据'}</span>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">自招名额</span>
+                          <span className="text-sm font-semibold flex-1 text-center">{stats?.quotaAutonomous ?? 0}</span>
                         </div>
                         <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">到校分数</span>
-                          <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreToSchool ?? '无数据'}</span>
-                        </div>
-                        <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">到区名额</span>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">到区名额</span>
                           <span className="text-sm font-semibold flex-1 text-center">{stats?.quotaToDistrict ?? 0}</span>
                         </div>
                         <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                          <span className="text-[10px] text-muted-foreground whitespace-nowrap">到校名额</span>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">到校名额</span>
                           <span className="text-sm font-semibold flex-1 text-center">{stats?.quotaToSchool ?? 0}</span>
                         </div>
-                      </div>
-
-                      <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-slate-300 rounded-full"
-                          style={{ width: `${stats?.probability ?? 0}%` }}
-                        />
+                        <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">到区分数</span>
+                          <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreToDistrict ?? '无数据'}</span>
+                        </div>
+                        <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">到校分数</span>
+                          <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreToSchool ?? '无数据'}</span>
+                        </div>
+                        <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">统招分数</span>
+                          <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreUnified ?? '无数据'}</span>
+                        </div>
                       </div>
 
                       <div className="flex items-center justify-between pt-0.5">
-                        <div className="text-[10px] text-muted-foreground">
-                          模考概率基于历史成绩分布估算
+                        <div className="text-xs text-muted-foreground">
+                          推荐度基于学生画像与学校录取数据
                         </div>
                         <div className="flex gap-1.5">
-                          <Button variant="outline" size="sm" className="h-6 text-[10px] px-2.5 rounded-full">
-                            详情
+                          <Button variant="outline" size="sm" asChild className="h-8 text-xs px-2.5 rounded-full">
+                            <Link to={`/schools/${s.id}`}>详情</Link>
                           </Button>
                           <Button
                             size="sm"
                             disabled={inTargets}
                             onClick={() => addTarget(s.id)}
                             variant={inTargets ? "secondary" : "default"}
-                            className={`h-6 text-[10px] px-2.5 rounded-full ${inTargets ? 'text-green-700 bg-green-100 hover:bg-green-200' : ''}`}
+                            className={`h-8 text-xs px-2.5 rounded-full ${inTargets ? 'text-green-700 bg-green-100 hover:bg-green-200' : ''}`}
                           >
                             {inTargets ? '已在目标' : '加入目标'}
                           </Button>

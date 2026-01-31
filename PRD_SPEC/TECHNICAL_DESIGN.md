@@ -657,15 +657,14 @@ backend/
 #### 高中学校表（schools）
 | 字段名     | 数据类型     | 描述                                 | 约束                      |
 | ---------- | ------------ | ------------------------------------ | ------------------------- |
-| id         | UUID         | 学校ID（主键）                       | PRIMARY KEY               |
-| name       | VARCHAR(255) | 学校名称                             | NOT NULL                  |
-| code       | VARCHAR(20)  | 学校代码                             | UNIQUE NOT NULL           |
+| code       | VARCHAR(20)  | 学校代码（主键）                     | PRIMARY KEY               |
+| name       | VARCHAR(100) | 学校名称                             | NOT NULL                  |
 | district   | VARCHAR(50)  | 所在区县                             | NOT NULL                  |
 | type       | VARCHAR(20)  | 学校类型（市重点、区重点、一般高中） | NOT NULL                  |
 | full_type  | VARCHAR(100) | 完整学校类型描述                     |                           |
-| address    | VARCHAR(255) | 学校地址                             |                           |
-| phone      | VARCHAR(50)  | 联系电话                             |                           |
-| email      | VARCHAR(255) | 电子邮箱                             |                           |
+| address    | VARCHAR(200) | 学校地址                             |                           |
+| phone      | VARCHAR(20)  | 联系电话                             |                           |
+| email      | VARCHAR(100) | 电子邮箱                             |                           |
 | features   | TEXT         | 学校特色                             |                           |
 | faculty    | TEXT         | 师资力量                             |                           |
 | note       | TEXT         | 备注信息                             |                           |
@@ -676,8 +675,7 @@ backend/
 | 字段名      | 数据类型     | 描述                       | 约束                      |
 | ----------- | ------------ | -------------------------- | ------------------------- |
 | id          | UUID         | 分数线ID（主键）           | PRIMARY KEY               |
-| school_id   | UUID         | 学校ID（外键）             | REFERENCES schools(id)    |
-| school_name | VARCHAR(255) | 学校名称（冗余存储）       | NOT NULL                  |
+| school_code | VARCHAR(20)  | 学校代码（外键）           | REFERENCES schools(code)  |
 | district    | VARCHAR(50)  | 区县名称                   | NOT NULL                  |
 | score       | DECIMAL(5,1) | 录取分数线                 | NOT NULL                  |
 | score_upper | DECIMAL(5,1) | 分数上限（达成率判断依据） |                           |
@@ -689,90 +687,86 @@ backend/
 #### 初中学校表（middle_schools）
 | 字段名     | 数据类型     | 描述                  | 约束                      |
 | ---------- | ------------ | --------------------- | ------------------------- |
-| id         | UUID         | 初中学校ID（主键）    | PRIMARY KEY               |
-| name       | VARCHAR(255) | 初中学校名称          | NOT NULL                  |
+| code       | VARCHAR(20)  | 学校代码（主键）      | PRIMARY KEY               |
+| name       | VARCHAR(100) | 初中学校名称          | NOT NULL                  |
 | district   | VARCHAR(50)  | 所在区县              | NOT NULL                  |
 | type       | VARCHAR(20)  | 学校类型（公办/民办） | NOT NULL                  |
 | created_at | TIMESTAMP    | 创建时间              | DEFAULT CURRENT_TIMESTAMP |
 | updated_at | TIMESTAMP    | 更新时间              | DEFAULT CURRENT_TIMESTAMP |
 
 #### 到校名额及录取分数线表（school_seats）
-| 字段名                    | 数据类型     | 描述                     | 约束                          |
-| ------------------------- | ------------ | ------------------------ | ----------------------------- |
-| id                        | UUID         | 名额ID（主键）           | PRIMARY KEY                   |
-| middle_school_id          | UUID         | 初中学校ID（外键）       | REFERENCES middle_schools(id) |
-| middle_school_name        | VARCHAR(255) | 初中学校名称（冗余存储） | NOT NULL                      |
-| middle_school_district    | VARCHAR(50)  | 初中所属区               | NOT NULL                      |
-| high_school_id            | UUID         | 高中学校ID（外键）       | REFERENCES schools(id)        |
-| high_school_name          | VARCHAR(255) | 高中学校名称（冗余存储） | NOT NULL                      |
-| high_school_district      | VARCHAR(50)  | 高中所属区               | NOT NULL                      |
-| seats                     | INTEGER      | 到校名额数量             | NOT NULL                      |
-| year                      | INTEGER      | 年份                     | NOT NULL                      |
-| total_admission_score     | DECIMAL(5,1) | 到校总分分数线           |                               |
-| chinese_admission_score   | DECIMAL(5,1) | 语文分数线               |                               |
-| math_admission_score      | DECIMAL(5,1) | 数学分数线               |                               |
-| english_admission_score   | DECIMAL(5,1) | 英语分数线               |                               |
-| physics_admission_score   | DECIMAL(5,1) | 物理分数线               |                               |
-| chemistry_admission_score | DECIMAL(5,1) | 化学分数线               |                               |
-| politics_admission_score  | DECIMAL(5,1) | 道法分数线               |                               |
-| history_admission_score   | DECIMAL(5,1) | 历史分数线               |                               |
-| created_at                | TIMESTAMP    | 创建时间                 | DEFAULT CURRENT_TIMESTAMP     |
-| updated_at                | TIMESTAMP    | 更新时间                 | DEFAULT CURRENT_TIMESTAMP     |
+| 字段名                    | 数据类型     | 描述                 | 约束                            |
+| ------------------------- | ------------ | -------------------- | ------------------------------- |
+| id                        | UUID         | 名额ID（主键）       | PRIMARY KEY                     |
+| middle_school_code        | VARCHAR(20)  | 初中学校代码（外键） | REFERENCES middle_schools(code) |
+| high_school_code          | VARCHAR(20)  | 高中学校代码（外键） | REFERENCES schools(code)        |
+| seats                     | INTEGER      | 到校名额数量         | NOT NULL                        |
+| year                      | INTEGER      | 年份                 | NOT NULL                        |
+| total_admission_score     | DECIMAL(5,1) | 到校总分分数线       |                                 |
+| chinese_admission_score   | DECIMAL(5,1) | 语文分数线           |                                 |
+| math_admission_score      | DECIMAL(5,1) | 数学分数线           |                                 |
+| english_admission_score   | DECIMAL(5,1) | 英语分数线           |                                 |
+| physics_admission_score   | DECIMAL(5,1) | 物理分数线           |                                 |
+| chemistry_admission_score | DECIMAL(5,1) | 化学分数线           |                                 |
+| politics_admission_score  | DECIMAL(5,1) | 道法分数线           |                                 |
+| history_admission_score   | DECIMAL(5,1) | 历史分数线           |                                 |
+| created_at                | TIMESTAMP    | 创建时间             | DEFAULT CURRENT_TIMESTAMP       |
+| updated_at                | TIMESTAMP    | 更新时间             | DEFAULT CURRENT_TIMESTAMP       |
 
 #### 到区名额及录取分数线表（district_seats）
-| 字段名                    | 数据类型     | 描述                     | 约束                      |
-| ------------------------- | ------------ | ------------------------ | ------------------------- |
-| id                        | UUID         | 名额ID（主键）           | PRIMARY KEY               |
-| district                  | VARCHAR(50)  | 区县名称                 | NOT NULL                  |
-| high_school_id            | UUID         | 高中学校ID（外键）       | REFERENCES schools(id)    |
-| high_school_name          | VARCHAR(255) | 高中学校名称（冗余存储） | NOT NULL                  |
-| high_school_district      | VARCHAR(50)  | 高中所属区               | NOT NULL                  |
-| seats                     | INTEGER      | 到区名额数量             | NOT NULL                  |
-| year                      | INTEGER      | 年份                     | NOT NULL                  |
-| total_admission_score     | DECIMAL(5,1) | 到区总分分数线           |                           |
-| chinese_admission_score   | DECIMAL(5,1) | 语文分数线               |                           |
-| math_admission_score      | DECIMAL(5,1) | 数学分数线               |                           |
-| english_admission_score   | DECIMAL(5,1) | 英语分数线               |                           |
-| physics_admission_score   | DECIMAL(5,1) | 物理分数线               |                           |
-| chemistry_admission_score | DECIMAL(5,1) | 化学分数线               |                           |
-| politics_admission_score  | DECIMAL(5,1) | 道法分数线               |                           |
-| history_admission_score   | DECIMAL(5,1) | 历史分数线               |                           |
-| created_at                | TIMESTAMP    | 创建时间                 | DEFAULT CURRENT_TIMESTAMP |
-| updated_at                | TIMESTAMP    | 更新时间                 | DEFAULT CURRENT_TIMESTAMP |
+| 字段名                    | 数据类型     | 描述                 | 约束                      |
+| ------------------------- | ------------ | -------------------- | ------------------------- |
+| id                        | UUID         | 名额ID（主键）       | PRIMARY KEY               |
+| district                  | VARCHAR(50)  | 区县名称             | NOT NULL                  |
+| high_school_code          | VARCHAR(20)  | 高中学校代码（外键） | REFERENCES schools(code)  |
+| seats                     | INTEGER      | 到区名额数量         | NOT NULL                  |
+| year                      | INTEGER      | 年份                 | NOT NULL                  |
+| total_admission_score     | DECIMAL(5,1) | 到区总分分数线       |                           |
+| chinese_admission_score   | DECIMAL(5,1) | 语文分数线           |                           |
+| math_admission_score      | DECIMAL(5,1) | 数学分数线           |                           |
+| english_admission_score   | DECIMAL(5,1) | 英语分数线           |                           |
+| physics_admission_score   | DECIMAL(5,1) | 物理分数线           |                           |
+| chemistry_admission_score | DECIMAL(5,1) | 化学分数线           |                           |
+| politics_admission_score  | DECIMAL(5,1) | 道法分数线           |                           |
+| history_admission_score   | DECIMAL(5,1) | 历史分数线           |                           |
+| created_at                | TIMESTAMP    | 创建时间             | DEFAULT CURRENT_TIMESTAMP |
+| updated_at                | TIMESTAMP    | 更新时间             | DEFAULT CURRENT_TIMESTAMP |
 
 #### 平行志愿录取分数线表（parallel_admission_scores）
-| 字段名                    | 数据类型     | 描述                     | 约束                      |
-| ------------------------- | ------------ | ------------------------ | ------------------------- |
-| id                        | UUID         | ID（主键）               | PRIMARY KEY               |
-| high_school_id            | UUID         | 高中学校ID（外键）       | REFERENCES schools(id)    |
-| high_school_name          | VARCHAR(255) | 高中学校名称（冗余存储） | NOT NULL                  |
-| district                  | VARCHAR(50)  | 区县名称                 | NOT NULL                  |
-| total_admission_score     | DECIMAL(5,1) | 平行志愿总分分数线       | NOT NULL                  |
-| chinese_admission_score   | DECIMAL(5,1) | 语文分数线               |                           |
-| math_admission_score      | DECIMAL(5,1) | 数学分数线               |                           |
-| english_admission_score   | DECIMAL(5,1) | 英语分数线               |                           |
-| physics_admission_score   | DECIMAL(5,1) | 物理分数线               |                           |
-| chemistry_admission_score | DECIMAL(5,1) | 化学分数线               |                           |
-| politics_admission_score  | DECIMAL(5,1) | 道法分数线               |                           |
-| history_admission_score   | DECIMAL(5,1) | 历史分数线               |                           |
-| year                      | INTEGER      | 年份                     | NOT NULL                  |
-| created_at                | TIMESTAMP    | 创建时间                 | DEFAULT CURRENT_TIMESTAMP |
-| updated_at                | TIMESTAMP    | 更新时间                 | DEFAULT CURRENT_TIMESTAMP |
+| 字段名                    | 数据类型     | 描述                 | 约束                      |
+| ------------------------- | ------------ | -------------------- | ------------------------- |
+| id                        | UUID         | ID（主键）           | PRIMARY KEY               |
+| high_school_code          | VARCHAR(20)  | 高中学校代码（外键） | REFERENCES schools(code)  |
+| district                  | VARCHAR(50)  | 区县名称             | NOT NULL                  |
+| total_admission_score     | DECIMAL(5,1) | 平行志愿总分分数线   | NOT NULL                  |
+| chinese_admission_score   | DECIMAL(5,1) | 语文分数线           |                           |
+| math_admission_score      | DECIMAL(5,1) | 数学分数线           |                           |
+| english_admission_score   | DECIMAL(5,1) | 英语分数线           |                           |
+| physics_admission_score   | DECIMAL(5,1) | 物理分数线           |                           |
+| chemistry_admission_score | DECIMAL(5,1) | 化学分数线           |                           |
+| politics_admission_score  | DECIMAL(5,1) | 道法分数线           |                           |
+| history_admission_score   | DECIMAL(5,1) | 历史分数线           |                           |
+| year                      | INTEGER      | 年份                 | NOT NULL                  |
+| created_at                | TIMESTAMP    | 创建时间             | DEFAULT CURRENT_TIMESTAMP |
+| updated_at                | TIMESTAMP    | 更新时间             | DEFAULT CURRENT_TIMESTAMP |
+
+#### 冗余字段说明
+> 注：为了优化查询性能，建议在实际实现中根据具体查询场景，考虑使用视图或联合查询来获取关联数据，而不是完全依赖冗余字段。对于频繁查询的场景，可以保留必要的冗余字段以提高性能。
 
 #### 用户表（users）
 | 字段名               | 数据类型     | 描述                           | 约束                      |
 | -------------------- | ------------ | ------------------------------ | ------------------------- |
 | id                   | UUID         | 用户ID（主键）                 | PRIMARY KEY               |
 | username             | VARCHAR(50)  | 用户名                         | UNIQUE NOT NULL           |
-| email                | VARCHAR(255) | 邮箱                           | UNIQUE NOT NULL           |
+| email                | VARCHAR(100) | 邮箱                           | UNIQUE NOT NULL           |
 | email_verified       | BOOLEAN      | 邮箱验证状态                   | DEFAULT FALSE             |
-| password_hash        | VARCHAR(255) | 密码哈希                       | NOT NULL                  |
-| password_reset_token | VARCHAR(255) | 密码重置令牌                   |                           |
+| password_hash        | VARCHAR(100) | 密码哈希                       | NOT NULL                  |
+| password_reset_token | VARCHAR(100) | 密码重置令牌                   |                           |
 | login_attempts       | INTEGER      | 登录尝试次数                   | DEFAULT 0                 |
 | last_login_at        | TIMESTAMP    | 最后登录时间                   |                           |
 | created_at           | TIMESTAMP    | 创建时间                       | DEFAULT CURRENT_TIMESTAMP |
 | updated_at           | TIMESTAMP    | 更新时间                       | DEFAULT CURRENT_TIMESTAMP |
-| refresh_token_hash   | VARCHAR(255) | 刷新令牌哈希                   |                           |
+| refresh_token_hash   | VARCHAR(100) | 刷新令牌哈希                   |                           |
 | token_expires_at     | TIMESTAMP    | 令牌过期时间                   |                           |
 | active_sessions      | JSONB        | 活跃会话信息（多设备登录管理） |                           |
 
@@ -782,28 +776,29 @@ backend/
 - 多设备会话建议记录设备指纹与最近活跃时间，并支持撤销单设备会话
 
 #### 学生信息表（student_profiles）
-| 字段名           | 数据类型     | 描述                   | 约束                          |
-| ---------------- | ------------ | ---------------------- | ----------------------------- |
-| id               | UUID         | 学生信息ID（主键）     | PRIMARY KEY                   |
-| user_id          | UUID         | 用户ID（外键）         | REFERENCES users(id) UNIQUE   |
-| district         | VARCHAR(50)  | 所在区县               | NOT NULL                      |
-| junior_type      | VARCHAR(20)  | 初中类型（公办、民办） | NOT NULL                      |
-| middle_school_id | UUID         | 初中学校ID（外键）     | REFERENCES middle_schools(id) |
-| stable_score     | DECIMAL(5,1) | 稳定分                 | NOT NULL                      |
-| high_score       | DECIMAL(5,1) | 上限分                 | NOT NULL                      |
-| low_score        | DECIMAL(5,1) | 下限分                 | NOT NULL                      |
-| created_at       | TIMESTAMP    | 创建时间               | DEFAULT CURRENT_TIMESTAMP     |
-| updated_at       | TIMESTAMP    | 更新时间               | DEFAULT CURRENT_TIMESTAMP     |
+| 字段名             | 数据类型     | 描述                   | 约束                            |
+| ------------------ | ------------ | ---------------------- | ------------------------------- |
+| id                 | UUID         | 学生信息ID（主键）     | PRIMARY KEY                     |
+| user_id            | UUID         | 用户ID（外键）         | REFERENCES users(id) UNIQUE     |
+| district           | VARCHAR(50)  | 所在区县               | NOT NULL                        |
+| junior_type        | VARCHAR(20)  | 初中类型（公办、民办） | NOT NULL                        |
+| middle_school_code | VARCHAR(20)  | 初中学校代码（外键）   | REFERENCES middle_schools(code) |
+| stable_score       | DECIMAL(5,1) | 稳定分                 | NOT NULL                        |
+| high_score         | DECIMAL(5,1) | 上限分                 | NOT NULL                        |
+| low_score          | DECIMAL(5,1) | 下限分                 | NOT NULL                        |
+| created_at         | TIMESTAMP    | 创建时间               | DEFAULT CURRENT_TIMESTAMP       |
+| updated_at         | TIMESTAMP    | 更新时间               | DEFAULT CURRENT_TIMESTAMP       |
 
 #### 目标学校表（target_schools）
-| 字段名      | 数据类型     | 描述                 | 约束                      |
-| ----------- | ------------ | -------------------- | ------------------------- |
-| id          | UUID         | 目标ID（主键）       | PRIMARY KEY               |
-| user_id     | UUID         | 用户ID（外键）       | REFERENCES users(id)      |
-| school_id   | UUID         | 学校ID（外键）       | REFERENCES schools(id)    |
-| school_name | VARCHAR(255) | 学校名称（冗余存储） | NOT NULL                  |
-| created_at  | TIMESTAMP    | 创建时间             | DEFAULT CURRENT_TIMESTAMP |
-| updated_at  | TIMESTAMP    | 更新时间             | DEFAULT CURRENT_TIMESTAMP |
+| 字段名      | 数据类型     | 描述                 | 约束                         |
+| ----------- | ------------ | -------------------- | ---------------------------- |
+| id          | UUID         | 目标ID（主键）       | PRIMARY KEY                  |
+| user_id     | UUID         | 用户ID（外键）       | REFERENCES users(id)         |
+| school_code | VARCHAR(20)  | 学校代码（外键）     | REFERENCES schools(code)     |
+| school_name | VARCHAR(100) | 学校名称（冗余存储） | NOT NULL                     |
+| created_at  | TIMESTAMP    | 创建时间             | DEFAULT CURRENT_TIMESTAMP    |
+| updated_at  | TIMESTAMP    | 更新时间             | DEFAULT CURRENT_TIMESTAMP    |
+|             |              |                      | UNIQUE(user_id, school_code) |
 
 #### 模考记录表（mock_exams）
 | 字段名          | 数据类型     | 描述           | 约束                      |
@@ -825,35 +820,54 @@ backend/
 
 ### 6.2 数据库索引
 
-| 表名                      | 索引字段                               | 索引类型   | 用途                   |
-| ------------------------- | -------------------------------------- | ---------- | ---------------------- |
-| schools                   | district, type                         | 复合索引   | 优化按区域和类型的查询 |
-| score_lines               | school_id, district, year              | 复合索引   | 优化多条件查询         |
-| middle_schools            | district                               | 单字段索引 | 优化按区域的查询       |
-| school_seats              | middle_school_id, high_school_id, year | 复合索引   | 优化多条件查询         |
-| district_seats            | district, high_school_id, year         | 复合索引   | 优化多条件查询         |
-| parallel_admission_scores | high_school_id, district, year         | 复合索引   | 优化多条件查询         |
-| users                     | email, username                        | 唯一索引   | 优化登录查询           |
-| student_profiles          | user_id                                | 唯一索引   | 确保一对一关系         |
-| target_schools            | user_id, school_id                     | 复合索引   | 优化查询               |
-| mock_exams                | user_id, exam_date                     | 复合索引   | 优化按用户和时间的查询 |
+| 表名                      | 索引字段                                   | 索引类型   | 用途                   |
+| ------------------------- | ------------------------------------------ | ---------- | ---------------------- |
+| schools                   | district, type                             | 复合索引   | 优化按区域和类型的查询 |
+| score_lines               | school_code, district, year                | 复合索引   | 优化多条件查询         |
+| score_lines               | year                                       | 单字段索引 | 优化按年份的查询       |
+| middle_schools            | district                                   | 单字段索引 | 优化按区域的查询       |
+| school_seats              | middle_school_code, high_school_code, year | 复合索引   | 优化多条件查询         |
+| district_seats            | district, high_school_code, year           | 复合索引   | 优化多条件查询         |
+| parallel_admission_scores | high_school_code, district, year           | 复合索引   | 优化多条件查询         |
+| users                     | email, username                            | 唯一索引   | 优化登录查询           |
+| student_profiles          | user_id                                    | 唯一索引   | 确保一对一关系         |
+| student_profiles          | middle_school_code                         | 单字段索引 | 优化按初中学校的查询   |
+| target_schools            | user_id, school_code                       | 复合索引   | 优化查询               |
+| target_schools            | user_id, school_code                       | 唯一索引   | 确保用户目标学校唯一性 |
+| mock_exams                | user_id, exam_date                         | 复合索引   | 优化按用户和时间的查询 |
+| mock_exams                | total_score                                | 单字段索引 | 优化按分数的查询       |
 
 ### 6.3 数据库关系
 
 ```mermaid
 erDiagram
-    USERS ||--o{ STUDENT_PROFILES : has
-    USERS ||--o{ TARGET_SCHOOLS : has
-    USERS ||--o{ MOCK_EXAMS : has
-    STUDENT_PROFILES }o--|| MIDDLE_SCHOOLS : attends
-    TARGET_SCHOOLS }o--|| SCHOOLS : targets
-    MOCK_EXAMS }o--|| USERS : belongs_to
-    SCHOOLS ||--o{ SCORE_LINES : has
-    SCHOOLS ||--o{ SCHOOL_SEATS : has
-    SCHOOLS ||--o{ DISTRICT_SEATS : has
-    SCHOOLS ||--o{ PARALLEL_ADMISSION_SCORES : has
-    MIDDLE_SCHOOLS ||--o{ SCHOOL_SEATS : provides
+    USERS ||--o{ STUDENT_PROFILES : has (CASCADE)
+    USERS ||--o{ TARGET_SCHOOLS : has (CASCADE)
+    USERS ||--o{ MOCK_EXAMS : has (CASCADE)
+    STUDENT_PROFILES }o--|| MIDDLE_SCHOOLS : attends (SET NULL)
+    TARGET_SCHOOLS }o--|| SCHOOLS : targets (SET NULL)
+    MOCK_EXAMS }o--|| USERS : belongs_to (CASCADE)
+    SCHOOLS ||--o{ SCORE_LINES : has (CASCADE)
+    SCHOOLS ||--o{ SCHOOL_SEATS : has (CASCADE)
+    SCHOOLS ||--o{ DISTRICT_SEATS : has (CASCADE)
+    SCHOOLS ||--o{ PARALLEL_ADMISSION_SCORES : has (CASCADE)
+    MIDDLE_SCHOOLS ||--o{ SCHOOL_SEATS : provides (CASCADE)
 ```
+
+#### 外键约束级联操作说明
+| 外键关系                            | 级联操作 | 说明                                             |
+| ----------------------------------- | -------- | ------------------------------------------------ |
+| users → student_profiles            | CASCADE  | 用户删除时，关联的学生信息也删除                 |
+| users → target_schools              | CASCADE  | 用户删除时，关联的目标学校也删除                 |
+| users → mock_exams                  | CASCADE  | 用户删除时，关联的模考记录也删除                 |
+| middle_schools → student_profiles   | SET NULL | 初中学校删除时，学生信息中的初中学校代码设为NULL |
+| schools → target_schools            | SET NULL | 高中学校删除时，目标学校中的学校代码设为NULL     |
+| users → mock_exams                  | CASCADE  | 用户删除时，关联的模考记录也删除                 |
+| schools → score_lines               | CASCADE  | 高中学校删除时，关联的分数线也删除               |
+| schools → school_seats              | CASCADE  | 高中学校删除时，关联的到校名额也删除             |
+| schools → district_seats            | CASCADE  | 高中学校删除时，关联的到区名额也删除             |
+| schools → parallel_admission_scores | CASCADE  | 高中学校删除时，关联的平行志愿分数线也删除       |
+| middle_schools → school_seats       | CASCADE  | 初中学校删除时，关联的到校名额也删除             |
 
 ## 6. API接口设计
 ### 6.0 API风格与命名规范（AI友好）

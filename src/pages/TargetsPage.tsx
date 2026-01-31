@@ -1,6 +1,7 @@
 import { SectionCard } from '@/components/Shared/SectionCard';
 import { FormField } from '@/components/Shared/FormField';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Target, Plus, Info, FileText } from 'lucide-react';
@@ -21,6 +22,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { HighSchool, StudentProfile, TargetSchool } from '@/lib/types';
 import { createId, loadStudentProfile, loadTargets, saveTargets } from '@/lib/appData';
 import { listSchools } from '@/lib/dataClient';
+import { levelFromProbability } from '@/lib/evaluation';
 
 export default function TargetsPage() {
   const { t } = useTranslation();
@@ -29,6 +31,7 @@ export default function TargetsPage() {
   const [targets, setTargets] = useState<TargetSchool[]>(() => loadTargets());
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>('');
+  const [schoolSearch, setSchoolSearch] = useState('');
 
   const { data: schoolsResp } = useQuery({
     queryKey: ['schools:list', { q: '', district: '全部', type: '全部', studentDistrict: profileDraft.district, middleSchoolId: profileDraft.middleSchoolId }],
@@ -42,6 +45,13 @@ export default function TargetsPage() {
 
   const schools = (schoolsResp?.data ?? []) as HighSchool[];
 
+  const filteredSchools = useMemo(() => {
+    if (!schoolSearch) return schools;
+    const searchTerm = schoolSearch.toLowerCase();
+    return schools.filter(s =>
+      s.name.toLowerCase().includes(searchTerm)
+    );
+  }, [schools, schoolSearch]);
 
   const targetSchools = useMemo(() => {
     const map = new Map(schools.map((s) => [s.id, s]));
@@ -85,16 +95,16 @@ export default function TargetsPage() {
         <SectionCard gap="xs" className="profile-card" contentClassName="px-4 pb-4">
           <div className="flex items-start justify-between pb-0">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50">
-                <FileText className="h-3.5 w-3.5 text-foreground" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50">
+                <FileText className="h-4 w-4 text-foreground" />
               </div>
               <div>
                 <div className="font-bold text-base">上海中考志愿与录取方式</div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">三步走：自招，到区/到校，平行志愿</div>
+
               </div>
             </div>
-            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full text-muted-foreground">
-              <Info className="h-3 w-3" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground">
+              <Info className="h-4 w-4" />
             </Button>
           </div>
 
@@ -118,22 +128,22 @@ export default function TargetsPage() {
           <SectionCard gap="xs" className="profile-card" contentClassName="px-4 pb-4">
             <div className="flex items-start justify-between pb-0">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50">
-                  <Target className="h-3.5 w-3.5 text-foreground" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50">
+                  <Target className="h-4 w-4 text-foreground" />
                 </div>
                 <div>
                   <div className="font-bold text-base">{t('ui.section.targets.list.title')}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">{t('ui.section.targets.list.desc')}</div>
+
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" asChild className="h-6 text-[10px] px-2.5 rounded-full">
+                <Button variant="outline" size="sm" asChild className="h-8 text-xs px-2.5 rounded-full">
                   <Link to="/filter">{t('ui.action.goFilter')}</Link>
                 </Button>
                 <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button size="sm" className="h-6 text-[10px] px-2.5 rounded-full">
-                      <Plus className="h-3 w-3 mr-1" />
+                    <Button size="sm" className="h-8 text-xs px-2.5 rounded-full">
+                      <Plus className="h-4 w-4 mr-1" />
                       {t('ui.action.addTarget')}
                     </Button>
                   </DialogTrigger>
@@ -144,16 +154,35 @@ export default function TargetsPage() {
                     </DialogHeader>
                     <div className="space-y-4">
                       <FormField label={t('ui.field.school')}>
-                        <Select value={selectedSchoolId} onValueChange={setSelectedSchoolId}>
+                        <Select value={selectedSchoolId} onValueChange={(v) => {
+                          setSelectedSchoolId(v);
+                          setSchoolSearch('');
+                        }}>
                           <SelectTrigger>
                             <SelectValue placeholder={t('ui.field.school.placeholder')} />
                           </SelectTrigger>
                           <SelectContent>
-                            {schools.map((s) => (
-                              <SelectItem key={s.id} value={s.id}>
-                                {s.name}
-                              </SelectItem>
-                            ))}
+                            <div className="p-2">
+                              <Input
+                                placeholder="搜索学校"
+                                value={schoolSearch}
+                                onChange={(e) => setSchoolSearch(e.target.value)}
+                                className="w-full"
+                                inputMode="search"
+                                autoComplete="off"
+                                autoCorrect="off"
+                                autoCapitalize="off"
+                              />
+                            </div>
+                            {filteredSchools.length === 0 ? (
+                              <div className="p-2 text-sm text-muted-foreground">没有找到匹配的学校</div>
+                            ) : (
+                              filteredSchools.map((s) => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  {s.name}
+                                </SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                       </FormField>
@@ -179,61 +208,79 @@ export default function TargetsPage() {
               ) : (
                 targetSchools.map((s) => {
                   const stats = s.stats;
+                  const probability = stats?.probability ?? 0;
+                  const p = probability / 100;
+                  const level = levelFromProbability(p);
+                  const barColor = level === 'high' ? 'bg-emerald-500' : level === 'mid' ? 'bg-amber-500' : 'bg-rose-500';
                   return (
                     <Card key={s.id} className="shadow-sm border border-border/60">
                       <CardContent className="p-2 space-y-2">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
                             <div className="font-semibold text-base truncate">{s.name}</div>
-                            <div className="text-[10px] text-muted-foreground mt-0.5">
-                              区域：{s.district} · 类型：{s.type}
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              {s.district} · {s.type}
+                              {s.accommodation && ` · ${s.accommodation}`}
                             </div>
                           </div>
                           {stats?.probability && (
-                            <div className="px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] font-medium whitespace-nowrap flex-shrink-0">
+                            <div className={`px-2 py-0.5 rounded-full bg-gray-100 text-xs font-medium whitespace-nowrap flex-shrink-0 ${level === 'high' ? 'text-green-700' : level === 'mid' ? 'text-amber-700' : 'text-red-700'}`}>
                               模考概率 {stats.probability}%
                             </div>
                           )}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-1.5">
+                        <div className="grid grid-cols-3 gap-1.5">
                           <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">{profileDraft.district ? `${profileDraft.district}到区` : '到区分数'}</span>
-                            <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreToDistrict ?? '无数据'}</span>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">自招名额</span>
+                            <span className="text-sm font-semibold flex-1 text-center">{stats?.quotaAutonomous ?? 0}</span>
                           </div>
                           <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">到校分数</span>
-                            <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreToSchool ?? '无数据'}</span>
-                          </div>
-                          <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">到区名额</span>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">到区名额</span>
                             <span className="text-sm font-semibold flex-1 text-center">{stats?.quotaToDistrict ?? 0}</span>
                           </div>
                           <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">到校名额</span>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">到校名额</span>
                             <span className="text-sm font-semibold flex-1 text-center">{stats?.quotaToSchool ?? 0}</span>
+                          </div>
+                          <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">到区分数</span>
+                            <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreToDistrict ?? '无数据'}</span>
+                          </div>
+                          <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">到校分数</span>
+                            <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreToSchool ?? '无数据'}</span>
+                          </div>
+                          <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">统招分数</span>
+                            <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreUnified ?? '无数据'}</span>
                           </div>
                         </div>
 
                         <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-slate-300 rounded-full"
+                            className={`h-full ${barColor} rounded-full`}
                             style={{ width: `${stats?.probability ?? 0}%` }}
                           />
                         </div>
 
                         <div className="flex items-center justify-between pt-0.5">
-                          <div className="text-[10px] text-muted-foreground">
+                          <div className="text-xs text-muted-foreground">
                             模考概率基于历史成绩分布估算
                           </div>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="h-6 text-[10px] px-2.5 rounded-full"
-                            onClick={() => onRemoveTarget(s.id)}
-                          >
-                            {t('ui.action.remove')}
-                          </Button>
+                          <div className="flex gap-1.5">
+                            <Button variant="outline" size="sm" asChild className="h-8 text-xs px-2.5 rounded-full">
+                              <Link to={`/schools/${s.id}`}>详情</Link>
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="h-8 text-xs px-2.5 rounded-full"
+                              onClick={() => onRemoveTarget(s.id)}
+                            >
+                              {t('ui.action.remove')}
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>

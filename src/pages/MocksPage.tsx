@@ -1,4 +1,5 @@
 import { SectionCard } from '@/components/Shared/SectionCard';
+import { DataCard, DataCardGrid } from '@/components/Shared/DataCard';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/Shared/FormField';
 import { Input } from '@/components/ui/input';
@@ -153,37 +154,25 @@ export default function MocksPage() {
         <SectionCard gap="xs" className="profile-card" contentClassName="px-4 pb-4">
           <div className="flex items-start justify-between pb-0">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50">
-                <Calculator className="h-3.5 w-3.5 text-foreground" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50">
+                <Calculator className="h-4 w-4 text-foreground" />
               </div>
               <div>
                 <div className="font-bold text-base">{t('ui.section.mocks.stats.title')}</div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">{t('ui.section.mocks.stats.desc')}</div>
+
               </div>
             </div>
           </div>
 
           <Separator className="mb-3 opacity-50" />
 
-          <div className="grid gap-2 grid-cols-2 lg:grid-cols-4">
-            <div className="bg-muted/30 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-muted-foreground">{t('ui.metric.count')}</div>
-              <div className="text-xl font-bold mt-0.5">{stats.count}</div>
-            </div>
-            <div className="bg-muted/30 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-muted-foreground">{t('ui.metric.mean')}</div>
-              <div className="text-xl font-bold mt-0.5">{stats.mean == null ? '-' : stats.mean.toFixed(1)}</div>
-            </div>
-            <div className="bg-muted/30 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-muted-foreground">{t('ui.metric.max')}</div>
-              <div className="text-xl font-bold mt-0.5">{stats.max == null ? '-' : stats.max}</div>
-            </div>
-            <div className="bg-muted/30 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-muted-foreground">{t('ui.metric.min')}</div>
-              <div className="text-xl font-bold mt-0.5">{stats.min == null ? '-' : stats.min}</div>
-            </div>
-          </div>
-          <div className="text-[10px] text-muted-foreground mt-2 text-center">
+          <DataCardGrid>
+            <DataCard title={t('ui.metric.count')} value={stats.count} />
+            <DataCard title={t('ui.metric.mean')} value={stats.mean == null ? '-' : stats.mean.toFixed(1)} />
+            <DataCard title={t('ui.metric.max')} value={stats.max == null ? '-' : stats.max} />
+            <DataCard title={t('ui.metric.min')} value={stats.min == null ? '-' : stats.min} />
+          </DataCardGrid>
+          <div className="text-xs text-muted-foreground mt-1 text-center">
             {t('ui.metric.std')}: {stats.std == null ? '-' : stats.std.toFixed(2)}
           </div>
         </SectionCard>
@@ -191,152 +180,174 @@ export default function MocksPage() {
         <SectionCard gap="xs" className="profile-card" contentClassName="px-4 pb-4">
           <div className="flex items-start justify-between pb-0">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50">
-                <ListChecks className="h-3.5 w-3.5 text-foreground" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50">
+                <ListChecks className="h-4 w-4 text-foreground" />
               </div>
               <div>
                 <div className="font-bold text-base">{t('ui.section.mocks.list.title')}</div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">{t('ui.section.mocks.list.desc')}</div>
+
               </div>
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" onClick={openCreate} className="h-6 text-[10px] px-2.5 rounded-full">
-                  <Plus className="h-3 w-3 mr-1" />
+                <Button size="sm" onClick={openCreate} className="h-8 text-xs px-2.5 rounded-full">
+                  <Plus className="h-4 w-4 mr-1" />
                   {t('ui.action.addMock')}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-xl">
                 <DialogHeader>
-                  <DialogTitle>{editingId ? t('ui.dialog.editMock.title') : t('ui.dialog.addMock.title')}</DialogTitle>
-                  <DialogDescription>{t('ui.dialog.addMock.desc')}</DialogDescription>
+                  <DialogTitle className="text-base font-bold">{editingId ? t('ui.dialog.editMock.title') : t('ui.dialog.addMock.title')}</DialogTitle>
+                  <DialogDescription className="text-sm">{t('ui.dialog.addMock.desc')}</DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-4">
-                  <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-4 py-2">
+                  <div className="space-y-3">
                     <FormField label={t('ui.field.mockName')} required>
-                      <Input value={draft.name} onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))} className="profile-input text-base text-left px-3" />
+                      <Input
+                        value={draft.name}
+                        onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))}
+                        className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent"
+                        placeholder="请输入考试名称"
+                      />
                     </FormField>
                     <FormField label={t('ui.field.mockDate')}>
                       <Input
                         type="date"
                         value={draft.examDate}
                         onChange={(e) => setDraft((p) => ({ ...p, examDate: e.target.value }))}
-                        className="profile-input text-base text-left px-3"
+                        className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent"
                       />
                     </FormField>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <FormField label={t('ui.field.score.chinese')}>
-                      <Input
-                        inputMode="numeric"
-                        type="number"
-                        className="profile-input text-lg"
-                        value={draft.scores.chinese ?? ''}
-                        onChange={(e) =>
-                          setDraft((p) => ({
-                            ...p,
-                            scores: { ...p.scores, chinese: e.target.value === '' ? null : Number(e.target.value) },
-                          }))
-                        }
-                      />
-                    </FormField>
-                    <FormField label={t('ui.field.score.math')}>
-                      <Input
-                        inputMode="numeric"
-                        type="number"
-                        className="profile-input text-lg"
-                        value={draft.scores.math ?? ''}
-                        onChange={(e) =>
-                          setDraft((p) => ({
-                            ...p,
-                            scores: { ...p.scores, math: e.target.value === '' ? null : Number(e.target.value) },
-                          }))
-                        }
-                      />
-                    </FormField>
-                    <FormField label={t('ui.field.score.english')}>
-                      <Input
-                        inputMode="numeric"
-                        type="number"
-                        className="profile-input text-lg"
-                        value={draft.scores.english ?? ''}
-                        onChange={(e) =>
-                          setDraft((p) => ({
-                            ...p,
-                            scores: { ...p.scores, english: e.target.value === '' ? null : Number(e.target.value) },
-                          }))
-                        }
-                      />
-                    </FormField>
-                    <FormField label={t('ui.field.score.physics')}>
-                      <Input
-                        inputMode="numeric"
-                        type="number"
-                        className="profile-input text-lg"
-                        value={draft.scores.physics ?? ''}
-                        onChange={(e) =>
-                          setDraft((p) => ({
-                            ...p,
-                            scores: { ...p.scores, physics: e.target.value === '' ? null : Number(e.target.value) },
-                          }))
-                        }
-                      />
-                    </FormField>
-                    <FormField label={t('ui.field.score.chemistry')}>
-                      <Input
-                        inputMode="numeric"
-                        type="number"
-                        className="profile-input text-lg"
-                        value={draft.scores.chemistry ?? ''}
-                        onChange={(e) =>
-                          setDraft((p) => ({
-                            ...p,
-                            scores: { ...p.scores, chemistry: e.target.value === '' ? null : Number(e.target.value) },
-                          }))
-                        }
-                      />
-                    </FormField>
-                    <FormField label={t('ui.field.score.politics')}>
-                      <Input
-                        inputMode="numeric"
-                        type="number"
-                        className="profile-input text-lg"
-                        value={draft.scores.politics ?? ''}
-                        onChange={(e) =>
-                          setDraft((p) => ({
-                            ...p,
-                            scores: { ...p.scores, politics: e.target.value === '' ? null : Number(e.target.value) },
-                          }))
-                        }
-                      />
-                    </FormField>
-                    <FormField label={t('ui.field.score.history')}>
-                      <Input
-                        inputMode="numeric"
-                        type="number"
-                        className="profile-input text-lg"
-                        value={draft.scores.history ?? ''}
-                        onChange={(e) =>
-                          setDraft((p) => ({
-                            ...p,
-                            scores: { ...p.scores, history: e.target.value === '' ? null : Number(e.target.value) },
-                          }))
-                        }
-                      />
-                    </FormField>
-                    <FormField label={t('ui.field.score.total')} helpText={t('ui.field.score.total.help')}>
-                      <Input value={computeTotal(draft.scores)} readOnly className="profile-input text-lg bg-muted/20" />
-                    </FormField>
+                  <div>
+                    <h3 className="text-sm font-semibold mb-3">{t('ui.section.mocks.scores.title')}</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormField label={t('ui.field.score.chinese')}>
+                        <Input
+                          inputMode="numeric"
+                          type="number"
+                          className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                          value={draft.scores.chinese ?? ''}
+                          onChange={(e) =>
+                            setDraft((p) => ({
+                              ...p,
+                              scores: { ...p.scores, chinese: e.target.value === '' ? null : Number(e.target.value) },
+                            }))
+                          }
+                          placeholder="0"
+                        />
+                      </FormField>
+                      <FormField label={t('ui.field.score.math')}>
+                        <Input
+                          inputMode="numeric"
+                          type="number"
+                          className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                          value={draft.scores.math ?? ''}
+                          onChange={(e) =>
+                            setDraft((p) => ({
+                              ...p,
+                              scores: { ...p.scores, math: e.target.value === '' ? null : Number(e.target.value) },
+                            }))
+                          }
+                          placeholder="0"
+                        />
+                      </FormField>
+                      <FormField label={t('ui.field.score.english')}>
+                        <Input
+                          inputMode="numeric"
+                          type="number"
+                          className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                          value={draft.scores.english ?? ''}
+                          onChange={(e) =>
+                            setDraft((p) => ({
+                              ...p,
+                              scores: { ...p.scores, english: e.target.value === '' ? null : Number(e.target.value) },
+                            }))
+                          }
+                          placeholder="0"
+                        />
+                      </FormField>
+                      <FormField label={t('ui.field.score.physics')}>
+                        <Input
+                          inputMode="numeric"
+                          type="number"
+                          className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                          value={draft.scores.physics ?? ''}
+                          onChange={(e) =>
+                            setDraft((p) => ({
+                              ...p,
+                              scores: { ...p.scores, physics: e.target.value === '' ? null : Number(e.target.value) },
+                            }))
+                          }
+                          placeholder="0"
+                        />
+                      </FormField>
+                      <FormField label={t('ui.field.score.chemistry')}>
+                        <Input
+                          inputMode="numeric"
+                          type="number"
+                          className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                          value={draft.scores.chemistry ?? ''}
+                          onChange={(e) =>
+                            setDraft((p) => ({
+                              ...p,
+                              scores: { ...p.scores, chemistry: e.target.value === '' ? null : Number(e.target.value) },
+                            }))
+                          }
+                          placeholder="0"
+                        />
+                      </FormField>
+                      <FormField label={t('ui.field.score.politics')}>
+                        <Input
+                          inputMode="numeric"
+                          type="number"
+                          className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                          value={draft.scores.politics ?? ''}
+                          onChange={(e) =>
+                            setDraft((p) => ({
+                              ...p,
+                              scores: { ...p.scores, politics: e.target.value === '' ? null : Number(e.target.value) },
+                            }))
+                          }
+                          placeholder="0"
+                        />
+                      </FormField>
+                      <FormField label={t('ui.field.score.history')}>
+                        <Input
+                          inputMode="numeric"
+                          type="number"
+                          className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                          value={draft.scores.history ?? ''}
+                          onChange={(e) =>
+                            setDraft((p) => ({
+                              ...p,
+                              scores: { ...p.scores, history: e.target.value === '' ? null : Number(e.target.value) },
+                            }))
+                          }
+                          placeholder="0"
+                        />
+                      </FormField>
+                      <FormField label={t('ui.field.score.total')}>
+                        <Input
+                          value={computeTotal(draft.scores)}
+                          readOnly
+                          className="w-full h-10 px-4 text-base rounded-md border border-input bg-muted/20 text-center font-semibold"
+                        />
+                      </FormField>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">{t('ui.field.score.total.help')}</p>
                   </div>
                 </div>
 
-                <DialogFooter>
-                  <Button variant="secondary" onClick={() => setDialogOpen(false)}>
+                <DialogFooter className="pt-2">
+                  <Button variant="secondary" className="h-10 px-4">
                     {t('ui.action.cancel')}
                   </Button>
-                  <Button onClick={upsert}>{t('ui.action.save')}</Button>
+                  <Button className="h-10 px-6" onClick={upsert}>
+                    {t('ui.action.save')}
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -350,22 +361,22 @@ export default function MocksPage() {
             <div className="space-y-2">
               {sortedExams.map((e) => (
                 <Card key={e.id} className="shadow-sm border border-border/60">
-                  <CardContent className="p-3 flex items-center justify-between">
+                  <CardContent className="p-2 flex items-center justify-between">
                     <div>
-                      <div className="font-semibold text-base">{e.name}</div>
+                      <div className="font-semibold text-sm">{e.name}</div>
                       <div className="text-xs text-muted-foreground mt-0.5">{e.examDate ?? '无日期'}</div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
                       <div className="text-right">
-                        <div className="text-lg font-bold text-primary">{e.totalScore}</div>
-                        <div className="text-[10px] text-muted-foreground">总分</div>
+                        <div className="text-base font-bold text-primary">{e.totalScore}</div>
+                        <div className="text-xs text-muted-foreground">总分</div>
                       </div>
                       <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" className="h-7 w-7 rounded-full" onClick={() => openEdit(e)}>
-                          <Edit2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full" onClick={() => openEdit(e)}>
+                          <Edit2 className="h-3 w-3 text-muted-foreground" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7 rounded-full hover:text-destructive" onClick={() => remove(e.id)}>
-                          <Trash2 className="h-3.5 w-3.5" />
+                        <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full hover:text-destructive" onClick={() => remove(e.id)}>
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>

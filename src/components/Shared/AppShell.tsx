@@ -31,7 +31,7 @@ export function AppShell({ children, hideFooter = true }: AppShellProps) {
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-background font-sans antialiased flex flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70 shadow-sm">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70 shadow-sm pt-safe">
         <div className="container flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <Avatar className="h-9 w-9 rounded-xl border border-border/50 bg-muted/20">

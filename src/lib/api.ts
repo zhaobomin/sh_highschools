@@ -41,9 +41,11 @@ api.interceptors.response.use(
     // Handle 401/403
     if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('token');
-      // Optional: Redirect to login
+      // Redirect to login
       if (window.location.pathname !== '/login') {
         window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+        // 阻止后续代码执行，避免重定向被中止
+        return new Promise(() => {}); // 永远不会解析的Promise
       }
     }
 

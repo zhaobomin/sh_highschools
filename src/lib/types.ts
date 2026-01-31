@@ -27,9 +27,12 @@ export interface HighSchool {
   district: District;
   type: HighSchoolType;
   fullType?: string;
+  accommodation?: string;
   stats?: {
     scoreToDistrict?: number | null;
     scoreToSchool?: number | null;
+    scoreUnified?: number | null;
+    quotaAutonomous?: number | null;
     quotaToDistrict?: number | null;
     quotaToSchool?: number | null;
     probability?: number;

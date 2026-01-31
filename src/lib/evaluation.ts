@@ -22,8 +22,8 @@ export function probabilityToReach(threshold: number, mean: number, std: number)
 export type ProbabilityLevel = 'high' | 'mid' | 'low';
 
 export function levelFromProbability(p: number): ProbabilityLevel {
-  if (p >= 0.75) return 'high';
-  if (p >= 0.4) return 'mid';
+  if (p > 0.9) return 'high';
+  if (p >= 0.7) return 'mid';
   return 'low';
 }
 

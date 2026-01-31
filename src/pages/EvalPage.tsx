@@ -1,4 +1,5 @@
 import { SectionCard } from '@/components/Shared/SectionCard';
+import { DataCard, DataCardGrid } from '@/components/Shared/DataCard';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
@@ -87,59 +88,49 @@ export default function EvalPage() {
         <SectionCard gap="xs" className="profile-card" contentClassName="px-4 pb-4">
           <div className="flex items-start justify-between pb-0">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50">
-                <TrendingUp className="h-3.5 w-3.5 text-foreground" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50">
+                <TrendingUp className="h-4 w-4 text-foreground" />
               </div>
               <div>
                 <div className="font-bold text-base">{t('ui.section.eval.model.title')}</div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">{t('ui.section.eval.model.desc')}</div>
+
               </div>
             </div>
-            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full text-muted-foreground">
-              <Info className="h-3 w-3" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground">
+              <Info className="h-4 w-4" />
             </Button>
           </div>
 
           <Separator className="mb-3 opacity-50" />
 
-          <div className="grid gap-2 grid-cols-2 lg:grid-cols-4">
-            <div className="bg-muted/30 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-muted-foreground">{t('ui.metric.mockCount')}</div>
-              <div className="text-xl font-bold mt-0.5">{model.count}</div>
-            </div>
-            <div className="bg-muted/30 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-muted-foreground">{t('ui.metric.mean')}</div>
-              <div className="text-xl font-bold mt-0.5">{model.mean == null ? '-' : model.mean.toFixed(1)}</div>
-            </div>
-            <div className="bg-muted/30 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-muted-foreground">{t('ui.metric.std')}</div>
-              <div className="text-xl font-bold mt-0.5">{model.std == null ? '-' : model.std.toFixed(2)}</div>
-            </div>
-            <div className="bg-muted/30 rounded-lg p-3 text-center">
-              <div className="text-[10px] text-muted-foreground">{t('ui.metric.modelSource')}</div>
-              <div className="text-sm font-medium mt-1">
+          <DataCardGrid>
+            <DataCard title={t('ui.metric.mockCount')} value={model.count} />
+            <DataCard title={t('ui.metric.mean')} value={model.mean == null ? '-' : model.mean.toFixed(1)} />
+            <DataCard title={t('ui.metric.std')} value={model.std == null ? '-' : model.std.toFixed(2)} />
+            <DataCard title={t('ui.metric.modelSource')} value={
+              <div className="text-xs font-medium">
                 {model.source === 'mocks'
                   ? t('ui.metric.modelSource.mocks')
                   : model.source === 'estimate'
                     ? t('ui.metric.modelSource.estimate')
                     : t('ui.metric.modelSource.none')}
               </div>
-            </div>
-          </div>
+            } />
+          </DataCardGrid>
           {model.source === 'none' && (
-            <div className="text-[10px] text-muted-foreground mt-2 text-center">{t('ui.section.eval.model.hint')}</div>
+            <div className="text-[8px] text-muted-foreground mt-1 text-center">{t('ui.section.eval.model.hint')}</div>
           )}
         </SectionCard>
 
         <SectionCard gap="xs" className="profile-card" contentClassName="px-4 pb-4">
           <div className="flex items-start justify-between pb-0">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50">
-                <School className="h-3.5 w-3.5 text-foreground" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50">
+                <School className="h-4 w-4 text-foreground" />
               </div>
               <div>
                 <div className="font-bold text-base">{t('ui.section.eval.list.title')}</div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">{t('ui.section.eval.list.desc')}</div>
+
               </div>
             </div>
           </div>
@@ -149,7 +140,7 @@ export default function EvalPage() {
           {targetSchools.length === 0 ? (
             <div className="py-6 text-center space-y-3">
               <div className="text-sm text-muted-foreground">{t('ui.states.emptyTargets')}</div>
-              <Button asChild size="sm" className="h-7 text-xs px-3 rounded-full">
+              <Button asChild size="sm" className="h-8 text-sm px-3 rounded-full">
                 <Link to="/filter">{t('ui.action.goFilter')}</Link>
               </Button>
             </div>
@@ -173,11 +164,11 @@ export default function EvalPage() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <div className="font-semibold text-base truncate">{s.name}</div>
-                          <div className="text-[10px] text-muted-foreground mt-0.5">
+                          <div className="text-xs text-muted-foreground mt-0.5">
                             {s.district} · {s.type} · {sl ? `${t('ui.label.scoreLine')}: ${sl.score} (${sl.year})` : t('ui.label.scoreLine.na')}
                           </div>
                         </div>
-                        <div className="text-[10px] font-medium px-2 py-0.5 rounded-full border bg-muted/30 whitespace-nowrap">
+                        <div className="text-xs font-medium px-2 py-0.5 rounded-full border bg-muted/30 whitespace-nowrap">
                           {tagText}
                         </div>
                       </div>
@@ -190,7 +181,7 @@ export default function EvalPage() {
                         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                           <div className={`h-full ${barColor}`} style={{ width: `${canCalc ? pct : 0}%` }} />
                         </div>
-                        <div className="text-[10px] text-muted-foreground">
+                        <div className="text-xs text-muted-foreground">
                           {canCalc ? t('ui.eval.explain', { mean: model.mean!.toFixed(1), std: model.std!.toFixed(2) }) : t('ui.eval.explain.na')}
                         </div>
                       </div>

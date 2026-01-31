@@ -4,3 +4,8 @@ sqlalchemy
 pydantic
 pydantic-settings
 python-multipart
+bcrypt
+pyjwt
+python-dotenv
+supabase
+psycopg2-binary
