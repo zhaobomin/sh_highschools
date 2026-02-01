@@ -1,6 +1,6 @@
 import type { ApiResponse } from '@/lib/api';
 import type { District, HighSchool, HighSchoolType, JuniorType, MiddleSchool, ScoreLine } from '@/lib/types';
-import { highSchools, middleSchools, scoreLines, schoolScoreLines, quotaLines, schoolQuotaLines } from '@/mocks/data';
+import { districts, highSchools, middleSchools, scoreLines, schoolScoreLines, quotaLines, schoolQuotaLines } from '@/mocks/data';
 
 function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -12,6 +12,9 @@ export async function mockListSchools(params?: {
   type?: HighSchoolType | '全部';
   studentDistrict?: District | null;
   middleSchoolId?: string | null;
+  stableScore?: number | null;
+  highScore?: number | null;
+  lowScore?: number | null;
 }): Promise<ApiResponse<HighSchool[]>> {
   await delay(200);
 
@@ -72,8 +75,45 @@ export async function mockListSchools(params?: {
     }
     stats.quotaAutonomous = autonomousQuota;
 
-    // 7. Probability (Mock)
-    stats.probability = Math.floor(Math.random() * 40) + 50; // 50-90%
+    // 7. Probability based on student scores
+    if (params?.stableScore !== null && params?.stableScore !== undefined) {
+      const studentScore = params.stableScore;
+      let baseProbability = 0;
+      
+      // Calculate probability based on unified admission score
+      if (stats.scoreUnified) {
+        if (studentScore >= stats.scoreUnified + 10) {
+          baseProbability = 90; // High probability
+        } else if (studentScore >= stats.scoreUnified) {
+          baseProbability = 75; // Good probability
+        } else if (studentScore >= stats.scoreUnified - 10) {
+          baseProbability = 60; // Moderate probability
+        } else if (studentScore >= stats.scoreUnified - 20) {
+          baseProbability = 40; // Low probability
+        } else {
+          baseProbability = 20; // Very low probability
+        }
+      }
+      
+      // Adjust based on student's high and low scores
+      if (params.highScore !== null && params.highScore !== undefined && stats.scoreUnified) {
+        if (params.highScore >= stats.scoreUnified) {
+          baseProbability += 10;
+        }
+      }
+      
+      if (params.lowScore !== null && params.lowScore !== undefined && stats.scoreUnified) {
+        if (params.lowScore < stats.scoreUnified - 20) {
+          baseProbability -= 10;
+        }
+      }
+      
+      // Ensure probability is within reasonable range
+      stats.probability = Math.max(10, Math.min(95, Math.round(baseProbability)));
+    } else {
+      // Fallback to random if no scores provided
+      stats.probability = Math.floor(Math.random() * 40) + 50; // 50-90%
+    }
 
     // Set defaults for missing values
     if (stats.scoreToDistrict === undefined) stats.scoreToDistrict = stats.scoreUnified;

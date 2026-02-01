@@ -20,10 +20,26 @@ export async function listSchools(params?: {
   type?: HighSchoolType | '全部';
   studentDistrict?: District | null;
   middleSchoolId?: string | null;
+  stableScore?: number | null;
+  highScore?: number | null;
+  lowScore?: number | null;
 }): Promise<ApiResponse<HighSchool[]>> {
   return fallback(
     () => fetcher.get('/schools/', { params }),
     () => mockListSchools(params)
+  );
+}
+
+export async function listSchoolsSimple(): Promise<ApiResponse<Array<{ id: string; name: string }>>> {
+  return fallback(
+    () => fetcher.get('/schools/simple'),
+    () => {
+      // Mock数据，返回简化的学校列表
+      const mockSchools = mockListSchools().then(resp =>
+        resp.data.map(school => ({ id: school.id, name: school.name }))
+      );
+      return mockSchools.then(data => ({ data }));
+    }
   );
 }
 

@@ -320,7 +320,33 @@ COMMENT ON COLUMN mock_exams.total_score IS '总分';
 COMMENT ON COLUMN mock_exams.created_at IS '创建时间';
 COMMENT ON COLUMN mock_exams.updated_at IS '更新时间';
 
--- 11. 创建索引
+-- 11. 创建高中自招名额表（self_enrollment_quota）
+CREATE TABLE IF NOT EXISTS self_enrollment_quota (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    school_code VARCHAR(20) NOT NULL,
+    boarding_status VARCHAR(20) NOT NULL,
+    total_quota INTEGER NOT NULL,
+    sports_quota INTEGER NOT NULL,
+    art_quota INTEGER NOT NULL,
+    year INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (school_code) REFERENCES schools(code) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- 添加高中自招名额表字段注释
+COMMENT ON TABLE self_enrollment_quota IS '高中自招名额表';
+COMMENT ON COLUMN self_enrollment_quota.id IS '自招名额ID（主键）';
+COMMENT ON COLUMN self_enrollment_quota.school_code IS '学校代码（外键）';
+COMMENT ON COLUMN self_enrollment_quota.boarding_status IS '寄宿情况';
+COMMENT ON COLUMN self_enrollment_quota.total_quota IS '合计名额';
+COMMENT ON COLUMN self_enrollment_quota.sports_quota IS '市级优秀体育学生名额';
+COMMENT ON COLUMN self_enrollment_quota.art_quota IS '市级艺术骨干学生名额';
+COMMENT ON COLUMN self_enrollment_quota.year IS '年份';
+COMMENT ON COLUMN self_enrollment_quota.created_at IS '创建时间';
+COMMENT ON COLUMN self_enrollment_quota.updated_at IS '更新时间';
+
+-- 12. 创建索引
 -- 高中学校表索引
 CREATE INDEX IF NOT EXISTS idx_schools_district_type ON schools(district, type);
 
@@ -349,6 +375,10 @@ CREATE INDEX IF NOT EXISTS idx_target_schools_user_school ON target_schools(user
 -- 模考记录表索引
 CREATE INDEX IF NOT EXISTS idx_mock_exams_user_date ON mock_exams(user_id, exam_date);
 CREATE INDEX IF NOT EXISTS idx_mock_exams_total_score ON mock_exams(total_score);
+
+-- 高中自招名额表索引
+CREATE INDEX IF NOT EXISTS idx_self_enrollment_school_year ON self_enrollment_quota(school_code, year);
+CREATE INDEX IF NOT EXISTS idx_self_enrollment_year ON self_enrollment_quota(year);
 
 -- 提交事务
 COMMIT;

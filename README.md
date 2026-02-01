@@ -1,73 +1,61 @@
-# React + TypeScript + Vite
+# SH Highschools
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repository hosts a React + TypeScript frontend built with Vite plus a Flask backend that now owns the entire `/api/v1` surface and also serves the production build of the React app from `dist/`. The goal is to run a single Python process in production so that the browser can load both the UI and the API from the same origin.
 
-Currently, two official plugins are available:
+## Architecture overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Backend** – A Flask application (`app/main.py`) registers a single `/api/v1` blueprint that groups `auth`, `schools`, and `filter` modules. Authentication uses JWT tokens issued with `pyjwt`, and SQL/Supabase access continues to go through the shared `app/core/db.py` adapter.
+- **Frontend** – The Vite build outputs into `dist/`, and the Flask app serves that directory as static files. During development you can still run `npm run dev`, but every API request must go directly to Flask without the former `/api` proxy.
+- **Deployment** – Build the frontend once, then run `python -m app.main` (the Flask server) so that both UI and API are available under one host.
 
-## React Compiler
+## Backend setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Activate the Python virtual environment and install dependencies:
+   ```bash
+   python -m pip install -r requirements.txt
+   ```
+2. Provide configuration through `.env` or environment variables (see `app/core/config.py` for the available keys such as `SECRET_KEY`, `DATABASE_URL`, and Supabase credentials).
+3. Build the frontend before starting Flask so `dist/index.html` exists (see [Frontend setup](#frontend-setup)).
+4. Launch the app:
+   ```bash
+   python -m app.main
+   ```
+   The server listens on `0.0.0.0:5000` by default and exposes:
+   - `/api/v1/...` for the API.
+   - `/`, `/assets/*`, etc. for the React UI.
 
-## Expanding the ESLint configuration
+## Frontend setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Install the npm dependencies and build the production bundle:
+   ```bash
+   npm install
+   npm run build
+   ```
+   The output lands in `dist/`, which Flask will serve.
+2. The React code reads the API base URL from `import.meta.env.VITE_API_BASE_URL`. In production this defaults to `/api/v1` so it works with the Flask server on the same domain.
+3. During development (`npm run dev`), set:
+   ```bash
+   export VITE_API_BASE_URL=http://localhost:5000/api/v1
+   npm run dev
+   ```
+   so that the dev server sends requests directly to Flask instead of relying on a proxy.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Running the combined stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1. Build the frontend once (`npm run build`).
+2. Ensure Flask can access the `dist/` directory.
+3. Start Flask (`python -m app.main`). It will:
+   - Serve `dist/index.html` for unknown routes, enabling client-side routing.
+   - Expose the new Flask-powered `/api/v1` endpoints without any FastAPI proxying.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Any time the frontend changes, rebuild `dist/` before restarting the Flask server in production.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Environment variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- `VITE_API_BASE_URL`: Where the frontend sends API requests (default `/api/v1` when served from Flask; override for `npm run dev`).  
+- `SECRET_KEY`, `DATABASE_URL`, `SUPABASE_URL`, etc.: Read from `app/core/config.py` via `.env`. These control JWT signing and the Supabase/PostgreSQL adapter.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Notes
+
+- CORS is configured on the Flask app (`flask-cors`) to allow the still-possible scenario of running the React dev server while the API lives on another port.
+- The backend still relies on the existing `app/core/db.py` adapter, so you can keep using Supabase or switch to PostgreSQL by editing that module.

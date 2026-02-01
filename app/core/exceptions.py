@@ -1,8 +1,10 @@
 from typing import Any, Dict, Optional
-from fastapi import HTTPException, Request
-from fastapi.responses import JSONResponse
+from flask import jsonify
 
-class CustomException(HTTPException):
+
+class CustomException(Exception):
+    """应用级别错误封装"""
+
     def __init__(
         self,
         status_code: int,
@@ -10,27 +12,26 @@ class CustomException(HTTPException):
         message: str,
         details: Optional[Dict[str, Any]] = None,
     ):
-        super().__init__(status_code=status_code, detail=message)
+        self.status_code = status_code
         self.code = code
         self.message = message
-        self.details = details
+        self.details = details or {}
+        super().__init__(message)
 
-async def custom_exception_handler(request: Request, exc: CustomException):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={
-            "code": exc.code,
-            "message": exc.message,
-            "details": exc.details,
-        },
-    )
 
-async def generic_exception_handler(request: Request, exc: Exception):
-    return JSONResponse(
-        status_code=500,
-        content={
-            "code": "INTERNAL_SERVER_ERROR",
-            "message": "An unexpected error occurred.",
-            "details": str(exc), # Be careful exposing this in prod
-        },
-    )
+def handle_custom_exception(exc: CustomException):
+    payload = {
+        "code": exc.code,
+        "message": exc.message,
+        "details": exc.details,
+    }
+    return jsonify(payload), exc.status_code
+
+
+def handle_generic_exception(exc: Exception):
+    payload = {
+        "code": "INTERNAL_SERVER_ERROR",
+        "message": "An unexpected error occurred.",
+        "details": str(exc),
+    }
+    return jsonify(payload), 500

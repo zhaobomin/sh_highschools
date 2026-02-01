@@ -1,37 +1,40 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import auth, schools, filter
-from app.core.exceptions import CustomException, custom_exception_handler, generic_exception_handler
+import os
+from pathlib import Path
 
-app = FastAPI(
-    title="SH Highschools API",
-    openapi_url="/api/v1/openapi.json",
-    docs_url="/api/v1/docs",
-)
+from flask import Flask, send_from_directory
+from flask_cors import CORS
 
-# CORS
-origins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-]
+from app.api.v1 import api_v1_bp
+from app.core.exceptions import CustomException, handle_custom_exception, handle_generic_exception
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-# Exception Handlers
-app.add_exception_handler(CustomException, custom_exception_handler)
-app.add_exception_handler(Exception, generic_exception_handler)
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "dist"
 
-# Routers
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
-app.include_router(schools.router, prefix="/api/v1/schools", tags=["schools"])
-app.include_router(filter.router, prefix="/api/v1/filter", tags=["filter"])
 
-@app.get("/")
-async def root():
-    return {"message": "Welcome to SH Highschools API"}
+def create_app() -> Flask:
+    app = Flask(__name__)
+
+    CORS(app, supports_credentials=True)
+
+    app.register_blueprint(api_v1_bp)
+    app.register_error_handler(CustomException, handle_custom_exception)
+    app.register_error_handler(Exception, handle_generic_exception)
+
+    @app.route("/", defaults={"path": ""})
+    @app.route("/<path:path>")
+    def serve_frontend(path: str):
+        if path:
+            target_path = FRONTEND_DIR / path
+            if target_path.exists():
+                return send_from_directory(FRONTEND_DIR, path)
+        index_path = FRONTEND_DIR / "index.html"
+        if index_path.exists():
+            return send_from_directory(FRONTEND_DIR, "index.html")
+        raise RuntimeError("Frontend build not found. Run `npm run build` in the frontend directory.")
+
+    return app
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5001))
+    create_app().run(host="0.0.0.0", port=port)

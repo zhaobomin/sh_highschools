@@ -101,10 +101,9 @@ export interface MockExam {
     chinese: number | null;
     math: number | null;
     english: number | null;
-    physics: number | null;
-    chemistry: number | null;
     politics: number | null;
     history: number | null;
+    pe: number | null;
   };
   totalScore: number;
   createdAt: string;

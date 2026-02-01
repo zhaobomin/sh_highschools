@@ -4,7 +4,8 @@ import os
 from datetime import datetime
 
 # 输入和输出文件路径
-input_file = '上海初中学校列表.csv'
+input_file1 = '2025_分数线_分配到校.csv'
+input_file2 = '2025_名额_分配到校.csv'
 output_file = 'middle_schools.csv'
 
 # 字段映射
@@ -43,35 +44,78 @@ seen_names = set()
 # 用于记录每个区的学校编码计数器
 district_counters = {}
 
-print(f"开始处理文件: {input_file}")
+# 存储所有学校数据的列表（用于排序）
+all_schools = []
+
+print(f"开始处理文件: {input_file1} 和 {input_file2}")
 print(f"输出文件: {output_file}")
 
-# 读取原始文件并处理
-with open(input_file, 'r', encoding='utf-8') as infile, open(output_file, 'w', newline='', encoding='utf-8') as outfile:
+# 处理第一个输入文件
+print("\n处理第一个文件...")
+with open(input_file1, 'r', encoding='utf-8') as infile:
     reader = csv.DictReader(infile)
-    writer = csv.DictWriter(outfile, fieldnames=target_fields)
-    
-    # 写入表头
-    writer.writeheader()
-    
-    # 处理数据
-    row_count = 0
-    duplicate_count = 0
-    
     for row in reader:
-        # 获取学校名称和所在区
-        school_name = row.get('学校名称', '')
-        district = row.get('所在区', '')
+        # 获取初中学校名称和所在区
+        school_name = row.get('初级中学', '')
+        district = row.get('区县', '')
         
         # 检查是否是重复表头
-        if not school_name or school_name == '学校名称':
+        if not school_name or school_name == '初级中学':
             continue
         
         # 检查是否重复（根据学校名称去重）
         if school_name in seen_names:
-            duplicate_count += 1
-            print(f"发现重复学校名称: {school_name}，跳过")
             continue
+        
+        # 构建学校数据
+        school_data = {
+            'name': school_name,
+            'district': district,
+            'type': ''  # 第一个文件没有办学性质字段
+        }
+        all_schools.append(school_data)
+        seen_names.add(school_name)
+
+# 处理第二个输入文件
+print("处理第二个文件...")
+with open(input_file2, 'r', encoding='utf-8') as infile:
+    reader = csv.DictReader(infile)
+    for row in reader:
+        # 获取初中学校名称和所在区
+        school_name = row.get('初中学校名称', '')
+        district = row.get('所属区', '')
+        
+        # 检查是否是重复表头
+        if not school_name or school_name == '初中学校名称':
+            continue
+        
+        # 检查是否重复（根据学校名称去重）
+        if school_name in seen_names:
+            continue
+        
+        # 构建学校数据
+        school_data = {
+            'name': school_name,
+            'district': district,
+            'type': ''  # 第二个文件也没有办学性质字段
+        }
+        all_schools.append(school_data)
+        seen_names.add(school_name)
+
+# 按所属区（使用区编码）和学校名称排序
+print("\n排序学校数据...")
+all_schools.sort(key=lambda x: (district_code_mapping.get(x['district'], '99'), x['name']))
+
+# 写入输出文件
+print("写入输出文件...")
+with open(output_file, 'w', newline='', encoding='utf-8') as outfile:
+    writer = csv.DictWriter(outfile, fieldnames=target_fields)
+    writer.writeheader()
+    
+    row_count = 0
+    for school_data in all_schools:
+        school_name = school_data['name']
+        district = school_data['district']
         
         # 获取区编码
         district_code = district_code_mapping.get(district, '00')
@@ -92,18 +136,16 @@ with open(input_file, 'r', encoding='utf-8') as infile, open(output_file, 'w', n
             'code': new_code,
             'name': school_name,
             'district': district,
-            'type': row.get('办学性质', '')
+            'type': '公办'
         }
         
         # 写入新行
         writer.writerow(new_row)
-        seen_names.add(school_name)
         district_counters[district_code] += 1
         row_count += 1
 
-print(f"处理完成！")
+print(f"\n处理完成！")
 print(f"成功写入: {row_count} 条记录")
-print(f"跳过重复: {duplicate_count} 条记录")
 print(f"去重后总记录数: {len(seen_names)}")
 print(f"各区县学校数量:")
 for district, code in district_code_mapping.items():
