@@ -1,5 +1,5 @@
 import type { ApiResponse } from '@/lib/api';
-import type { District, HighSchool, HighSchoolType, JuniorType, MiddleSchool, ScoreLine } from '@/lib/types';
+import type { District, HighSchool, HighSchoolType, MiddleSchool, ScoreLine } from '@/lib/types';
 import { districts, highSchools, middleSchools, scoreLines, schoolScoreLines, quotaLines, schoolQuotaLines } from '@/mocks/data';
 
 function delay(ms: number) {
@@ -10,7 +10,6 @@ export async function mockListSchools(params?: {
   q?: string;
   district?: District | '全部';
   type?: HighSchoolType | '全部';
-  studentDistrict?: District | null;
   middleSchoolId?: string | null;
   stableScore?: number | null;
   highScore?: number | null;
@@ -34,12 +33,12 @@ export async function mockListSchools(params?: {
     const stats: HighSchool['stats'] = {};
     
     // 1. Score to District
-    if (params?.studentDistrict) {
-      const sl = scoreLines.find(x => x.schoolId === s.id && x.district === params.studentDistrict);
+    if (params?.district && params.district !== '全部') {
+      const sl = scoreLines.find(x => x.schoolId === s.id && x.district === params.district);
       if (sl) stats.scoreToDistrict = sl.score;
 
       // 3. Quota to District
-      const ql = quotaLines.find(x => x.schoolId === s.id && x.district === params.studentDistrict);
+      const ql = quotaLines.find(x => x.schoolId === s.id && x.district === params.district);
       if (ql) stats.quotaToDistrict = ql.count;
     }
 
@@ -141,7 +140,7 @@ export async function mockListSchools(params?: {
       stats.quotaToSchool = schoolQuota;
     }
 
-    return { ...s, stats };
+    return { ...s, stats, isTarget: false };
   });
 
   return { data: enriched, meta: { total: enriched.length } };
@@ -195,17 +194,13 @@ export async function mockListMiddleSchools(params?: {
 
 export async function mockListFilterOptions(): Promise<ApiResponse<{
   districts: District[];
-  junior_types: JuniorType[];
   middle_schools: MiddleSchool[];
 }>> {
   await delay(200);
 
-  const juniorTypes: JuniorType[] = ['公办', '民办'];
-
   return {
     data: {
       districts,
-      junior_types: juniorTypes,
       middle_schools: middleSchools,
     },
     meta: {

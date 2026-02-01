@@ -10,11 +10,11 @@ import { useMemo, useState, useEffect, useRef } from 'react';
 import { Info, User, School } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PullToRefresh from '@/components/Shared/PullToRefresh';
-import type { District, HighSchool, HighSchoolType, MiddleSchool, StudentProfile, TargetSchool } from '@/lib/types';
+import type { District, HighSchool, HighSchoolType, MiddleSchool, StudentProfile } from '@/lib/types';
 import { districts, highSchoolTypes } from '@/mocks/data';
-import { createId, loadStudentProfile, loadTargets, saveStudentProfile, saveTargets, loadMiddleSchools, saveMiddleSchools, loadFilterSelects, saveFilterSelects } from '@/lib/appData';
+import { loadStudentProfile, saveStudentProfile, loadMiddleSchools, saveMiddleSchools, loadFilterSelects, saveFilterSelects } from '@/lib/appData';
 import type { FilterSelectCache } from '@/lib/appData';
-import { listSchools, getStudentProfile, saveStudentProfile as saveStudentProfileApi, getFilterOptions } from '@/lib/dataClient';
+import { listSchools, getStudentProfile, saveStudentProfile as saveStudentProfileApi, getFilterOptions, addTargetSchool } from '@/lib/dataClient';
 import { levelFromProbability } from '@/lib/evaluation';
 
 // 前端参数验证函数
@@ -24,10 +24,6 @@ const validateProfile = (profile: StudentProfile): { isValid: boolean; errors: s
   // 检查必填字段
   if (!profile.district) {
     errors.push('请选择所在区');
-  }
-
-  if (!profile.juniorType) {
-    errors.push('请选择初中类型');
   }
 
   if (!profile.middleSchoolId) {
@@ -83,7 +79,6 @@ export default function FilterPage() {
   // 初始化一个空的学生画像
   const [profile, setProfile] = useState<StudentProfile>(() => ({
     district: null,
-    juniorType: null,
     middleSchoolId: null,
     stableScore: null,
     highScore: null,
@@ -98,7 +93,6 @@ export default function FilterPage() {
       const backendProfile = profileData.data;
       const updatedProfile: StudentProfile = {
         district: backendProfile.district || null,
-        juniorType: backendProfile.junior_type || null,
         middleSchoolId: backendProfile.middle_school_id || null,
         stableScore: backendProfile.stable_score || null,
         highScore: backendProfile.high_score || null,
@@ -135,10 +129,9 @@ export default function FilterPage() {
 
   useEffect(() => {
     if (filterOptionsResp?.data) {
-      const { districts: districtsFromApi, junior_types: juniorTypesFromApi, middle_schools: middleSchoolsFromApi } = filterOptionsResp.data;
+      const { districts: districtsFromApi, middle_schools: middleSchoolsFromApi } = filterOptionsResp.data;
       const normalizedSelects: FilterSelectCache = {
         districts: districtsFromApi ?? [],
-        juniorTypes: juniorTypesFromApi ?? [],
       };
 
       setFilterSelects(normalizedSelects);
@@ -168,19 +161,21 @@ export default function FilterPage() {
     },
   });
 
-  const [targets, setTargets] = useState<TargetSchool[]>(() => loadTargets());
   const [filters, setFilters] = useState<{ q: string; type: HighSchoolType | '全部' }>(() => ({
     q: '',
     type: '全部',
   }));
   const [middleSchoolSearch, setMiddleSchoolSearch] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [addingTargets, setAddingTargets] = useState<Record<string, boolean>>({});
+  const [searchPhase, setSearchPhase] = useState<'idle' | 'saving' | 'searching'>('idle');
 
   const schoolFilters = useMemo(() => ({
     q: filters.q,
     district: (profile.district ?? '全部') as District | '全部',
     type: filters.type,
-    studentDistrict: profile.district,
     middleSchoolId: profile.middleSchoolId,
     stableScore: profile.stableScore,
     highScore: profile.highScore,
@@ -201,7 +196,8 @@ export default function FilterPage() {
   const {
     data: schoolsResp,
     refetch: refetchSchools,
-    isLoading: isSchoolsLoading
+    isLoading: isSchoolsLoading,
+    isFetching: isSchoolsFetching
   } = useQuery({
     queryKey: ['schools:list'],
     queryFn: () => listSchools(schoolFiltersRef.current),
@@ -222,6 +218,7 @@ export default function FilterPage() {
   const handleSearch = async () => {
     // 清除之前的错误信息
     setErrors([]);
+    setSearchPhase('saving');
 
     // 前端参数验证
     const validation = validateProfile(profile);
@@ -232,7 +229,6 @@ export default function FilterPage() {
 
     const payload = {
       district: profile.district,
-      junior_type: profile.juniorType,
       middle_school_id: profile.middleSchoolId,
       stable_score: profile.stableScore,
       high_score: profile.highScore,
@@ -242,11 +238,43 @@ export default function FilterPage() {
     try {
       await saveProfileMutation.mutateAsync(payload);
       // 验证通过且保存成功后，执行搜索
+      setSearchPhase('searching');
       refetchSchools?.();
     } catch (error: any) {
       // 统一处理后端错误
       const errorMessage = error.message || '保存学生画像失败，请稍后重试';
       setErrors([errorMessage]);
+      setSearchPhase('idle');
+    }
+  };
+
+  const handleAddTarget = async (schoolId: string) => {
+    setAddingTargets((prev) => ({ ...prev, [schoolId]: true }));
+    const previousSchools = queryClient.getQueryData<any>(['schools:list']);
+    queryClient.setQueryData(['schools:list'], (oldData: any) => {
+      if (!oldData?.data) return oldData;
+      return {
+        ...oldData,
+        data: oldData.data.map((school: HighSchool) =>
+          school.id === schoolId ? { ...school, isTarget: true } : school
+        ),
+      };
+    });
+    try {
+      await addTargetSchool({ schoolId });
+      await queryClient.invalidateQueries({ queryKey: ['schools:targets'] });
+    } catch (error: any) {
+      const errorMessage = error.message || '加入目标失败，请稍后重试';
+      setErrors([errorMessage]);
+      if (previousSchools) {
+        queryClient.setQueryData(['schools:list'], previousSchools);
+      }
+    } finally {
+      setAddingTargets((prev) => {
+        const next = { ...prev };
+        delete next[schoolId];
+        return next;
+      });
     }
   };
 
@@ -255,12 +283,9 @@ export default function FilterPage() {
     // 首先从缓存的完整列表中筛选
     let filtered = cachedMiddleSchools;
 
-    // 根据当前的区县和初中类型进行筛选
+    // 根据当前的区县进行筛选
     if (profile.district) {
       filtered = filtered.filter(ms => ms.district === profile.district);
-    }
-    if (profile.juniorType) {
-      filtered = filtered.filter(ms => ms.type === profile.juniorType);
     }
 
     // 根据搜索词进行筛选
@@ -272,28 +297,36 @@ export default function FilterPage() {
     }
 
     return filtered;
-  }, [cachedMiddleSchools, profile.district, profile.juniorType, middleSchoolSearch]);
+  }, [cachedMiddleSchools, profile.district, middleSchoolSearch]);
 
   const schools = (schoolsResp?.data ?? []) as HighSchool[];
-  const targetIdSet = useMemo(() => new Set(targets.map((x) => x.schoolId)), [targets]);
+  const totalSchools = schools.length;
+  const totalPages = Math.max(1, Math.ceil(totalSchools / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pagedSchools = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return schools.slice(start, start + pageSize);
+  }, [schools, currentPage, pageSize]);
 
-  const addTarget = (schoolId: string) => {
-    if (targetIdSet.has(schoolId)) return;
-    const next: TargetSchool[] = [
-      ...targets,
-      {
-        id: createId('target'),
-        schoolId,
-        createdAt: new Date().toISOString(),
-      },
-    ];
-    setTargets(next);
-    saveTargets(next);
-  };
+  useEffect(() => {
+    setPage(1);
+  }, [schoolsResp?.data]);
+
+  useEffect(() => {
+    if (page !== currentPage) {
+      setPage(currentPage);
+    }
+  }, [currentPage, page]);
+
+  useEffect(() => {
+    if (searchPhase === 'searching' && !isSchoolsFetching) {
+      setSearchPhase('idle');
+    }
+  }, [isSchoolsFetching, searchPhase]);
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      {(isProfileLoading || isOptionsLoading || isSchoolsLoading) ? (
+      {(isProfileLoading || isOptionsLoading) ? (
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-2"></div>
@@ -349,32 +382,6 @@ export default function FilterPage() {
                     </SelectContent>
                   </Select>
                 </FormField>
-                <FormField label="初中类型" required>
-                  <Select
-                    value={profile.juniorType ?? ''}
-                    onValueChange={(v) => {
-                      updateProfile({
-                        juniorType: v as StudentProfile['juniorType'],
-                        middleSchoolId: null,
-                      });
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filterSelects.juniorTypes.length === 0 ? (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">选项加载中</div>
-                      ) : (
-                        filterSelects.juniorTypes.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </FormField>
                 <FormField label='当前初中学校（用于"到校"名额）' required>
                   <Select
                     value={profile.middleSchoolId ?? ''}
@@ -382,7 +389,7 @@ export default function FilterPage() {
                       updateProfile({ middleSchoolId: v });
                       setMiddleSchoolSearch('');
                     }}
-                    disabled={!profile.district || !profile.juniorType}
+                    disabled={!profile.district}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="请选择当前初中学校" />
@@ -498,7 +505,11 @@ export default function FilterPage() {
                     onClick={handleSearch}
                     disabled={saveProfileMutation.isPending}
                   >
-                    搜索推荐
+                    {searchPhase === 'saving'
+                      ? '保存画像中'
+                      : searchPhase === 'searching'
+                        ? '推荐搜索中'
+                        : '搜索推荐'}
                   </Button>
                 </div>
               </div>
@@ -538,81 +549,132 @@ export default function FilterPage() {
                 <Separator className="mb-3 opacity-50" />
 
                 <div className="space-y-2">
-                  {schools.map((s) => {
-                    const inTargets = targetIdSet.has(s.id);
-                    const stats = s.stats;
-                    const probability = stats?.probability ?? 0;
-                    const p = probability / 100;
-                    const level = levelFromProbability(p);
-                    return (
-                      <Card key={s.id} className="shadow-sm">
-                        <CardContent className="p-2 space-y-2">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                              <div className="font-semibold text-base truncate">{s.name}</div>
-                              <div className="text-xs text-muted-foreground mt-0.5">
-                                {s.district} · {s.type}
-                                {s.accommodation && ` · ${s.accommodation}`}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-xs text-muted-foreground">
+                      {totalSchools} 所·{totalSchools === 0 ? 0 : currentPage}/{totalSchools === 0 ? 0 : totalPages} 页
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1); }}>
+                        <SelectTrigger className="h-8 w-[92px] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[6, 10, 15, 20].map((size) => (
+                            <SelectItem key={size} value={String(size)}>
+                              每页 {size}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-2 text-xs"
+                          disabled={totalSchools === 0 || currentPage <= 1}
+                          onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        >
+                          上一页
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-2 text-xs"
+                          disabled={totalSchools === 0 || currentPage >= totalPages}
+                          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        >
+                          下一页
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {isSchoolsLoading || isSchoolsFetching ? (
+                    <div className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+                      加载中…
+                    </div>
+                  ) : totalSchools === 0 ? (
+                    <div className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+                      暂无匹配的推荐学校，请调整条件后再试。
+                    </div>
+                  ) : (
+                    pagedSchools.map((s) => {
+                      const inTargets = Boolean(s.isTarget);
+                      const isAdding = Boolean(addingTargets[s.id]);
+                      const stats = s.stats;
+                      const probability = stats?.probability ?? 0;
+                      const p = probability / 100;
+                      const level = levelFromProbability(p);
+                      return (
+                        <Card key={s.id} className="shadow-sm">
+                          <CardContent className="p-2 space-y-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="font-semibold text-base truncate">{s.name}</div>
+                                <div className="text-xs text-muted-foreground mt-0.5">
+                                  {s.district} · {s.type}
+                                  {s.accommodation && ` · ${s.accommodation}`}
+                                </div>
                               </div>
+                              {stats?.probability && (
+                                <div className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${level === 'high' ? 'bg-green-100 text-green-700' : level === 'mid' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                                  {level === 'high' ? '稳' : level === 'mid' ? '冲' : '保'}
+                                </div>
+                              )}
                             </div>
-                            {stats?.probability && (
-                              <div className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${level === 'high' ? 'bg-green-100 text-green-700' : level === 'mid' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
-                                {level === 'high' ? '稳' : level === 'mid' ? '冲' : '保'}
+
+                            <div className="grid grid-cols-3 gap-1.5">
+                              <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">自招名额</span>
+                                <span className="text-xs font-semibold flex-1 text-center">{stats?.quotaAutonomous ?? '-'}</span>
                               </div>
-                            )}
-                          </div>
+                              <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">到区名额</span>
+                                <span className="text-xs font-semibold flex-1 text-center">{stats?.quotaToDistrict ?? '-'}</span>
+                              </div>
+                              <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">到校名额</span>
+                                <span className="text-xs font-semibold flex-1 text-center">{stats?.quotaToSchool ?? '-'}</span>
+                              </div>
+                              <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">统招分数</span>
+                                <span className="text-xs font-semibold flex-1 text-center">{stats?.scoreUnified ?? '-'}</span>
+                              </div>
+                              <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">到区分数</span>
+                                <span className="text-xs font-semibold flex-1 text-center">{stats?.scoreToDistrict ?? '-'}</span>
+                              </div>
+                              <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">到校分数</span>
+                                <span className="text-xs font-semibold flex-1 text-center">{stats?.scoreToSchool ?? '-'}</span>
+                              </div>
 
-                          <div className="grid grid-cols-3 gap-1.5">
-                            <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">自招名额</span>
-                              <span className="text-sm font-semibold flex-1 text-center">{stats?.quotaAutonomous ?? 0}</span>
-                            </div>
-                            <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">到区名额</span>
-                              <span className="text-sm font-semibold flex-1 text-center">{stats?.quotaToDistrict ?? 0}</span>
-                            </div>
-                            <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">到校名额</span>
-                              <span className="text-sm font-semibold flex-1 text-center">{stats?.quotaToSchool ?? 0}</span>
-                            </div>
-                            <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">统招分数</span>
-                              <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreUnified ?? '-'}</span>
-                            </div>
-                            <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">到区分数</span>
-                              <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreToDistrict ?? '-'}</span>
-                            </div>
-                            <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">到校分数</span>
-                              <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreToSchool ?? '-'}</span>
                             </div>
 
-                          </div>
-
-                          <div className="flex items-center justify-between pt-0.5">
-                            <div className="text-xs text-muted-foreground">
-                              推荐度基于学生画像与学校录取数据
-                            </div>
-                            <div className="flex gap-1.5">
-                              <Button variant="outline" size="sm" asChild className="h-8 text-xs px-2.5 rounded-full">
-                                <Link to={`/schools/${s.id}`}>详情</Link>
-                              </Button>
+                            <div className="flex items-center justify-between pt-0.5">
+                              <div className="text-xs text-muted-foreground">
+                                推荐度基于学生画像
+                              </div>
+                              <div className="flex gap-1.5">
+                                <Button variant="outline" size="sm" asChild className="h-8 text-xs px-2.5 rounded-full">
+                                  <Link to={`/schools/${s.id}`}>详情</Link>
+                                </Button>
                               <Button
                                 size="sm"
-                                disabled={inTargets}
-                                onClick={() => addTarget(s.id)}
+                                disabled={inTargets || isAdding}
+                                onClick={() => handleAddTarget(s.id)}
                                 variant={inTargets ? "secondary" : "default"}
                                 className={`h-8 text-xs px-2.5 rounded-full ${inTargets ? 'text-green-700 bg-green-100 hover:bg-green-200' : ''}`}
                               >
-                                {inTargets ? '已在目标' : '加入目标'}
+                                {isAdding ? '加入中' : inTargets ? '已在目标' : '加入目标'}
                               </Button>
+                              </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                          </CardContent>
+                        </Card>
+                      );
+                    })
+                  )}
                 </div>
               </SectionCard>
             </SectionCard>

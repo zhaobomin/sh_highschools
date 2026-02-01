@@ -119,20 +119,27 @@ class SupabaseImporter:
                         except:
                             return None
                     
+                    def get_int_value(value):
+                        if value == '' or value is None:
+                            return 0
+                        try:
+                            return int(value)
+                        except:
+                            return 0
+                    
                     data = {
                         'id': row['id'],
                         'middle_school_code': row['middle_school_code'],
                         'high_school_code': row['high_school_code'],
-                        'seats': int(row['seats']),
-                        'year': int(row['year']),
+                        'seats': get_int_value(row['seats']),
+                        'year': get_int_value(row['year']),
                         'total_admission_score': get_float_value(row['total_admission_score']),
                         'chinese_admission_score': get_float_value(row['chinese_admission_score']),
                         'math_admission_score': get_float_value(row['math_admission_score']),
                         'english_admission_score': get_float_value(row['english_admission_score']),
-                        'physics_admission_score': get_float_value(row['physics_admission_score']),
-                        'chemistry_admission_score': get_float_value(row['chemistry_admission_score']),
                         'politics_admission_score': get_float_value(row['politics_admission_score']),
                         'history_admission_score': get_float_value(row['history_admission_score']),
+                        'pe_admission_score': get_float_value(row.get('pe_admission_score')),
                         'created_at': time.strftime('%Y-%m-%d %H:%M:%S'),
                         'updated_at': time.strftime('%Y-%m-%d %H:%M:%S')
                     }
@@ -170,19 +177,26 @@ class SupabaseImporter:
                         except:
                             return None
                     
+                    def get_int_value(value):
+                        if value == '' or value is None:
+                            return 0
+                        try:
+                            return int(value)
+                        except:
+                            return 0
+                    
                     data = {
                         'district': row['district'],
                         'high_school_code': row['high_school_code'],
-                        'seats': int(row['seats']),
-                        'year': int(row['year']),
+                        'seats': get_int_value(row['seats']),
+                        'year': get_int_value(row['year']),
                         'total_admission_score': get_float_value(row['total_admission_score']),
                         'chinese_admission_score': get_float_value(row['chinese_admission_score']),
                         'math_admission_score': get_float_value(row['math_admission_score']),
                         'english_admission_score': get_float_value(row['english_admission_score']),
-                        'physics_admission_score': get_float_value(row['physics_admission_score']),
-                        'chemistry_admission_score': get_float_value(row['chemistry_admission_score']),
                         'politics_admission_score': get_float_value(row['politics_admission_score']),
                         'history_admission_score': get_float_value(row['history_admission_score']),
+                        'pe_admission_score': get_float_value(row.get('pe_admission_score')),
                         'created_at': time.strftime('%Y-%m-%d %H:%M:%S'),
                         'updated_at': time.strftime('%Y-%m-%d %H:%M:%S')
                     }
@@ -220,6 +234,14 @@ class SupabaseImporter:
                         except:
                             return None
                     
+                    def get_int_value(value):
+                        if value == '' or value is None:
+                            return 0
+                        try:
+                            return int(value)
+                        except:
+                            return 0
+                    
                     data = {
                         'id': row['id'],
                         'high_school_code': row['high_school_code'],
@@ -228,11 +250,10 @@ class SupabaseImporter:
                         'chinese_admission_score': get_float_value(row['chinese_admission_score']),
                         'math_admission_score': get_float_value(row['math_admission_score']),
                         'english_admission_score': get_float_value(row['english_admission_score']),
-                        'physics_admission_score': get_float_value(row['physics_admission_score']),
-                        'chemistry_admission_score': get_float_value(row['chemistry_admission_score']),
                         'politics_admission_score': get_float_value(row['politics_admission_score']),
                         'history_admission_score': get_float_value(row['history_admission_score']),
-                        'year': int(row['year']),
+                        'pe_admission_score': get_float_value(row.get('pe_admission_score')),
+                        'year': get_int_value(row['year']),
                         'created_at': time.strftime('%Y-%m-%d %H:%M:%S'),
                         'updated_at': time.strftime('%Y-%m-%d %H:%M:%S')
                     }
@@ -261,13 +282,22 @@ class SupabaseImporter:
             with open(csv_path, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 for row in reader:
+                    # 处理空值
+                    def get_int_value(value):
+                        if value == '' or value is None:
+                            return 0
+                        try:
+                            return int(value)
+                        except:
+                            return 0
+                    
                     data = {
                         'school_code': row['school_code'],
                         'boarding_status': row['boarding_status'],
-                        'total_quota': int(row['total_quota']),
-                        'sports_quota': int(row['sports_quota']),
-                        'art_quota': int(row['art_quota']),
-                        'year': int(row['year']),
+                        'total_quota': get_int_value(row['total_quota']),
+                        'sports_quota': get_int_value(row['sports_quota']),
+                        'art_quota': get_int_value(row['art_quota']),
+                        'year': get_int_value(row['year']),
                         'created_at': time.strftime('%Y-%m-%d %H:%M:%S'),
                         'updated_at': time.strftime('%Y-%m-%d %H:%M:%S')
                     }
@@ -305,11 +335,11 @@ def main():
     
     try:
         # 导入数据
-        importer.import_middle_schools(csv_files['middle_schools'])
-        importer.import_self_enrollment_quota(csv_files['self_enrollment_quota'])
+        #importer.import_middle_schools(csv_files['middle_schools'])
+        #importer.import_self_enrollment_quota(csv_files['self_enrollment_quota'])
         importer.import_school_seats(csv_files['school_seats'])
-        importer.import_district_seats(csv_files['district_seats'])
-        importer.import_parallel_admission_scores(csv_files['parallel_admission_scores'])
+        #importer.import_district_seats(csv_files['district_seats'])
+        #importer.import_parallel_admission_scores(csv_files['parallel_admission_scores'])
         
     finally:
         # 关闭连接

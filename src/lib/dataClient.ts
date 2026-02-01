@@ -1,5 +1,5 @@
 import fetcher, { type ApiResponse } from '@/lib/api';
-import type { District, HighSchool, HighSchoolType, JuniorType, MiddleSchool, ScoreLine } from '@/lib/types';
+import type { District, HighSchool, HighSchoolType, MiddleSchool, ScoreLine } from '@/lib/types';
 import { mockGetLatestScoreLine, mockListMiddleSchools, mockListSchools, mockGetSchoolDetail, mockListFilterOptions } from '@/mocks/api';
 
 
@@ -18,7 +18,6 @@ export async function listSchools(params?: {
   q?: string;
   district?: District | '全部';
   type?: HighSchoolType | '全部';
-  studentDistrict?: District | null;
   middleSchoolId?: string | null;
   stableScore?: number | null;
   highScore?: number | null;
@@ -30,16 +29,24 @@ export async function listSchools(params?: {
   );
 }
 
-export async function listSchoolsSimple(): Promise<ApiResponse<Array<{ id: string; name: string }>>> {
+export async function addTargetSchool(params: { schoolId: string }): Promise<ApiResponse<{ id?: string; school_code: string; isTarget: boolean }>> {
   return fallback(
-    () => fetcher.get('/schools/simple'),
-    () => {
-      // Mock数据，返回简化的学校列表
-      const mockSchools = mockListSchools().then(resp =>
-        resp.data.map(school => ({ id: school.id, name: school.name }))
-      );
-      return mockSchools.then(data => ({ data }));
-    }
+    () => fetcher.post('/schools/targets', { school_code: params.schoolId }),
+    () => Promise.resolve({ data: { school_code: params.schoolId, isTarget: true } })
+  );
+}
+
+export async function listTargetSchools(): Promise<ApiResponse<HighSchool[]>> {
+  return fallback(
+    () => fetcher.get('/schools/targets'),
+    () => Promise.resolve({ data: [] })
+  );
+}
+
+export async function removeTargetSchool(params: { schoolId: string }): Promise<ApiResponse<{ school_code: string; isTarget: boolean }>> {
+  return fallback(
+    () => fetcher.delete(`/schools/targets/${encodeURIComponent(params.schoolId)}`),
+    () => Promise.resolve({ data: { school_code: params.schoolId, isTarget: false } })
   );
 }
 
@@ -87,7 +94,6 @@ export async function saveStudentProfile(data: any): Promise<ApiResponse<any>> {
 
 export async function getFilterOptions(): Promise<ApiResponse<{
   districts: District[];
-  junior_types: JuniorType[];
   middle_schools: MiddleSchool[];
 }>> {
   return fallback(

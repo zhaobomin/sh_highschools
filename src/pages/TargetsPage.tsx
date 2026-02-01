@@ -20,30 +20,55 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PullToRefresh from '@/components/Shared/PullToRefresh';
-import type { HighSchool, TargetSchool } from '@/lib/types';
-import { createId, loadTargets, saveTargets } from '@/lib/appData';
-import { listSchoolsSimple } from '@/lib/dataClient';
+import type { HighSchool } from '@/lib/types';
+import { loadMiddleSchools } from '@/lib/appData';
+import { addTargetSchool, getStudentProfile, listSchools, listTargetSchools, removeTargetSchool } from '@/lib/dataClient';
 import { levelFromProbability } from '@/lib/evaluation';
 
 export default function TargetsPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
-  const [targets, setTargets] = useState<TargetSchool[]>(() => loadTargets());
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>('');
   const [schoolSearch, setSchoolSearch] = useState('');
+  const [addingTarget, setAddingTarget] = useState(false);
+  const [removingTargets, setRemovingTargets] = useState<Record<string, boolean>>({});
 
-  const { data: schoolsResp, isLoading } = useQuery({
-    queryKey: ['schools:simple'],
-    queryFn: listSchoolsSimple,
+  const { data: profileResp } = useQuery({
+    queryKey: ['studentProfile'],
+    queryFn: getStudentProfile,
+    retry: false,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 300000,
+  });
+
+  const { data: schoolsResp } = useQuery({
+    queryKey: ['schools:all'],
+    queryFn: () => listSchools({ district: '全部', type: '全部' }),
+  });
+
+  const { data: targetsResp, isLoading } = useQuery({
+    queryKey: ['schools:targets'],
+    queryFn: listTargetSchools,
   });
 
   const handleRefresh = async () => {
-    await queryClient.refetchQueries({ queryKey: ['schools:simple'] });
+    await queryClient.refetchQueries({ queryKey: ['schools:all'] });
+    await queryClient.refetchQueries({ queryKey: ['schools:targets'] });
   };
 
   const schools = (schoolsResp?.data ?? []) as HighSchool[];
+  const targetSchools = (targetsResp?.data ?? []) as HighSchool[];
+  const targetIdSet = useMemo(() => new Set(targetSchools.map((s) => s.id)), [targetSchools]);
+  const studentProfile = profileResp?.data ?? null;
+  const middleSchools = useMemo(() => loadMiddleSchools(), []);
+  const middleSchoolName = useMemo(() => {
+    if (!studentProfile?.middle_school_id) return '';
+    const match = middleSchools.find((ms) => ms.id === studentProfile.middle_school_id);
+    return match?.name ?? '';
+  }, [middleSchools, studentProfile?.middle_school_id]);
 
   const filteredSchools = useMemo(() => {
     if (!schoolSearch) return schools;
@@ -53,40 +78,89 @@ export default function TargetsPage() {
     );
   }, [schools, schoolSearch]);
 
-  const targetSchools = useMemo(() => {
-    const map = new Map(schools.map((s) => [s.id, s]));
-    return targets
-      .map((tgt) => map.get(tgt.schoolId))
-      .filter((v): v is HighSchool => Boolean(v));
-  }, [schools, targets]);
-
-
-
-
-
   const canAddSelected =
-    Boolean(selectedSchoolId) && !targets.some((x) => x.schoolId === selectedSchoolId) && schools.some((s) => s.id === selectedSchoolId);
+    Boolean(selectedSchoolId) && !targetIdSet.has(selectedSchoolId) && schools.some((s) => s.id === selectedSchoolId);
 
-  const onRemoveTarget = (schoolId: string) => {
-    const next = targets.filter((tgt) => tgt.schoolId !== schoolId);
-    setTargets(next);
-    saveTargets(next);
+  const onRemoveTarget = async (schoolId: string) => {
+    if (!window.confirm('确认移除该目标学校？')) {
+      return;
+    }
+    setRemovingTargets((prev) => ({ ...prev, [schoolId]: true }));
+    const previousTargets = queryClient.getQueryData<any>(['schools:targets']);
+    const previousSchools = queryClient.getQueryData<any>(['schools:list']);
+    queryClient.setQueryData(['schools:targets'], (oldData: any) => {
+      if (!oldData?.data) return oldData;
+      return {
+        ...oldData,
+        data: oldData.data.filter((school: HighSchool) => school.id !== schoolId),
+      };
+    });
+    queryClient.setQueryData(['schools:list'], (oldData: any) => {
+      if (!oldData?.data) return oldData;
+      return {
+        ...oldData,
+        data: oldData.data.map((school: HighSchool) =>
+          school.id === schoolId ? { ...school, isTarget: false } : school
+        ),
+      };
+    });
+    try {
+      await removeTargetSchool({ schoolId });
+    } catch (error: any) {
+      if (previousTargets) {
+        queryClient.setQueryData(['schools:targets'], previousTargets);
+      }
+      if (previousSchools) {
+        queryClient.setQueryData(['schools:list'], previousSchools);
+      }
+    } finally {
+      setRemovingTargets((prev) => {
+        const next = { ...prev };
+        delete next[schoolId];
+        return next;
+      });
+    }
   };
 
-  const onAddTarget = () => {
-    if (!canAddSelected) return;
-    const next: TargetSchool[] = [
-      ...targets,
-      {
-        id: createId('target'),
-        schoolId: selectedSchoolId,
-        createdAt: new Date().toISOString(),
-      },
-    ];
-    setTargets(next);
-    saveTargets(next);
-    setAddDialogOpen(false);
-    setSelectedSchoolId('');
+  const onAddTarget = async () => {
+    if (!canAddSelected || addingTarget) return;
+    setAddingTarget(true);
+    const previousTargets = queryClient.getQueryData<any>(['schools:targets']);
+    const selectedSchool = schools.find((s) => s.id === selectedSchoolId);
+    if (selectedSchool) {
+      queryClient.setQueryData(['schools:targets'], (oldData: any) => {
+        const current = (oldData?.data ?? []) as HighSchool[];
+        if (current.some((s) => s.id === selectedSchool.id)) {
+          return oldData;
+        }
+        return {
+          ...oldData,
+          data: [...current, { ...selectedSchool, isTarget: true }],
+        };
+      });
+    }
+    try {
+      await addTargetSchool({ schoolId: selectedSchoolId });
+      queryClient.setQueryData(['schools:list'], (oldData: any) => {
+        if (!oldData?.data) return oldData;
+        return {
+          ...oldData,
+          data: oldData.data.map((school: HighSchool) =>
+            school.id === selectedSchoolId ? { ...school, isTarget: true } : school
+          ),
+        };
+      });
+      setAddDialogOpen(false);
+      setSelectedSchoolId('');
+      setSchoolSearch('');
+    } catch (error: any) {
+      if (previousTargets) {
+        queryClient.setQueryData(['schools:targets'], previousTargets);
+      }
+      throw error;
+    } finally {
+      setAddingTarget(false);
+    }
   };
 
   return (
@@ -134,6 +208,40 @@ export default function TargetsPage() {
             </SectionCard>
 
             <SectionCard divider={false} gap="xs" className="bg-transparent border-none shadow-none p-0" contentClassName="p-0 pt-0">
+              <SectionCard gap="xs" className="profile-card" contentClassName="px-4 pb-4">
+                <div className="flex items-start justify-between pb-0">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50">
+                      <Target className="h-4 w-4 text-foreground" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-base">学生画像</div>
+
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground">
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <Separator className="mb-3 opacity-50" />
+
+                <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-2">
+                  <div className="rounded-lg border border-border/60 bg-muted/30 px-2 py-2 text-center">
+                    <div className="text-[11px] text-muted-foreground">所在区</div>
+                    <div className="text-sm font-semibold mt-0.5">
+                      {studentProfile?.district || '未设置'}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-center">
+                    <div className="text-[11px] text-muted-foreground">当前初中</div>
+                    <div className="text-sm font-semibold mt-0.5 truncate whitespace-nowrap">
+                      {middleSchoolName || '未设置'}
+                    </div>
+                  </div>
+                </div>
+              </SectionCard>
+
               <SectionCard gap="xs" className="profile-card" contentClassName="px-4 pb-4">
                 <div className="flex items-start justify-between pb-0">
                   <div className="flex items-center gap-2">
@@ -200,7 +308,7 @@ export default function TargetsPage() {
                           <Button variant="secondary" onClick={() => setAddDialogOpen(false)}>
                             {t('ui.action.cancel')}
                           </Button>
-                          <Button disabled={!canAddSelected} onClick={onAddTarget}>
+                          <Button disabled={!canAddSelected || addingTarget} onClick={onAddTarget}>
                             {t('ui.action.confirm')}
                           </Button>
                         </DialogFooter>
@@ -242,27 +350,27 @@ export default function TargetsPage() {
                             <div className="grid grid-cols-3 gap-1.5">
                               <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
                                 <span className="text-xs text-muted-foreground whitespace-nowrap">自招名额</span>
-                                <span className="text-sm font-semibold flex-1 text-center">{stats?.quotaAutonomous ?? 0}</span>
+                                <span className="text-xs font-semibold flex-1 text-center">{stats?.quotaAutonomous ?? 0}</span>
                               </div>
                               <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
                                 <span className="text-xs text-muted-foreground whitespace-nowrap">到区名额</span>
-                                <span className="text-sm font-semibold flex-1 text-center">{stats?.quotaToDistrict ?? 0}</span>
+                                <span className="text-xs font-semibold flex-1 text-center">{stats?.quotaToDistrict ?? 0}</span>
                               </div>
                               <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
                                 <span className="text-xs text-muted-foreground whitespace-nowrap">到校名额</span>
-                                <span className="text-sm font-semibold flex-1 text-center">{stats?.quotaToSchool ?? 0}</span>
+                                <span className="text-xs font-semibold flex-1 text-center">{stats?.quotaToSchool ?? 0}</span>
                               </div>
                               <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
                                 <span className="text-xs text-muted-foreground whitespace-nowrap">统招分数</span>
-                                <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreUnified ?? '-'}</span>
+                                <span className="text-xs font-semibold flex-1 text-center">{stats?.scoreUnified ?? '-'}</span>
                               </div>
                               <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
                                 <span className="text-xs text-muted-foreground whitespace-nowrap">到区分数</span>
-                                <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreToDistrict ?? '-'}</span>
+                                <span className="text-xs font-semibold flex-1 text-center">{stats?.scoreToDistrict ?? '-'}</span>
                               </div>
                               <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
                                 <span className="text-xs text-muted-foreground whitespace-nowrap">到校分数</span>
-                                <span className="text-sm font-semibold flex-1 text-center">{stats?.scoreToSchool ?? '-'}</span>
+                                <span className="text-xs font-semibold flex-1 text-center">{stats?.scoreToSchool ?? '-'}</span>
                               </div>
 
                             </div>
@@ -287,8 +395,9 @@ export default function TargetsPage() {
                                   size="sm"
                                   className="h-8 text-xs px-2.5 rounded-full"
                                   onClick={() => onRemoveTarget(s.id)}
+                                  disabled={Boolean(removingTargets[s.id])}
                                 >
-                                  {t('ui.action.remove')}
+                                  {removingTargets[s.id] ? '移除中' : t('ui.action.remove')}
                                 </Button>
                               </div>
                             </div>

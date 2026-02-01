@@ -28,6 +28,7 @@ export interface HighSchool {
   type: HighSchoolType;
   fullType?: string;
   accommodation?: string;
+  isTarget?: boolean;
   stats?: {
     scoreToDistrict?: number | null;
     scoreToSchool?: number | null;
@@ -80,7 +81,6 @@ export interface MiddleSchool {
 
 export interface StudentProfile {
   district: District | null;
-  juniorType: JuniorType | null;
   middleSchoolId: string | null;
   stableScore: number | null;
   highScore: number | null;
@@ -117,4 +117,3 @@ export interface MockExamStats {
   min: number | null;
   max: number | null;
 }
-

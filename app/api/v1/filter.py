@@ -20,7 +20,6 @@ class MiddleSchool(BaseModel):
 
 class FilterOptions(BaseModel):
     districts: List[str]
-    junior_types: List[str]
     middle_schools: List[MiddleSchool]
 
 
@@ -30,7 +29,6 @@ class FilterOptionsResponse(BaseModel):
 
 class StudentProfile(BaseModel):
     district: str
-    junior_type: str
     middle_school_id: Optional[str] = None
     stable_score: float
     high_score: float
@@ -80,7 +78,6 @@ def get_filter_options():
     schools = db.select("middle_schools", ["code", "name", "district", "type"])
 
     districts = sorted({school["district"] for school in schools})
-    junior_types = sorted({school["type"] for school in schools})
     middle_schools = [
         {
             "id": school["code"],
@@ -94,7 +91,6 @@ def get_filter_options():
     response = FilterOptionsResponse(
         data=FilterOptions(
             districts=districts,
-            junior_types=junior_types,
             middle_schools=middle_schools,
         )
     )
@@ -112,7 +108,7 @@ def get_student_profile():
             message="User context missing.",
         )
 
-    profiles = db.select("student_profiles", ["district", "junior_type", "middle_school_code", "stable_score", "high_score", "low_score"], {"user_id": current_user["id"]})
+    profiles = db.select("student_profiles", ["district", "middle_school_code", "stable_score", "high_score", "low_score"], {"user_id": current_user["id"]})
     if not profiles:
         return {"data": None}
 
@@ -120,7 +116,6 @@ def get_student_profile():
     return {
         "data": {
             "district": profile["district"],
-            "junior_type": profile["junior_type"],
             "middle_school_id": profile.get("middle_school_code"),
             "stable_score": profile.get("stable_score"),
             "high_score": profile.get("high_score"),
@@ -155,7 +150,6 @@ def save_student_profile():
 
     data_payload = {
         "district": profile_data.district,
-        "junior_type": profile_data.junior_type,
         "middle_school_code": profile_data.middle_school_id,
         "stable_score": profile_data.stable_score,
         "high_score": profile_data.high_score,

@@ -1,4 +1,4 @@
-import type { MockExam, StudentProfile, TargetSchool, MiddleSchool, District, JuniorType } from '@/lib/types';
+import type { MockExam, StudentProfile, TargetSchool, MiddleSchool, District } from '@/lib/types';
 import { readJson, writeJson } from '@/lib/storage';
 
 const KEY_PROFILE = 'shhs:studentProfile:v1';
@@ -14,7 +14,6 @@ export function createId(prefix: string): string {
 export function loadStudentProfile(): StudentProfile {
   return readJson<StudentProfile>(KEY_PROFILE, {
     district: null,
-    juniorType: null,
     middleSchoolId: null,
     stableScore: null,
     highScore: null,
@@ -52,11 +51,10 @@ export function saveMiddleSchools(schools: MiddleSchool[]): void {
 
 export interface FilterSelectCache {
   districts: District[];
-  juniorTypes: JuniorType[];
 }
 
 export function loadFilterSelects(): FilterSelectCache {
-  return readJson<FilterSelectCache>(KEY_FILTER_SELECTS, { districts: [], juniorTypes: [] });
+  return readJson<FilterSelectCache>(KEY_FILTER_SELECTS, { districts: [] });
 }
 
 export function saveFilterSelects(cache: FilterSelectCache): void {
