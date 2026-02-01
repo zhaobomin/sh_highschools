@@ -355,7 +355,7 @@ export default function MocksPage() {
                     </div>
 
                     <DialogFooter className="pt-2">
-                      <Button variant="secondary" className="h-10 px-4" disabled={saving}>
+                      <Button variant="secondary" className="h-10 px-4" disabled={saving} onClick={() => setDialogOpen(false)}>
                         {t('ui.action.cancel')}
                       </Button>
                       <Button className="h-10 px-6" onClick={() => upsert()} disabled={saving}>
