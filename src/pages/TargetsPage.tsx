@@ -341,8 +341,8 @@ export default function TargetsPage() {
                                 </div>
                               </div>
                               {stats?.probability && (
-                                <div className={`px-2 py-0.5 rounded-full bg-gray-100 text-xs font-medium whitespace-nowrap flex-shrink-0 ${level === 'high' ? 'text-green-700' : level === 'mid' ? 'text-amber-700' : 'text-red-700'}`}>
-                                  模考概率 {stats.probability}%
+                                <div className={`px-2 py-0.5 rounded-full bg-gray-100 text-xs font-medium whitespace-nowrap flex-shrink-0 ${level === 'high' ? 'text-green-700' : level === 'mid' ? 'text-amber-700' : 'text-rose-700'}`}>
+                                  {level === 'high' ? '保' : level === 'mid' ? '稳' : '冲'} · {stats.probability}%
                                 </div>
                               )}
                             </div>

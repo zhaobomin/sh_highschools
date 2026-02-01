@@ -1,4 +1,5 @@
 from datetime import datetime
+import math
 from typing import Any, Dict, List, Optional, Tuple, Set
 
 from flask import Blueprint, request
@@ -30,36 +31,93 @@ def _safe_int(value: Any) -> Optional[int]:
         return None
 
 
-def _default_unified_score(school_type: Optional[str]) -> float:
-    if school_type == "市重点":
-        return 690.0
-    if school_type == "区重点":
-        return 660.0
-    return 630.0
+
+def _clamp(value: float, min_value: float, max_value: float) -> float:
+    return max(min_value, min(max_value, value))
 
 
-def _default_district_quota(school_type: Optional[str]) -> int:
-    if school_type == "市重点":
-        return 35
-    if school_type == "区重点":
-        return 25
-    return 15
+def _normal_cdf(z: float) -> float:
+    t = 1 / (1 + 0.2316419 * abs(z))
+    d = 0.3989423 * math.exp((-z * z) / 2)
+    p = d * t * (
+        0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))
+    )
+    cdf = 1 - p if z > 0 else p
+    return _clamp(cdf, 0.0, 1.0)
 
 
-def _default_school_quota(school_type: Optional[str]) -> int:
-    if school_type == "市重点":
-        return 10
-    if school_type == "区重点":
-        return 7
-    return 3
+def _probability_to_reach(
+    threshold: Optional[float],
+    mean: Optional[float],
+    std: Optional[float],
+) -> Optional[float]:
+    if threshold is None or mean is None or std is None or std <= 0:
+        return None
+    z = (threshold - mean) / std
+    return _clamp(1 - _normal_cdf(z), 0.0, 1.0)
 
 
-def _default_autonomous_quota(school_type: Optional[str]) -> int:
-    if school_type == "市重点":
-        return 75
-    if school_type == "区重点":
+def _level_from_probability(probability: Optional[float]) -> str:
+    if probability is None:
+        return "na"
+    if probability >= 0.75:
+        return "high"
+    if probability >= 0.4:
+        return "mid"
+    return "low"
+
+
+def _compute_mock_stats(scores: List[float]) -> Tuple[int, Optional[float], Optional[float]]:
+    if not scores:
+        return 0, None, None
+    count = len(scores)
+    mean = sum(scores) / count
+    variance = sum((score - mean) ** 2 for score in scores) / count
+    std = math.sqrt(variance)
+    return count, mean, std
+
+
+def _probability_from_profile(
+    benchmark: float,
+    stable_score: Optional[float],
+    high_score: Optional[float],
+    low_score: Optional[float],
+) -> Optional[int]:
+    if stable_score is None or high_score is None or low_score is None:
+        return None
+    if high_score < low_score:
+        return None
+    if low_score >= benchmark:
+        return 85
+    if stable_score >= benchmark:
+        return 65
+    if high_score >= benchmark:
         return 40
     return 15
+
+
+def _derive_model(
+    stable_score: Optional[float],
+    high_score: Optional[float],
+    low_score: Optional[float],
+    mock_scores: List[float],
+) -> Dict[str, Any]:
+    count, mean, std = _compute_mock_stats(mock_scores)
+    if count >= 2 and mean is not None and std is not None and std > 0:
+        return {"mean": mean, "std": std, "count": count, "source": "mocks"}
+    if (
+        stable_score is not None
+        and high_score is not None
+        and low_score is not None
+        and high_score > low_score
+    ):
+        return {
+            "mean": stable_score,
+            "std": max(5.0, (high_score - low_score) / 4),
+            "count": count,
+            "source": "estimate",
+        }
+    return {"mean": None, "std": None, "count": count, "source": "none"}
 
 
 def _calculate_probability(
@@ -98,6 +156,9 @@ def _build_stats(
     school_quota: Optional[int],
     autonomous_quota: Optional[int],
     mock_best_score: Optional[float],
+    stable_score: Optional[float],
+    high_score: Optional[float],
+    low_score: Optional[float],
 ) -> Dict[str, Any]:
     stats: Dict[str, Any] = {}
     stats["scoreUnified"] = unified_score
@@ -110,7 +171,14 @@ def _build_stats(
         score for score in [unified_score, district_score, school_score] if score is not None
     ]
     benchmark = min(benchmark_scores) if benchmark_scores else None
-    stats["probability"] = _calculate_probability(benchmark, mock_best_score)
+    probability = None
+    if benchmark is not None:
+        probability = _probability_from_profile(benchmark, stable_score, high_score, low_score)
+        if probability is None and mock_best_score is not None:
+            probability = _calculate_probability(benchmark, mock_best_score)
+        if probability is None:
+            probability = 50
+    stats["probability"] = probability
     return stats
 
 
@@ -294,6 +362,9 @@ def _fetch_schools_with_supabase(
             school_quota=school_quota,
             autonomous_quota=autonomous_quota,
             mock_best_score=mock_best_score,
+            stable_score=stable_score,
+            high_score=high_score,
+            low_score=low_score,
         )
 
         enriched.append(
@@ -431,6 +502,9 @@ def _fetch_schools_without_supabase(
             school_quota=school_quota,
             autonomous_quota=autonomous_quota,
             mock_best_score=mock_best_score,
+            stable_score=stable_score,
+            high_score=high_score,
+            low_score=low_score,
         )
 
         enriched.append(
@@ -663,6 +737,170 @@ def list_target_schools():
         )
 
     return {"data": enriched_schools, "meta": {"total": total}}
+
+
+@schools_bp.route("/targets/evaluation", methods=["GET"])
+@require_auth
+def evaluate_target_schools():
+    current_user = get_current_user()
+    if not current_user:
+        raise CustomException(
+            status_code=401,
+            code="UNAUTHORIZED",
+            message="User context missing.",
+        )
+
+    targets = db.select("target_schools", ["school_code"], {"user_id": current_user["id"]})
+    school_codes = [record["school_code"] for record in targets if record.get("school_code")]
+
+    profiles = db.select(
+        "student_profiles",
+        ["district", "middle_school_code", "stable_score", "high_score", "low_score"],
+        {"user_id": current_user["id"]},
+    )
+    profile = profiles[0] if profiles else {}
+    target_district = profile.get("district")
+    middle_school_id = profile.get("middle_school_code")
+    stable_score = _safe_float(profile.get("stable_score"))
+    high_score = _safe_float(profile.get("high_score"))
+    low_score = _safe_float(profile.get("low_score"))
+
+    mock_exams = db.select("mock_exams", ["total_score"], {"user_id": current_user["id"]})
+    mock_scores = [
+        score
+        for score in (
+            _safe_float(record.get("total_score"))
+            for record in (mock_exams or [])
+        )
+        if score is not None
+    ]
+
+    model = _derive_model(stable_score, high_score, low_score, mock_scores)
+
+    if not school_codes:
+        return {
+            "data": {
+                "profile": {
+                    "district": profile.get("district"),
+                    "middleSchoolId": profile.get("middle_school_code"),
+                    "stableScore": stable_score,
+                    "highScore": high_score,
+                    "lowScore": low_score,
+                },
+                "model": model,
+                "targets": [],
+            }
+        }
+
+    target_school_codes = set(school_codes)
+    if isinstance(db, SupabaseAdapter):
+        enriched_schools, _ = _fetch_schools_with_supabase(
+            "",
+            None,
+            target_district,
+            middle_school_id,
+            1,
+            None,
+            school_codes,
+            target_school_codes,
+            None,
+            stable_score,
+            high_score,
+            low_score,
+        )
+    else:
+        enriched_schools, _ = _fetch_schools_without_supabase(
+            "",
+            None,
+            target_district,
+            middle_school_id,
+            1,
+            None,
+            school_codes,
+            target_school_codes,
+            None,
+            stable_score,
+            high_score,
+            low_score,
+        )
+
+    mean = model.get("mean")
+    std = model.get("std")
+    evaluations = []
+    for school in enriched_schools:
+        stats = school.get("stats") or {}
+        unified_score = _safe_float(stats.get("scoreUnified"))
+        district_score = _safe_float(stats.get("scoreToDistrict"))
+        school_score = _safe_float(stats.get("scoreToSchool"))
+        autonomous_quota = _safe_int(stats.get("quotaAutonomous"))
+        district_quota = _safe_int(stats.get("quotaToDistrict"))
+        school_quota = _safe_int(stats.get("quotaToSchool"))
+
+        unified_prob = _probability_to_reach(unified_score, mean, std)
+        district_prob = _probability_to_reach(district_score, mean, std)
+        school_prob = _probability_to_reach(school_score, mean, std)
+
+        available_probs = [p for p in [unified_prob, district_prob, school_prob] if p is not None]
+        overall_prob = None
+        if available_probs:
+            product = 1.0
+            for p in available_probs:
+                product *= (1 - p)
+            overall_prob = _clamp(1 - product, 0.0, 1.0)
+
+        evaluations.append(
+            {
+                "id": school.get("id"),
+                "name": school.get("name"),
+                "district": school.get("district"),
+                "type": school.get("type"),
+                "fullType": school.get("fullType"),
+                "channels": {
+                    "autonomous": {
+                        "score": None,
+                        "quota": autonomous_quota,
+                        "probability": None,
+                        "gap": None,
+                    },
+                    "district": {
+                        "score": district_score,
+                        "quota": district_quota,
+                        "probability": district_prob,
+                        "gap": None if district_score is None or mean is None else round(mean - district_score, 1),
+                    },
+                    "school": {
+                        "score": school_score,
+                        "quota": school_quota,
+                        "probability": school_prob,
+                        "gap": None if school_score is None or mean is None else round(mean - school_score, 1),
+                    },
+                    "unified": {
+                        "score": unified_score,
+                        "quota": None,
+                        "probability": unified_prob,
+                        "gap": None if unified_score is None or mean is None else round(mean - unified_score, 1),
+                    },
+                },
+                "overall": {
+                    "probability": overall_prob,
+                    "level": _level_from_probability(overall_prob),
+                },
+            }
+        )
+
+    return {
+        "data": {
+            "profile": {
+                "district": profile.get("district"),
+                "middleSchoolId": profile.get("middle_school_code"),
+                "stableScore": stable_score,
+                "highScore": high_score,
+                "lowScore": low_score,
+            },
+            "model": model,
+            "targets": evaluations,
+        }
+    }
 
 
 @schools_bp.route("/targets/<school_code>", methods=["DELETE"])

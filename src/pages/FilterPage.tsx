@@ -617,8 +617,8 @@ export default function FilterPage() {
                                 </div>
                               </div>
                               {stats?.probability && (
-                                <div className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${level === 'high' ? 'bg-green-100 text-green-700' : level === 'mid' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
-                                  {level === 'high' ? '稳' : level === 'mid' ? '冲' : '保'}
+                                <div className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${level === 'high' ? 'bg-green-100 text-green-700' : level === 'mid' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
+                                  {level === 'high' ? '保' : level === 'mid' ? '稳' : '冲'}
                                 </div>
                               )}
                             </div>

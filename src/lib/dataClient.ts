@@ -43,6 +43,13 @@ export async function listTargetSchools(): Promise<ApiResponse<HighSchool[]>> {
   );
 }
 
+export async function getTargetEvaluation(): Promise<ApiResponse<any>> {
+  return fallback(
+    () => fetcher.get('/schools/targets/evaluation'),
+    () => Promise.resolve({ data: { model: { mean: null, std: null, count: 0, source: 'none' }, targets: [] } })
+  );
+}
+
 export async function removeTargetSchool(params: { schoolId: string }): Promise<ApiResponse<{ school_code: string; isTarget: boolean }>> {
   return fallback(
     () => fetcher.delete(`/schools/targets/${encodeURIComponent(params.schoolId)}`),
