@@ -21,7 +21,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PullToRefresh from '@/components/Shared/PullToRefresh';
 import type { HighSchool } from '@/lib/types';
-import { loadMiddleSchools } from '@/lib/appData';
+
 import { addTargetSchool, getStudentProfile, listSchools, listTargetSchools, removeTargetSchool } from '@/lib/dataClient';
 import { levelFromProbability } from '@/lib/evaluation';
 
@@ -63,12 +63,7 @@ export default function TargetsPage() {
   const targetSchools = (targetsResp?.data ?? []) as HighSchool[];
   const targetIdSet = useMemo(() => new Set(targetSchools.map((s) => s.id)), [targetSchools]);
   const studentProfile = profileResp?.data ?? null;
-  const middleSchools = useMemo(() => loadMiddleSchools(), []);
-  const middleSchoolName = useMemo(() => {
-    if (!studentProfile?.middle_school_id) return '';
-    const match = middleSchools.find((ms) => ms.id === studentProfile.middle_school_id);
-    return match?.name ?? '';
-  }, [middleSchools, studentProfile?.middle_school_id]);
+  const middleSchoolName = studentProfile?.middle_school_name ?? '';
 
   const filteredSchools = useMemo(() => {
     if (!schoolSearch) return schools;

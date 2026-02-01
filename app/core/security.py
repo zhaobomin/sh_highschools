@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from functools import wraps
 from typing import Any, Dict, Optional
 
@@ -18,6 +18,20 @@ def _serialize_record(record: Dict[str, Any]) -> Dict[str, Any]:
         else:
             serialized[key] = value
     return serialized
+
+
+def _parse_iso_datetime(value: Any) -> Optional[datetime]:
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        try:
+            normalized = value.replace("Z", "+00:00") if value.endswith("Z") else value
+            return datetime.fromisoformat(normalized)
+        except ValueError:
+            return None
+    return None
 
 
 def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
@@ -78,6 +92,16 @@ def require_auth(func):
                 code="UNAUTHORIZED",
                 message="User not found for provided token.",
             )
+        token_expires_at = users[0].get("token_expires_at")
+        expires_at = _parse_iso_datetime(token_expires_at)
+        if expires_at:
+            now = datetime.now(timezone.utc) if expires_at.tzinfo else datetime.utcnow()
+            if now > expires_at:
+                raise CustomException(
+                    status_code=401,
+                    code="UNAUTHORIZED",
+                    message="Token expired or revoked.",
+                )
         g.current_user = _serialize_record(users[0])
         return func(*args, **kwargs)
     return wrapper

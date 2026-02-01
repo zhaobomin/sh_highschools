@@ -113,10 +113,19 @@ def get_student_profile():
         return {"data": None}
 
     profile = profiles[0]
+    middle_school_id = profile.get("middle_school_code")
+    middle_school_name = None
+    
+    if middle_school_id:
+        schools = db.select("middle_schools", ["name"], {"code": middle_school_id})
+        if schools:
+            middle_school_name = schools[0]["name"]
+    
     return {
         "data": {
             "district": profile["district"],
-            "middle_school_id": profile.get("middle_school_code"),
+            "middle_school_id": middle_school_id,
+            "middle_school_name": middle_school_name,
             "stable_score": profile.get("stable_score"),
             "high_score": profile.get("high_score"),
             "low_score": profile.get("low_score"),

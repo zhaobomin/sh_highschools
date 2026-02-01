@@ -14,7 +14,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -111,9 +111,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   // 登出
-  const logout = () => {
+  const logout = async () => {
+    fetcher.post('/auth/logout').catch(() => {
+      // Ignore logout API errors and proceed with local logout
+    });
     localStorage.removeItem('token');
     setUser(null);
+    window.location.href = '/login';
   };
 
   const value = {

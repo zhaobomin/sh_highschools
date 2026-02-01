@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Navbar } from '@/components/Shared/Navbar';
 
 function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -16,8 +17,40 @@ function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  const [isUsernameValid, setIsUsernameValid] = useState(true);
+  const [isEmailValid, setIsEmailValid] = useState(true);
+  const [isPasswordValid, setIsPasswordValid] = useState(true);
+
+  const validateUsername = (username: string) => {
+    return username.length >= 3;
+  };
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    return password.length >= 6;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 客户端验证
+    const usernameValid = validateUsername(username);
+    const emailValid = validateEmail(email);
+    const passwordValid = validatePassword(password);
+    
+    setIsUsernameValid(usernameValid);
+    setIsEmailValid(emailValid);
+    setIsPasswordValid(passwordValid);
+    
+    if (!usernameValid || !emailValid || !passwordValid) {
+      setError('请检查输入信息是否正确');
+      return;
+    }
+    
     setError('');
     setIsSubmitting(true);
 
@@ -32,47 +65,55 @@ function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            创建账户
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            或{' '}
-            <Link
-              to="/login"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              登录现有账户
-            </Link>
-          </p>
-        </div>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Navbar />
+      <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+              创建账户
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              或{' '}
+              <Link
+                to="/login"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                登录现有账户
+              </Link>
+            </p>
+          </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">注册</CardTitle>
-            <CardDescription>
-              填写以下信息以创建新账户
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {error && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">注册</CardTitle>
+              <CardDescription>
+                填写以下信息以创建新账户
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
                 <Label htmlFor="username">用户名</Label>
                 <Input
                   id="username"
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setIsUsernameValid(validateUsername(e.target.value));
+                  }}
                   required
-                  className="mt-1"
+                  className={`mt-1 ${!isUsernameValid ? 'border-destructive focus-visible:ring-destructive' : ''}`}
                 />
+                {!isUsernameValid && (
+                  <p className="mt-1 text-sm text-destructive">用户名长度至少3位</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="email">邮箱</Label>
@@ -80,10 +121,16 @@ function RegisterPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setIsEmailValid(validateEmail(e.target.value));
+                  }}
                   required
-                  className="mt-1"
+                  className={`mt-1 ${!isEmailValid ? 'border-destructive focus-visible:ring-destructive' : ''}`}
                 />
+                {!isEmailValid && (
+                  <p className="mt-1 text-sm text-destructive">请输入有效的邮箱地址</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="password">密码</Label>
@@ -91,24 +138,31 @@ function RegisterPage() {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setIsPasswordValid(validatePassword(e.target.value));
+                  }}
                   required
-                  className="mt-1"
+                  className={`mt-1 ${!isPasswordValid ? 'border-destructive focus-visible:ring-destructive' : ''}`}
                 />
+                {!isPasswordValid && (
+                  <p className="mt-1 text-sm text-destructive">密码长度至少6位</p>
+                )}
               </div>
-            </form>
-          </CardContent>
-          <CardFooter>
-            <Button
-              type="submit"
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="w-full"
-            >
-              {isSubmitting ? '注册中...' : '注册'}
-            </Button>
-          </CardFooter>
-        </Card>
+              </form>
+            </CardContent>
+            <CardFooter>
+              <Button
+                type="submit"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="w-full"
+              >
+                {isSubmitting ? '注册中...' : '注册'}
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     </div>
   );

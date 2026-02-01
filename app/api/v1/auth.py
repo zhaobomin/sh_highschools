@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Type
 
 import bcrypt
@@ -7,6 +7,7 @@ from pydantic import BaseModel, ValidationError
 
 from app.core.db import db
 from app.core.exceptions import CustomException
+from app.core.config import settings
 from app.core.security import create_access_token, get_current_user, require_auth
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -33,6 +34,10 @@ def _parse_body(model: Type[BaseModel], payload: dict) -> BaseModel:
             message="Request payload validation failed.",
             details={"errors": exc.errors()},
         )
+
+def _get_token_expiry() -> str:
+    expire_at = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    return expire_at.isoformat()
 
 
 @auth_bp.route("/register", methods=["POST"])
@@ -80,6 +85,11 @@ def register():
         )
 
     access_token = create_access_token({"sub": created_user["id"]})
+    db.update(
+        "users",
+        {"token_expires_at": _get_token_expiry()},
+        {"id": created_user["id"]},
+    )
 
     return {
         "access_token": access_token,
@@ -120,6 +130,11 @@ def login():
     db.update("users", {"last_login_at": datetime.utcnow().isoformat()}, {"id": user["id"]})
 
     access_token = create_access_token({"sub": user["id"]})
+    db.update(
+        "users",
+        {"token_expires_at": _get_token_expiry()},
+        {"id": user["id"]},
+    )
 
     return {
         "access_token": access_token,
@@ -134,3 +149,16 @@ def login():
 def get_me():
     current_user = get_current_user()
     return current_user or {}
+
+
+@auth_bp.route("/logout", methods=["POST"])
+@require_auth
+def logout():
+    current_user = get_current_user()
+    if current_user:
+        db.update(
+            "users",
+            {"token_expires_at": datetime.utcnow().isoformat()},
+            {"id": current_user["id"]},
+        )
+    return {"message": "Logged out"}

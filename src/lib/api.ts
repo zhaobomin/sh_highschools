@@ -1,4 +1,5 @@
 import axios, { type AxiosRequestConfig, AxiosError } from 'axios';
+import { Capacitor } from '@capacitor/core';
 
 // Define unified error structure
 export interface ApiError {
@@ -12,8 +13,11 @@ export interface ApiResponse<T = any> {
   meta?: any;
 }
 
-const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api/v1';
+const API_BASE_URL = Capacitor.isNativePlatform()
+  ? (import.meta.env.VITE_API_BASE_URL_CAPACITOR as string | undefined) ??
+    (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
+    '/api/v1'
+  : (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

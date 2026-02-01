@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Info, Upload } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useAuth } from '@/lib/auth';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ interface AppShellProps {
 export function AppShell({ children, hideFooter = true }: AppShellProps) {
   const { t } = useTranslation();
   const location = useLocation();
+  const { logout } = useAuth();
 
   const pageTitle = useMemo(() => {
     if (location.pathname.startsWith('/')) return '上海中考择校';
@@ -50,11 +52,15 @@ export function AppShell({ children, hideFooter = true }: AppShellProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-muted/30 hover:bg-muted/50">
-              <Info className="h-4.5 w-4.5 text-muted-foreground" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-muted/30 hover:bg-muted/50">
-              <Upload className="h-4.5 w-4.5 text-muted-foreground" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 rounded-full bg-muted/30 hover:bg-muted/50"
+              onClick={logout}
+              aria-label="Logout"
+              title="Logout"
+            >
+              <LogOut className="h-4.5 w-4.5 text-muted-foreground" />
             </Button>
           </div>
         </div>
