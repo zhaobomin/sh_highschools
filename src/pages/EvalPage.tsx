@@ -1,14 +1,11 @@
 import { SectionCard } from '@/components/Shared/SectionCard';
-import { DataCard, DataCardGrid } from '@/components/Shared/DataCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { TrendingUp, School, Info, Target } from 'lucide-react';
+import { School } from 'lucide-react';
 import PullToRefresh from '@/components/Shared/PullToRefresh';
 import { getTargetEvaluation } from '@/lib/dataClient';
 import { levelFromProbability } from '@/lib/evaluation';
@@ -42,17 +39,9 @@ export default function EvalPage() {
 
   const evaluation = evalResp?.data ?? null;
   const model = evaluation?.model ?? { mean: null, std: null, count: 0, source: 'none' };
-  const profile = evaluation?.profile ?? {};
   const targets = evaluation?.targets ?? [];
 
   const hasModel = model.mean != null && model.std != null;
-  const hasEstimate = profile?.stableScore != null || profile?.highScore != null || profile?.lowScore != null;
-
-  const modelSourceLabel = useMemo(() => {
-    if (model.source === 'mocks') return t('ui.metric.modelSource.mocks');
-    if (model.source === 'estimate') return t('ui.metric.modelSource.estimate');
-    return t('ui.metric.modelSource.none');
-  }, [model.source, t]);
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
