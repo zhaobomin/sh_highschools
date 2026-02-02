@@ -46,42 +46,28 @@ export default function ProfileSummarySection({
           </Button>
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-2 py-2 text-center">
-              <div className="text-[11px] text-muted-foreground">所在区</div>
-              <div className="text-sm font-semibold mt-0.5">
-                {district || '未设置'}
-              </div>
-            </div>
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-center">
-              <div className="text-[11px] text-muted-foreground">当前初中</div>
-              <div className="text-sm font-semibold mt-0.5 truncate whitespace-nowrap">
-                {middleSchoolName || '未设置'}
-              </div>
-            </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+            <div className="text-sm text-muted-foreground">所在区</div>
+            <div className="text-sm font-semibold">{district || '未设置'}</div>
           </div>
-          <div className="grid grid-cols-3 gap-2 mt-2">
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-2 py-2 text-center">
-              <div className="text-[11px] text-muted-foreground">稳定分</div>
-              <div className="text-sm font-semibold mt-0.5">
-                {stableScore || '未设置'}
-              </div>
-            </div>
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-2 py-2 text-center">
-              <div className="text-[11px] text-muted-foreground">上限分</div>
-              <div className="text-sm font-semibold mt-0.5">
-                {highScore || '未设置'}
-              </div>
-            </div>
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-2 py-2 text-center">
-              <div className="text-[11px] text-muted-foreground">下限分</div>
-              <div className="text-sm font-semibold mt-0.5">
-                {lowScore || '未设置'}
-              </div>
-            </div>
+          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+            <div className="text-sm text-muted-foreground">当前初中</div>
+            <div className="text-sm font-semibold truncate max-w-[60%]">{middleSchoolName || '未设置'}</div>
           </div>
-        </>
+          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+            <div className="text-sm text-muted-foreground">稳定分</div>
+            <div className="text-sm font-semibold">{stableScore || '未设置'}</div>
+          </div>
+          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+            <div className="text-sm text-muted-foreground">上限分</div>
+            <div className="text-sm font-semibold">{highScore || '未设置'}</div>
+          </div>
+          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+            <div className="text-sm text-muted-foreground">下限分</div>
+            <div className="text-sm font-semibold">{lowScore || '未设置'}</div>
+          </div>
+        </div>
       )}
     </ProfileSectionCard>
   );
