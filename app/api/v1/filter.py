@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Dict, List, Optional, Type
 
 from flask import Blueprint, request
@@ -6,7 +5,14 @@ from pydantic import BaseModel, ValidationError
 
 from app.core.db import db
 from app.core.exceptions import CustomException
+from app.core.response import api_response
 from app.core.security import get_current_user, require_auth
+from app.services.filter_service import (
+    build_filter_options,
+    get_student_profile as get_student_profile_service,
+    list_middle_schools,
+    save_student_profile as save_student_profile_service,
+)
 
 filter_bp = Blueprint("filter", __name__, url_prefix="/filter")
 
@@ -50,87 +56,26 @@ def _parse_body(model: Type[BaseModel], payload: dict) -> BaseModel:
 @filter_bp.route("/middle-schools", methods=["GET"])
 @require_auth
 def get_middle_schools():
-    params = {}
     district = request.args.get("district")
     school_type = request.args.get("type")
-    if district:
-        params["district"] = district
-    if school_type:
-        params["type"] = school_type
-
-    schools = db.select("middle_schools", ["code", "name", "district", "type"], params or None)
-
-    result = []
-    for school in schools:
-        result.append({
-            "id": school["code"],
-            "name": school["name"],
-            "district": school["district"],
-            "type": school["type"],
-        })
-
-    return result
+    result = list_middle_schools(db, district, school_type)
+    return api_response(result)
 
 
 @filter_bp.route("/options", methods=["GET"])
 @require_auth
 def get_filter_options():
-    schools = db.select("middle_schools", ["code", "name", "district", "type"])
-
-    districts = sorted({school["district"] for school in schools})
-    middle_schools = [
-        {
-            "id": school["code"],
-            "name": school["name"],
-            "district": school["district"],
-            "type": school["type"],
-        }
-        for school in schools
-    ]
-
-    response = FilterOptionsResponse(
-        data=FilterOptions(
-            districts=districts,
-            middle_schools=middle_schools,
-        )
-    )
-    return response.dict()
+    data = build_filter_options(db)
+    response = FilterOptionsResponse(data=FilterOptions(**data))
+    return api_response(response.dict()["data"])
 
 
 @filter_bp.route("/student-profile", methods=["GET"])
 @require_auth
 def get_student_profile():
     current_user = get_current_user()
-    if not current_user:
-        raise CustomException(
-            status_code=401,
-            code="UNAUTHORIZED",
-            message="User context missing.",
-        )
-
-    profiles = db.select("student_profiles", ["district", "middle_school_code", "stable_score", "high_score", "low_score"], {"user_id": current_user["id"]})
-    if not profiles:
-        return {"data": None}
-
-    profile = profiles[0]
-    middle_school_id = profile.get("middle_school_code")
-    middle_school_name = None
-    
-    if middle_school_id:
-        schools = db.select("middle_schools", ["name"], {"code": middle_school_id})
-        if schools:
-            middle_school_name = schools[0]["name"]
-    
-    return {
-        "data": {
-            "district": profile["district"],
-            "middle_school_id": middle_school_id,
-            "middle_school_name": middle_school_name,
-            "stable_score": profile.get("stable_score"),
-            "high_score": profile.get("high_score"),
-            "low_score": profile.get("low_score"),
-        }
-    }
+    profile = get_student_profile_service(db, current_user)
+    return api_response(profile)
 
 
 @filter_bp.route("/student-profile", methods=["POST"])
@@ -148,53 +93,5 @@ def save_student_profile():
 
     profile_data = _parse_body(StudentProfile, payload)
     current_user = get_current_user()
-    if not current_user:
-        raise CustomException(
-            status_code=401,
-            code="UNAUTHORIZED",
-            message="User context missing.",
-        )
-
-    existing_profiles = db.select("student_profiles", ["id"], {"user_id": current_user["id"]})
-
-    data_payload = {
-        "district": profile_data.district,
-        "middle_school_code": profile_data.middle_school_id,
-        "stable_score": profile_data.stable_score,
-        "high_score": profile_data.high_score,
-        "low_score": profile_data.low_score,
-    }
-
-    if existing_profiles:
-        updated = db.update(
-            "student_profiles",
-            {
-                **data_payload,
-                "updated_at": datetime.utcnow().isoformat(),
-            },
-            {"user_id": current_user["id"]},
-        )
-        if not updated:
-            raise CustomException(
-                status_code=500,
-                code="PROFILE_UPDATE_FAILED",
-                message="Failed to update student profile.",
-            )
-    else:
-        created = db.insert(
-            "student_profiles",
-            {
-                **data_payload,
-                "user_id": current_user["id"],
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat(),
-            },
-        )
-        if not created:
-            raise CustomException(
-                status_code=500,
-                code="PROFILE_CREATE_FAILED",
-                message="Failed to create student profile.",
-            )
-
-    return {"data": profile_data.dict()}
+    result = save_student_profile_service(db, current_user, profile_data.dict())
+    return api_response(result)

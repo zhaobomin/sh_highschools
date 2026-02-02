@@ -87,6 +87,61 @@ export interface StudentProfile {
   lowScore: number | null;
 }
 
+export interface StudentProfileResponse {
+  district: District | null;
+  middle_school_id: string | null;
+  middle_school_name?: string | null;
+  stable_score: number | null;
+  high_score: number | null;
+  low_score: number | null;
+}
+
+export interface TargetEvaluationModel {
+  mean: number | null;
+  std: number | null;
+  count: number;
+  source: string;
+}
+
+export interface TargetEvaluationProfile {
+  district: District | null;
+  middleSchoolId: string | null;
+  stableScore: number | null;
+  highScore: number | null;
+  lowScore: number | null;
+}
+
+export interface TargetEvaluationChannel {
+  score: number | null;
+  quota: number | null;
+  probability: number | null;
+  gap: number | null;
+}
+
+export interface TargetEvaluationSchool {
+  id: string;
+  name: string;
+  district: District;
+  type: HighSchoolType;
+  fullType?: string;
+  channels: {
+    autonomous: TargetEvaluationChannel;
+    district: TargetEvaluationChannel;
+    school: TargetEvaluationChannel;
+    unified: TargetEvaluationChannel;
+  };
+  overall: {
+    probability: number | null;
+    level: 'high' | 'mid' | 'low' | 'na';
+  };
+}
+
+export interface TargetEvaluationResponse {
+  profile: TargetEvaluationProfile;
+  model: TargetEvaluationModel;
+  targets: TargetEvaluationSchool[];
+}
+
 export interface TargetSchool {
   id: string;
   schoolId: string;

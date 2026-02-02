@@ -1,14 +1,12 @@
-from datetime import datetime, timedelta
 from typing import Type
-
-import bcrypt
 from flask import Blueprint, request
 from pydantic import BaseModel, ValidationError
 
 from app.core.db import db
 from app.core.exceptions import CustomException
-from app.core.config import settings
-from app.core.security import create_access_token, get_current_user, require_auth
+from app.core.response import api_response
+from app.core.security import get_current_user, require_auth
+from app.services.auth_service import login_user, logout_user, register_user
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -35,11 +33,6 @@ def _parse_body(model: Type[BaseModel], payload: dict) -> BaseModel:
             details={"errors": exc.errors()},
         )
 
-def _get_token_expiry() -> str:
-    expire_at = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return expire_at.isoformat()
-
-
 @auth_bp.route("/register", methods=["POST"])
 def register():
     payload = request.get_json(silent=True)
@@ -52,51 +45,8 @@ def register():
 
     user_data = _parse_body(UserCreate, payload)
 
-    if db.select("users", ["*"], {"email": user_data.email}):
-        raise CustomException(
-            status_code=400,
-            code="EMAIL_TAKEN",
-            message="Email already registered.",
-        )
-    if db.select("users", ["*"], {"username": user_data.username}):
-        raise CustomException(
-            status_code=400,
-            code="USERNAME_TAKEN",
-            message="Username already taken.",
-        )
-
-    hashed_password = bcrypt.hashpw(user_data.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-    created_user = db.insert(
-        "users",
-        {
-            "username": user_data.username,
-            "email": user_data.email,
-            "password_hash": hashed_password,
-            "email_verified": False,
-        },
-        ["id", "username"],
-    )
-
-    if not created_user:
-        raise CustomException(
-            status_code=500,
-            code="USER_CREATION_FAILED",
-            message="Failed to create user.",
-        )
-
-    access_token = create_access_token({"sub": created_user["id"]})
-    db.update(
-        "users",
-        {"token_expires_at": _get_token_expiry()},
-        {"id": created_user["id"]},
-    )
-
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user_id": created_user["id"],
-        "username": created_user["username"],
-    }
+    payload = register_user(db, user_data.username, user_data.email, user_data.password)
+    return api_response(payload)
 
 
 @auth_bp.route("/login", methods=["POST"])
@@ -110,55 +60,20 @@ def login():
         )
 
     credentials = _parse_body(UserLogin, payload)
-    users = db.select("users", ["id", "username", "password_hash"], {"email": credentials.username})
-
-    if not users:
-        raise CustomException(
-            status_code=401,
-            code="AUTH_FAILED",
-            message="Incorrect email or password.",
-        )
-
-    user = users[0]
-    if not bcrypt.checkpw(credentials.password.encode("utf-8"), user["password_hash"].encode("utf-8")):
-        raise CustomException(
-            status_code=401,
-            code="AUTH_FAILED",
-            message="Incorrect email or password.",
-        )
-
-    db.update("users", {"last_login_at": datetime.utcnow().isoformat()}, {"id": user["id"]})
-
-    access_token = create_access_token({"sub": user["id"]})
-    db.update(
-        "users",
-        {"token_expires_at": _get_token_expiry()},
-        {"id": user["id"]},
-    )
-
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user_id": user["id"],
-        "username": user["username"],
-    }
+    payload = login_user(db, credentials.username, credentials.password)
+    return api_response(payload)
 
 
 @auth_bp.route("/me", methods=["GET"])
 @require_auth
 def get_me():
     current_user = get_current_user()
-    return current_user or {}
+    return api_response(current_user or {})
 
 
 @auth_bp.route("/logout", methods=["POST"])
 @require_auth
 def logout():
     current_user = get_current_user()
-    if current_user:
-        db.update(
-            "users",
-            {"token_expires_at": datetime.utcnow().isoformat()},
-            {"id": current_user["id"]},
-        )
-    return {"message": "Logged out"}
+    logout_user(db, current_user)
+    return api_response({"message": "Logged out"})

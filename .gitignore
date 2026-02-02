@@ -9,3 +9,26 @@ dist/
 *.tsbuildinfo
 .vercel
 .env*.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+build/
+out/
+
+# Database
+db/
+
+# Documentation
+docs/

@@ -1,6 +1,22 @@
 import fetcher, { type ApiResponse } from '@/lib/api';
-import type { District, HighSchool, HighSchoolType, MiddleSchool, ScoreLine } from '@/lib/types';
+import type {
+  District,
+  HighSchool,
+  HighSchoolType,
+  MiddleSchool,
+  ScoreLine,
+  StudentProfileResponse,
+  TargetEvaluationResponse,
+  TargetEvaluationSchool,
+  TargetEvaluationModel,
+} from '@/lib/types';
+
 import { mockGetLatestScoreLine, mockListMiddleSchools, mockListSchools, mockGetSchoolDetail, mockListFilterOptions } from '@/mocks/api';
+
+export type {
+  TargetEvaluationSchool,
+  TargetEvaluationModel,
+};
 
 
 const useMocks = false; // import.meta.env.VITE_USE_MOCKS === '1';
@@ -39,14 +55,26 @@ export async function addTargetSchool(params: { schoolId: string }): Promise<Api
 export async function listTargetSchools(): Promise<ApiResponse<HighSchool[]>> {
   return fallback(
     () => fetcher.get('/schools/targets'),
-    () => Promise.resolve({ data: [] })
+    () => Promise.resolve({ data: [], meta: { total: 0 } })
   );
 }
 
-export async function getTargetEvaluation(): Promise<ApiResponse<any>> {
+export async function getTargetEvaluation(): Promise<ApiResponse<TargetEvaluationResponse>> {
   return fallback(
     () => fetcher.get('/schools/targets/evaluation'),
-    () => Promise.resolve({ data: { model: { mean: null, std: null, count: 0, source: 'none' }, targets: [] } })
+    () => Promise.resolve({
+      data: {
+        profile: {
+          district: null,
+          middleSchoolId: null,
+          stableScore: null,
+          highScore: null,
+          lowScore: null,
+        },
+        model: { mean: null, std: null, count: 0, source: 'none' },
+        targets: [],
+      },
+    })
   );
 }
 
@@ -78,21 +106,24 @@ export async function getLatestScoreLine(params: {
   );
 }
 
-export async function getSchoolDetail(schoolId: string): Promise<HighSchool | null> {
+export async function getSchoolDetail(schoolId: string): Promise<ApiResponse<HighSchool | null>> {
   return fallback(
     () => fetcher.get(`/schools/${encodeURIComponent(schoolId)}`),
-    () => mockGetSchoolDetail(schoolId)
+    async () => {
+      const data = await mockGetSchoolDetail(schoolId);
+      return { data };
+    }
   );
 }
 
-export async function getStudentProfile(): Promise<ApiResponse<any | null>> {
+export async function getStudentProfile(): Promise<ApiResponse<StudentProfileResponse | null>> {
   return fallback(
     () => fetcher.get('/filter/student-profile'),
     () => Promise.resolve({ data: null })
   );
 }
 
-export async function saveStudentProfile(data: any): Promise<ApiResponse<any>> {
+export async function saveStudentProfile(data: StudentProfileResponse): Promise<ApiResponse<StudentProfileResponse>> {
   return fallback(
     () => fetcher.post('/filter/student-profile', data),
     () => Promise.resolve({ data })

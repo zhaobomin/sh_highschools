@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { fetcher } from './api';
+import { fetcher, type ApiResponse } from './api';
 
 interface User {
   id: string;
@@ -43,8 +43,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const token = localStorage.getItem('token');
         if (token) {
           // 获取用户信息
-          const userData = await fetcher.get<User>('/auth/me');
-          setUser(userData);
+          const userData = await fetcher.get<ApiResponse<User>>('/auth/me');
+          setUser(userData.data);
         }
       } catch (error) {
         localStorage.removeItem('token');
@@ -61,21 +61,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const response = await fetcher.post<{
+      const response = await fetcher.post<ApiResponse<{
         access_token: string;
         token_type: string;
         user_id: string;
         username: string;
-      }>('/auth/login', {
+      }>>('/auth/login', {
         username: email, // 注意：后端使用OAuth2PasswordRequestForm，所以这里用username字段
         password,
       });
 
-      localStorage.setItem('token', response.access_token);
+      localStorage.setItem('token', response.data.access_token);
       
       // 获取完整用户信息
-      const userData = await fetcher.get<User>('/auth/me');
-      setUser(userData);
+      const userData = await fetcher.get<ApiResponse<User>>('/auth/me');
+      setUser(userData.data);
     } catch (error) {
       throw error;
     } finally {
@@ -87,22 +87,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const register = async (username: string, email: string, password: string) => {
     try {
       setIsLoading(true);
-      const response = await fetcher.post<{
+      const response = await fetcher.post<ApiResponse<{
         access_token: string;
         token_type: string;
         user_id: string;
         username: string;
-      }>('/auth/register', {
+      }>>('/auth/register', {
         username,
         email,
         password,
       });
 
-      localStorage.setItem('token', response.access_token);
+      localStorage.setItem('token', response.data.access_token);
       
       // 获取完整用户信息
-      const userData = await fetcher.get<User>('/auth/me');
-      setUser(userData);
+      const userData = await fetcher.get<ApiResponse<User>>('/auth/me');
+      setUser(userData.data);
     } catch (error) {
       throw error;
     } finally {
