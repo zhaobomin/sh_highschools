@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { TFunction } from 'i18next';
@@ -13,6 +13,8 @@ import ProfileSectionCard from '@/components/Shared/ProfileSectionCard';
 import ListCard from '@/components/Shared/ListCard';
 import SectionHeader from '@/components/Shared/SectionHeader';
 import EmptyState from '@/components/Shared/states/EmptyState';
+import StateContainer from '@/components/Shared/states/StateContainer';
+import { FormSection } from '@/components/Shared/FormSection';
 
 interface TargetsListSectionProps {
   t: TFunction;
@@ -23,7 +25,6 @@ interface TargetsListSectionProps {
   schoolSearch: string;
   setSchoolSearch: (value: string) => void;
   filteredSchools: HighSchool[];
-  canAddSelected: boolean;
   addingTarget: boolean;
   onAddTarget: () => void;
   targetSchools: HighSchool[];
@@ -40,7 +41,6 @@ export default function TargetsListSection({
   schoolSearch,
   setSchoolSearch,
   filteredSchools,
-  canAddSelected,
   addingTarget,
   onAddTarget,
   targetSchools,
@@ -69,7 +69,15 @@ export default function TargetsListSection({
                   <DialogTitle>{t('ui.dialog.addTarget.title')}</DialogTitle>
                   <DialogDescription>{t('ui.dialog.addTarget.desc')}</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <FormSection
+                  onSubmit={onAddTarget}
+                  onCancel={() => setAddDialogOpen(false)}
+                  isSubmitting={addingTarget}
+                  submitText={t('ui.action.confirm')}
+                  cancelText={t('ui.action.cancel')}
+                  className="space-y-4"
+                  actionsClassName="pt-2"
+                >
                   <FormField label={t('ui.field.school')}>
                     <Select value={selectedSchoolId} onValueChange={(v) => {
                       setSelectedSchoolId(v);
@@ -103,15 +111,7 @@ export default function TargetsListSection({
                       </SelectContent>
                     </Select>
                   </FormField>
-                </div>
-                <DialogFooter>
-                  <Button variant="secondary" onClick={() => setAddDialogOpen(false)}>
-                    {t('ui.action.cancel')}
-                  </Button>
-                  <Button disabled={!canAddSelected || addingTarget} onClick={onAddTarget}>
-                    {t('ui.action.confirm')}
-                  </Button>
-                </DialogFooter>
+                </FormSection>
               </DialogContent>
             </Dialog>
           </div>
@@ -122,84 +122,78 @@ export default function TargetsListSection({
 
       <div className="space-y-2">
         {targetSchools.length === 0 ? (
-          <EmptyState message={t('ui.states.emptyTargets')} />
+          <StateContainer>
+            <EmptyState message={t('ui.states.emptyTargets')} />
+          </StateContainer>
         ) : (
           targetSchools.map((s) => {
             const stats = s.stats;
             const probability = stats?.probability ?? 0;
             const p = probability / 100;
             const level = levelFromProbability(p);
-            const barColor = level === 'high' ? 'bg-emerald-500' : level === 'mid' ? 'bg-amber-500' : 'bg-rose-500';
             return (
-              <ListCard key={s.id} contentClassName="space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-base truncate">{s.name}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {s.district} · {s.type}
-                        {s.accommodation && ` · ${s.accommodation}`}
-                      </div>
+              <ListCard key={s.id} stack>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-base truncate">{s.name}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {s.district} · {s.type}
+                      {s.accommodation && ` · ${s.accommodation}`}
                     </div>
-                    {stats?.probability && (
-                      <div className={`px-2 py-0.5 rounded-full bg-gray-100 text-xs font-medium whitespace-nowrap flex-shrink-0 ${level === 'high' ? 'text-green-700' : level === 'mid' ? 'text-amber-700' : 'text-rose-700'}`}>
-                        {level === 'high' ? '保' : level === 'mid' ? '稳' : '冲'} · {stats.probability}%
-                      </div>
-                    )}
                   </div>
+                  {stats?.probability && (
+                    <div className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${level === 'high' ? 'bg-green-100 text-green-700' : level === 'mid' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
+                      {level === 'high' ? '保' : level === 'mid' ? '稳' : '冲'}
+                    </div>
+                  )}
+                </div>
 
-                  <div className="grid grid-cols-3 gap-1.5">
-                    <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">自招名额</span>
-                      <span className="text-xs font-semibold flex-1 text-center">{stats?.quotaAutonomous ?? 0}</span>
-                    </div>
-                    <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">到区名额</span>
-                      <span className="text-xs font-semibold flex-1 text-center">{stats?.quotaToDistrict ?? 0}</span>
-                    </div>
-                    <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">到校名额</span>
-                      <span className="text-xs font-semibold flex-1 text-center">{stats?.quotaToSchool ?? 0}</span>
-                    </div>
-                    <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">统招分数</span>
-                      <span className="text-xs font-semibold flex-1 text-center">{stats?.scoreUnified ?? '-'}</span>
-                    </div>
-                    <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">到区分数</span>
-                      <span className="text-xs font-semibold flex-1 text-center">{stats?.scoreToDistrict ?? '-'}</span>
-                    </div>
-                    <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">到校分数</span>
-                      <span className="text-xs font-semibold flex-1 text-center">{stats?.scoreToSchool ?? '-'}</span>
-                    </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">自招名额</span>
+                    <span className="text-xs font-semibold flex-1 text-center">{stats?.quotaAutonomous ?? 0}</span>
                   </div>
+                  <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">到区名额</span>
+                    <span className="text-xs font-semibold flex-1 text-center">{stats?.quotaToDistrict ?? 0}</span>
+                  </div>
+                  <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">到校名额</span>
+                    <span className="text-xs font-semibold flex-1 text-center">{stats?.quotaToSchool ?? 0}</span>
+                  </div>
+                  <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">统招分数</span>
+                    <span className="text-xs font-semibold flex-1 text-center">{stats?.scoreUnified ?? '-'}</span>
+                  </div>
+                  <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">到区分数</span>
+                    <span className="text-xs font-semibold flex-1 text-center">{stats?.scoreToDistrict ?? '-'}</span>
+                  </div>
+                  <div className="bg-muted/30 rounded-lg p-1.5 flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">到校分数</span>
+                    <span className="text-xs font-semibold flex-1 text-center">{stats?.scoreToSchool ?? '-'}</span>
+                  </div>
+                </div>
 
-                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${barColor} rounded-full`}
-                      style={{ width: `${stats?.probability ?? 0}%` }}
-                    />
+                <div className="flex items-center justify-between pt-0.5">
+                  <div className="text-xs text-muted-foreground">
+                    推荐度基于学生画像
                   </div>
-
-                  <div className="flex items-center justify-between pt-0.5">
-                    <div className="text-xs text-muted-foreground">
-                      模考概率基于历史成绩分布估算
-                    </div>
-                    <div className="flex gap-1.5">
-                      <Button variant="outline" size="sm" asChild className="h-8 text-xs px-2.5 rounded-full">
-                        <Link to={`/schools/${s.id}`}>详情</Link>
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="h-8 text-xs px-2.5 rounded-full"
-                        onClick={() => onRemoveTarget(s.id)}
-                        disabled={Boolean(removingTargets[s.id])}
-                      >
-                        {removingTargets[s.id] ? '移除中' : t('ui.action.remove')}
-                      </Button>
-                    </div>
+                  <div className="flex gap-1.5">
+                    <Button variant="outline" size="sm" asChild className="h-8 text-xs px-2.5 rounded-full">
+                      <Link to={`/schools/${s.id}`}>详情</Link>
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="h-8 text-xs px-2.5 rounded-full"
+                      onClick={() => onRemoveTarget(s.id)}
+                      disabled={Boolean(removingTargets[s.id])}
+                    >
+                      {removingTargets[s.id] ? '移除中' : t('ui.action.remove')}
+                    </Button>
                   </div>
+                </div>
               </ListCard>
             );
           })

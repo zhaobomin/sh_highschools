@@ -112,6 +112,17 @@ def list_target_schools():
     if not school_codes:
         return api_response([], {"total": 0})
 
+    # Get student profile scores
+    profiles = db.select(
+        "student_profiles",
+        ["stable_score", "high_score", "low_score"],
+        {"user_id": current_user["id"]},
+    )
+    profile = profiles[0] if profiles else {}
+    stable_score = profile.get("stable_score")
+    high_score = profile.get("high_score")
+    low_score = profile.get("low_score")
+
     target_school_codes = set(school_codes)
     enriched_schools, total = fetch_enriched_schools(
         db,
@@ -125,9 +136,9 @@ def list_target_schools():
         school_codes=school_codes,
         target_school_codes=target_school_codes,
         mock_best_score=mock_best_score,
-        stable_score=None,
-        high_score=None,
-        low_score=None,
+        stable_score=stable_score,
+        high_score=high_score,
+        low_score=low_score,
     )
 
     return api_response(enriched_schools, {"total": total})

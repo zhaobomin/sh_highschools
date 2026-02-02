@@ -9,6 +9,7 @@ import { addTargetSchool, getStudentProfile, listSchools, listTargetSchools, rem
 import ProfileSummarySection from '@/features/targets/components/ProfileSummarySection';
 import TargetsListSection from '@/features/targets/components/TargetsListSection';
 import AdmissionGuideSection from '@/components/Shared/AdmissionGuideSection';
+import StateContainer from '@/components/Shared/states/StateContainer';
 
 export default function TargetsPage() {
   const { t } = useTranslation();
@@ -146,18 +147,21 @@ export default function TargetsPage() {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       {isLoading ? (
-        <div className="space-y-3">
+        <StateContainer>
           <LoadingStateCard message="加载中..." />
-        </div>
+        </StateContainer>
       ) : (
         <div>
           <div className="space-y-4">
             <AdmissionGuideSection />
 
-            <SectionCard divider={false} gap="xs" className="bg-transparent border-none shadow-none p-0" contentClassName="p-0 pt-0">
+            <SectionCard divider={false} gap="xs" variant="plain" contentClassName="p-0 pt-0">
               <ProfileSummarySection
                 district={studentProfile?.district}
                 middleSchoolName={middleSchoolName}
+                stableScore={studentProfile?.stable_score}
+                highScore={studentProfile?.high_score}
+                lowScore={studentProfile?.low_score}
               />
 
               <TargetsListSection
@@ -169,7 +173,6 @@ export default function TargetsPage() {
                 schoolSearch={schoolSearch}
                 setSchoolSearch={setSchoolSearch}
                 filteredSchools={filteredSchools}
-                canAddSelected={canAddSelected}
                 addingTarget={addingTarget}
                 onAddTarget={onAddTarget}
                 targetSchools={targetSchools}
