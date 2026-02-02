@@ -12,6 +12,7 @@ interface SchoolHeaderSectionProps {
     accommodation?: string | null;
     code?: string | null;
     fullType?: string | null;
+    note?: string | null;
   };
   onBack: () => void;
 }
@@ -59,6 +60,12 @@ export default function SchoolHeaderSection({ school, onBack }: SchoolHeaderSect
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground">住宿情况：</span>
               <span className="text-sm">{school.accommodation}</span>
+            </div>
+          )}
+          {school.note && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground">备注信息：</span>
+              <span className="text-sm">{school.note}</span>
             </div>
           )}
         </div>

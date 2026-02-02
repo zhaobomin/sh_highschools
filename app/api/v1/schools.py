@@ -1,6 +1,6 @@
 from typing import Optional, Set
 
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 
 from app.core.db import SupabaseAdapter, db
 from app.core.exceptions import CustomException
@@ -14,6 +14,8 @@ from app.services.schools_service import (
     get_user_school_context,
     list_target_schools_payload,
     parse_list_schools_params,
+    get_school_detail_all,
+    get_school_detail,
 )
 from app.services.targets_service import (
     add_target_school as add_target_school_service,
@@ -235,7 +237,8 @@ def list_schools_simple():
     return api_response(simple_schools, {"total": len(simple_schools)})
 
 
-@schools_bp.route("/<int:school_id>", methods=["GET"])
+# 保留旧的get_school函数，但是修改路由，避免与新的get_school_endpoint冲突
+@schools_bp.route("/old/<int:school_id>", methods=["GET"])
 def get_school(school_id: int):
     return api_response(get_placeholder_school(school_id))
 
@@ -244,3 +247,32 @@ def get_school(school_id: int):
 def test():
     """测试API，无需认证"""
     return api_response(get_test_message())
+
+
+@schools_bp.route("/<string:school_id>/detail", methods=["GET"])
+def get_school_detail_endpoint(school_id):
+    """
+    获取学校详情所有数据的API端点
+    """
+    year = request.args.get("year", type=int)
+    try:
+        detail_data = get_school_detail_all(db, school_id, year)
+        if not detail_data:
+            return api_response(None, {"error": "School not found"}, 404)
+        return api_response(detail_data)
+    except Exception as e:
+        return api_response(None, {"error": str(e)}, 500)
+
+
+@schools_bp.route("/<string:school_id>", methods=["GET"])
+def get_school_endpoint(school_id):
+    """
+    获取学校详情信息的API端点（兼容旧接口）
+    """
+    try:
+        detail_data = get_school_detail(db, school_id)
+        if not detail_data:
+            return api_response(None, {"error": "School not found"}, 404)
+        return api_response(detail_data)
+    except Exception as e:
+        return api_response(None, {"error": str(e)}, 500)

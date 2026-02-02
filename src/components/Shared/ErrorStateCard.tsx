@@ -2,6 +2,7 @@ import { SectionCard } from '@/components/Shared/SectionCard';
 import { Button } from '@/components/ui/button';
 import type { ReactNode } from 'react';
 import SectionHeader from '@/components/Shared/SectionHeader';
+import { cn } from '@/lib/utils';
 
 interface ErrorStateCardProps {
   message: string;
@@ -9,6 +10,7 @@ interface ErrorStateCardProps {
   onAction?: () => void;
   icon?: ReactNode;
   title?: string;
+  className?: string;
 }
 
 export default function ErrorStateCard({
@@ -17,9 +19,10 @@ export default function ErrorStateCard({
   onAction,
   icon,
   title,
+  className,
 }: ErrorStateCardProps) {
   return (
-    <SectionCard gap="xs" className="profile-card" contentClassName="px-6 py-4">
+    <SectionCard gap="xs" className={cn("profile-card", className)} contentClassName="px-6 py-4">
       {(icon || title) && (
         <SectionHeader icon={icon} title={title || undefined} />
       )}

@@ -2,7 +2,7 @@ import { FormField } from '@/components/Shared/FormField';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Edit2, ListChecks, Plus, Trash2 } from 'lucide-react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { TFunction } from 'i18next';
@@ -11,6 +11,8 @@ import ProfileSectionCard from '@/components/Shared/ProfileSectionCard';
 import ListCard from '@/components/Shared/ListCard';
 import SectionHeader from '@/components/Shared/SectionHeader';
 import EmptyState from '@/components/Shared/states/EmptyState';
+import StateContainer from '@/components/Shared/states/StateContainer';
+import { FormSection } from '@/components/Shared/FormSection';
 
 interface DraftState {
   name: string;
@@ -70,139 +72,141 @@ export default function MockListSection({
                 <DialogDescription className="text-sm">{t('ui.dialog.addMock.desc')}</DialogDescription>
               </DialogHeader>
 
-            <div className="space-y-4 py-2">
-              <div className="space-y-3">
-                <FormField label={t('ui.field.mockName')} required>
-                  <Input
-                    value={draft.name}
-                    onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))}
-                    className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent"
-                    placeholder="请输入考试名称"
-                  />
-                </FormField>
-                <FormField label={t('ui.field.mockDate')}>
-                  <Input
-                    type="date"
-                    value={draft.examDate}
-                    onChange={(e) => setDraft((p) => ({ ...p, examDate: e.target.value }))}
-                    className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent"
-                  />
-                </FormField>
-              </div>
-
-              <div>
-                <h3 className="text-sm font-semibold mb-3">{t('ui.section.mocks.scores.title')}</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField label={t('ui.field.score.chinese')}>
+              <FormSection
+                onSubmit={onSave}
+                onCancel={() => setDialogOpen(false)}
+                isSubmitting={saving}
+                submitText={saving ? t('ui.action.saving') : t('ui.action.save')}
+                cancelText={t('ui.action.cancel')}
+                className="space-y-4 py-2"
+                bodyClassName="space-y-4"
+                actionsClassName="pt-2"
+                cancelClassName="h-10 px-4"
+                submitClassName="h-10 px-6"
+              >
+                <div className="space-y-3">
+                  <FormField label={t('ui.field.mockName')} required>
                     <Input
-                      inputMode="numeric"
-                      type="number"
-                      className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
-                      value={draft.scores.chinese ?? ''}
-                      onChange={(e) =>
-                        setDraft((p) => ({
-                          ...p,
-                          scores: { ...p.scores, chinese: e.target.value === '' ? null : Number(e.target.value) },
-                        }))
-                      }
-                      placeholder="0"
+                      value={draft.name}
+                      onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))}
+                      className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent"
+                      placeholder="请输入考试名称"
                     />
                   </FormField>
-                  <FormField label={t('ui.field.score.math')}>
+                  <FormField label={t('ui.field.mockDate')}>
                     <Input
-                      inputMode="numeric"
-                      type="number"
-                      className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
-                      value={draft.scores.math ?? ''}
-                      onChange={(e) =>
-                        setDraft((p) => ({
-                          ...p,
-                          scores: { ...p.scores, math: e.target.value === '' ? null : Number(e.target.value) },
-                        }))
-                      }
-                      placeholder="0"
-                    />
-                  </FormField>
-                  <FormField label={t('ui.field.score.english')}>
-                    <Input
-                      inputMode="numeric"
-                      type="number"
-                      className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
-                      value={draft.scores.english ?? ''}
-                      onChange={(e) =>
-                        setDraft((p) => ({
-                          ...p,
-                          scores: { ...p.scores, english: e.target.value === '' ? null : Number(e.target.value) },
-                        }))
-                      }
-                      placeholder="0"
-                    />
-                  </FormField>
-                  <FormField label={t('ui.field.score.politics')}>
-                    <Input
-                      inputMode="numeric"
-                      type="number"
-                      className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
-                      value={draft.scores.politics ?? ''}
-                      onChange={(e) =>
-                        setDraft((p) => ({
-                          ...p,
-                          scores: { ...p.scores, politics: e.target.value === '' ? null : Number(e.target.value) },
-                        }))
-                      }
-                      placeholder="0"
-                    />
-                  </FormField>
-                  <FormField label={t('ui.field.score.history')}>
-                    <Input
-                      inputMode="numeric"
-                      type="number"
-                      className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
-                      value={draft.scores.history ?? ''}
-                      onChange={(e) =>
-                        setDraft((p) => ({
-                          ...p,
-                          scores: { ...p.scores, history: e.target.value === '' ? null : Number(e.target.value) },
-                        }))
-                      }
-                      placeholder="0"
-                    />
-                  </FormField>
-                  <FormField label={t('ui.field.score.pe')}>
-                    <Input
-                      inputMode="numeric"
-                      type="number"
-                      className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
-                      value={draft.scores.pe ?? ''}
-                      onChange={(e) =>
-                        setDraft((p) => ({
-                          ...p,
-                          scores: { ...p.scores, pe: e.target.value === '' ? null : Number(e.target.value) },
-                        }))
-                      }
-                      placeholder="0"
-                    />
-                  </FormField>
-                  <FormField label={t('ui.field.score.total')}>
-                    <Input
-                      value={computeTotal(draft.scores)}
-                      readOnly
-                      className="w-full h-10 px-4 text-base rounded-md border border-input bg-muted/20 text-center font-semibold"
+                      type="date"
+                      value={draft.examDate}
+                      onChange={(e) => setDraft((p) => ({ ...p, examDate: e.target.value }))}
+                      className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent"
                     />
                   </FormField>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">{t('ui.field.score.total.help')}</p>
-              </div>
-            </div>
 
-            <DialogFooter className="pt-2">
-              <Button variant="secondary" className="h-10 px-4" disabled={saving} onClick={() => setDialogOpen(false)}>
-                {t('ui.action.cancel')}
-              </Button>
-              <Button className="h-10 px-6" onClick={onSave} disabled={saving}>
-                {saving ? t('ui.action.saving') : t('ui.action.save')}
-              </Button>
-            </DialogFooter>
+                <div>
+                  <h3 className="text-sm font-semibold mb-3">{t('ui.section.mocks.scores.title')}</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField label={t('ui.field.score.chinese')}>
+                      <Input
+                        inputMode="numeric"
+                        type="number"
+                        className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                        value={draft.scores.chinese ?? ''}
+                        onChange={(e) =>
+                          setDraft((p) => ({
+                            ...p,
+                            scores: { ...p.scores, chinese: e.target.value === '' ? null : Number(e.target.value) },
+                          }))
+                        }
+                        placeholder="0"
+                      />
+                    </FormField>
+                    <FormField label={t('ui.field.score.math')}>
+                      <Input
+                        inputMode="numeric"
+                        type="number"
+                        className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                        value={draft.scores.math ?? ''}
+                        onChange={(e) =>
+                          setDraft((p) => ({
+                            ...p,
+                            scores: { ...p.scores, math: e.target.value === '' ? null : Number(e.target.value) },
+                          }))
+                        }
+                        placeholder="0"
+                      />
+                    </FormField>
+                    <FormField label={t('ui.field.score.english')}>
+                      <Input
+                        inputMode="numeric"
+                        type="number"
+                        className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                        value={draft.scores.english ?? ''}
+                        onChange={(e) =>
+                          setDraft((p) => ({
+                            ...p,
+                            scores: { ...p.scores, english: e.target.value === '' ? null : Number(e.target.value) },
+                          }))
+                        }
+                        placeholder="0"
+                      />
+                    </FormField>
+                    <FormField label={t('ui.field.score.politics')}>
+                      <Input
+                        inputMode="numeric"
+                        type="number"
+                        className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                        value={draft.scores.politics ?? ''}
+                        onChange={(e) =>
+                          setDraft((p) => ({
+                            ...p,
+                            scores: { ...p.scores, politics: e.target.value === '' ? null : Number(e.target.value) },
+                          }))
+                        }
+                        placeholder="0"
+                      />
+                    </FormField>
+                    <FormField label={t('ui.field.score.history')}>
+                      <Input
+                        inputMode="numeric"
+                        type="number"
+                        className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                        value={draft.scores.history ?? ''}
+                        onChange={(e) =>
+                          setDraft((p) => ({
+                            ...p,
+                            scores: { ...p.scores, history: e.target.value === '' ? null : Number(e.target.value) },
+                          }))
+                        }
+                        placeholder="0"
+                      />
+                    </FormField>
+                    <FormField label={t('ui.field.score.pe')}>
+                      <Input
+                        inputMode="numeric"
+                        type="number"
+                        className="w-full h-10 px-4 text-base rounded-md border border-input bg-transparent text-center"
+                        value={draft.scores.pe ?? ''}
+                        onChange={(e) =>
+                          setDraft((p) => ({
+                            ...p,
+                            scores: { ...p.scores, pe: e.target.value === '' ? null : Number(e.target.value) },
+                          }))
+                        }
+                        placeholder="0"
+                      />
+                    </FormField>
+                    <FormField label={t('ui.field.score.total')}>
+                      <Input
+                        value={computeTotal(draft.scores)}
+                        readOnly
+                        className="w-full h-10 px-4 text-base rounded-md border border-input bg-muted/20 text-center font-semibold"
+                      />
+                    </FormField>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">{t('ui.field.score.total.help')}</p>
+                </div>
+              </FormSection>
             </DialogContent>
           </Dialog>
         )}
@@ -211,11 +215,13 @@ export default function MockListSection({
       <Separator className="mb-3 opacity-50" />
 
       {sortedExams.length === 0 ? (
-        <EmptyState message={t('ui.states.emptyMocks')} />
+        <StateContainer>
+          <EmptyState message={t('ui.states.emptyMocks')} />
+        </StateContainer>
       ) : (
         <div className="space-y-2">
           {sortedExams.map((e) => (
-            <ListCard key={e.id} contentClassName="flex items-center justify-between">
+            <ListCard key={e.id} size="md" contentClassName="flex items-center justify-between">
                 <div>
                   <div className="font-semibold text-sm">{e.name}</div>
                   <div className="text-xs text-muted-foreground mt-0.5">{e.examDate ?? '无日期'}</div>

@@ -1,5 +1,7 @@
 node_modules/
 dist/
+venv/
+.venv/
 .env
 .env.local
 .env.development.local
@@ -26,9 +28,3 @@ Thumbs.db
 # Build
 build/
 out/
-
-# Database
-db/
-
-# Documentation
-docs/

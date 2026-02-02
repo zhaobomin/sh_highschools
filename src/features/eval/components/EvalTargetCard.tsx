@@ -39,7 +39,7 @@ export default function EvalTargetCard({ school, model, hasModel, t }: EvalTarge
   ];
 
   return (
-    <ListCard className="border border-border/60 shadow-sm" contentClassName="p-4 space-y-3">
+    <ListCard size="lg" contentClassName="space-y-3">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="font-semibold text-base">{school.name}</div>

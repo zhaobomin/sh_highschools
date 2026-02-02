@@ -1,6 +1,6 @@
-import { ArrowLeft, School } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Navbar } from '@/components/Shared/Navbar';
 import LoadingStateCard from '@/components/Shared/LoadingStateCard';
+import StateContainer from '@/components/Shared/states/StateContainer';
 
 interface SchoolDetailLoadingSectionProps {
   onBack: () => void;
@@ -8,15 +8,25 @@ interface SchoolDetailLoadingSectionProps {
 
 export default function SchoolDetailLoadingSection({ onBack }: SchoolDetailLoadingSectionProps) {
   return (
-    <LoadingStateCard
-      icon={<School className="h-4 w-4 text-foreground" />}
-      title="学校详情"
-      message="加载中..."
-      actions={(
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-      )}
-    />
+    <div className="min-h-screen min-h-[100dvh] bg-background font-sans antialiased flex flex-col">
+      <Navbar 
+        title="学校详情"
+        subtitle="加载中..."
+        onBack={onBack}
+        showBackButton={true}
+        showAuthButtons={false}
+      />
+      <main className="flex-1 bg-muted/20">
+        <div className="py-4 mx-auto px-2 sm:px-3 md:px-4 md:py-6">
+          <StateContainer>
+            <LoadingStateCard
+              title="学校详情"
+              message="加载中..."
+              actions={null}
+            />
+          </StateContainer>
+        </div>
+      </main>
+    </div>
   );
 }

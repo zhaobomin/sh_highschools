@@ -6,6 +6,7 @@ import { FormSection } from '@/components/Shared/FormSection';
 import { FormField } from '@/components/Shared/FormField';
 import { LoadingSkeleton } from '@/components/Shared/states/LoadingSkeleton';
 import { ErrorState } from '@/components/Shared/states/ErrorState';
+import StateContainer from '@/components/Shared/states/StateContainer';
 import { FilterBar } from '@/components/Shared/FilterBar';
 import { BottomTabs, BottomTabsList } from '@/components/Shared/BottomTabs';
 import { Badge } from '@/components/ui/badge';
@@ -169,7 +170,7 @@ export default function DemoPage() {
 
                {/* Tab 2: Schools */}
                <TabsContent value="schools" className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
-                  <FilterBar onReset={() => console.log('reset')} onApply={() => console.log('apply')} className="bg-background shadow-sm border-none sticky top-[88px] z-30 mx-[-1rem] px-4 rounded-none md:static md:mx-0 md:rounded-lg md:border">
+                  <FilterBar onReset={() => console.log('reset')} onApply={() => console.log('apply')} sticky>
                      <FormField label="搜索">
                         <Input placeholder="输入学校名称..." className="bg-muted/50" />
                      </FormField>
@@ -195,7 +196,7 @@ export default function DemoPage() {
                      </FormField>
                   </FilterBar>
 
-                  <div className="space-y-3">
+                  <StateContainer>
                      {schoolsLoading && <LoadingSkeleton count={5} />}
                      {schoolsError && <ErrorState message="加载失败" onRetry={() => refetchSchools()} />}
                      {!schoolsLoading && !schoolsError && (schoolsData as any)?.data && (
@@ -224,7 +225,7 @@ export default function DemoPage() {
                            </div>
                         </>
                      )}
-                  </div>
+                  </StateContainer>
                </TabsContent>
 
                {/* Tab 3: Analysis */}
@@ -248,45 +249,44 @@ export default function DemoPage() {
                      onSubmit={() => { }}
                      submitText="保存更改"
                      cancelText="取消"
+                     bodyClassName="grid gap-4 max-w-2xl bg-card p-4 rounded-lg border shadow-sm"
                   >
-                     <div className="grid gap-4 max-w-2xl bg-card p-4 rounded-lg border shadow-sm">
-                        <FormField label="显示名称" required>
-                           <Input defaultValue="管理员" />
-                        </FormField>
-                        <FormField label="绑定邮箱" required>
-                           <Input defaultValue="admin@example.com" disabled className="bg-muted" />
-                        </FormField>
-                        <FormField label="通知频率">
-                           <Select defaultValue="daily">
-                              <SelectTrigger><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                 <SelectItem value="realtime">实时推送</SelectItem>
-                                 <SelectItem value="daily">每日摘要</SelectItem>
-                                 <SelectItem value="weekly">每周汇总</SelectItem>
-                              </SelectContent>
-                           </Select>
-                        </FormField>
-                        <FormField label="界面主题">
-                           <div className="flex items-center gap-4 pt-2">
-                              <div className="flex items-center space-x-2">
-                                 <RadioGroup defaultValue="system" className="flex gap-4">
-                                    <div className="flex items-center space-x-2">
-                                       <RadioGroupItem value="light" id="theme-light" />
-                                       <Label htmlFor="theme-light">浅色</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                       <RadioGroupItem value="dark" id="theme-dark" />
-                                       <Label htmlFor="theme-dark">深色</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                       <RadioGroupItem value="system" id="theme-system" />
-                                       <Label htmlFor="theme-system">跟随系统</Label>
-                                    </div>
-                                 </RadioGroup>
-                              </div>
+                     <FormField label="显示名称" required>
+                        <Input defaultValue="管理员" />
+                     </FormField>
+                     <FormField label="绑定邮箱" required>
+                        <Input defaultValue="admin@example.com" disabled className="bg-muted" />
+                     </FormField>
+                     <FormField label="通知频率">
+                        <Select defaultValue="daily">
+                           <SelectTrigger><SelectValue /></SelectTrigger>
+                           <SelectContent>
+                              <SelectItem value="realtime">实时推送</SelectItem>
+                              <SelectItem value="daily">每日摘要</SelectItem>
+                              <SelectItem value="weekly">每周汇总</SelectItem>
+                           </SelectContent>
+                        </Select>
+                     </FormField>
+                     <FormField label="界面主题">
+                        <div className="flex items-center gap-4 pt-2">
+                           <div className="flex items-center space-x-2">
+                              <RadioGroup defaultValue="system" className="flex gap-4">
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="light" id="theme-light" />
+                                    <Label htmlFor="theme-light">浅色</Label>
+                                 </div>
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="dark" id="theme-dark" />
+                                    <Label htmlFor="theme-dark">深色</Label>
+                                 </div>
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="system" id="theme-system" />
+                                    <Label htmlFor="theme-system">跟随系统</Label>
+                                 </div>
+                              </RadioGroup>
                            </div>
-                        </FormField>
-                     </div>
+                        </div>
+                     </FormField>
                   </FormSection>
 
                   <div className="w-full">

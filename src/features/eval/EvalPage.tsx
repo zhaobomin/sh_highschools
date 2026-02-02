@@ -11,6 +11,7 @@ import EvalTargetCard from '@/features/eval/components/EvalTargetCard';
 import SectionHeader from '@/components/Shared/SectionHeader';
 import LoadingStateCard from '@/components/Shared/LoadingStateCard';
 import EmptyState from '@/components/Shared/states/EmptyState';
+import StateContainer from '@/components/Shared/states/StateContainer';
 
 export default function EvalPage() {
   const { t } = useTranslation();
@@ -34,9 +35,9 @@ export default function EvalPage() {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       {isLoading ? (
-        <div className="space-y-3">
+        <StateContainer>
           <LoadingStateCard message="加载中..." />
-        </div>
+        </StateContainer>
       ) : (
         <div>
           <div className="space-y-4">
@@ -50,14 +51,16 @@ export default function EvalPage() {
               <Separator className="mb-3 opacity-50" />
 
               {targets.length === 0 ? (
-                <EmptyState
-                  message={t('ui.eval.hint.noTargets')}
-                  action={(
-                    <Button asChild size="sm" className="h-8 text-sm px-3 rounded-full">
-                      <Link to="/filter">{t('ui.action.goFilter')}</Link>
-                    </Button>
-                  )}
-                />
+                <StateContainer>
+                  <EmptyState
+                    message={t('ui.eval.hint.noTargets')}
+                    action={(
+                      <Button asChild size="sm" className="h-8 text-sm px-3 rounded-full">
+                        <Link to="/filter">{t('ui.action.goFilter')}</Link>
+                      </Button>
+                    )}
+                  />
+                </StateContainer>
               ) : (
                 <div className="space-y-3">
                   {targets.map((school) => (

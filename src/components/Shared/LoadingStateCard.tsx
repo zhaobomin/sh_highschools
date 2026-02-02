@@ -1,12 +1,14 @@
 import { SectionCard } from '@/components/Shared/SectionCard';
 import type { ReactNode } from 'react';
 import SectionHeader from '@/components/Shared/SectionHeader';
+import { cn } from '@/lib/utils';
 
 interface LoadingStateCardProps {
   message?: string;
   icon?: ReactNode;
   title?: string;
   actions?: ReactNode;
+  className?: string;
 }
 
 export default function LoadingStateCard({
@@ -14,9 +16,10 @@ export default function LoadingStateCard({
   icon,
   title,
   actions,
+  className,
 }: LoadingStateCardProps) {
   return (
-    <SectionCard gap="xs" className="profile-card" contentClassName="px-6 py-4">
+    <SectionCard gap="xs" className={cn("profile-card", className)} contentClassName="px-6 py-4">
       {(icon || title || actions) && (
         <SectionHeader icon={icon} title={title || undefined} actions={actions} />
       )}

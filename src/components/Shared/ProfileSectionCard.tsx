@@ -8,6 +8,11 @@ interface ProfileSectionCardProps {
   contentClassName?: string;
   divider?: boolean;
   gap?: 'xs' | 'sm' | 'md' | 'lg';
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  headerClassName?: string;
+  titleClassName?: string;
+  descriptionClassName?: string;
 }
 
 export default function ProfileSectionCard({
@@ -16,6 +21,11 @@ export default function ProfileSectionCard({
   contentClassName,
   divider,
   gap = 'xs',
+  title,
+  description,
+  headerClassName,
+  titleClassName,
+  descriptionClassName,
 }: ProfileSectionCardProps) {
   return (
     <SectionCard
@@ -23,6 +33,11 @@ export default function ProfileSectionCard({
       gap={gap}
       className={cn('profile-card', className)}
       contentClassName={cn('px-4 pb-4', contentClassName)}
+      title={title}
+      description={description}
+      headerClassName={headerClassName}
+      titleClassName={titleClassName}
+      descriptionClassName={descriptionClassName}
     >
       {children}
     </SectionCard>

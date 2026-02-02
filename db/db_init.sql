@@ -131,10 +131,9 @@ CREATE TABLE IF NOT EXISTS school_seats (
     chinese_admission_score DECIMAL(5,1),
     math_admission_score DECIMAL(5,1),
     english_admission_score DECIMAL(5,1),
-    physics_admission_score DECIMAL(5,1),
-    chemistry_admission_score DECIMAL(5,1),
     politics_admission_score DECIMAL(5,1),
     history_admission_score DECIMAL(5,1),
+    pe_admission_score DECIMAL(5,1),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (middle_school_code) REFERENCES middle_schools(code) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -152,10 +151,9 @@ COMMENT ON COLUMN school_seats.total_admission_score IS '到校总分分数线';
 COMMENT ON COLUMN school_seats.chinese_admission_score IS '语文分数线';
 COMMENT ON COLUMN school_seats.math_admission_score IS '数学分数线';
 COMMENT ON COLUMN school_seats.english_admission_score IS '英语分数线';
-COMMENT ON COLUMN school_seats.physics_admission_score IS '物理分数线';
-COMMENT ON COLUMN school_seats.chemistry_admission_score IS '化学分数线';
 COMMENT ON COLUMN school_seats.politics_admission_score IS '道法分数线';
 COMMENT ON COLUMN school_seats.history_admission_score IS '历史分数线';
+COMMENT ON COLUMN school_seats.pe_admission_score IS '体育分数线';
 COMMENT ON COLUMN school_seats.created_at IS '创建时间';
 COMMENT ON COLUMN school_seats.updated_at IS '更新时间';
 
@@ -170,10 +168,9 @@ CREATE TABLE IF NOT EXISTS district_seats (
     chinese_admission_score DECIMAL(5,1),
     math_admission_score DECIMAL(5,1),
     english_admission_score DECIMAL(5,1),
-    physics_admission_score DECIMAL(5,1),
-    chemistry_admission_score DECIMAL(5,1),
     politics_admission_score DECIMAL(5,1),
     history_admission_score DECIMAL(5,1),
+    pe_admission_score DECIMAL(5,1),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (high_school_code) REFERENCES schools(code) ON DELETE CASCADE ON UPDATE CASCADE
@@ -190,10 +187,9 @@ COMMENT ON COLUMN district_seats.total_admission_score IS '到区总分分数线
 COMMENT ON COLUMN district_seats.chinese_admission_score IS '语文分数线';
 COMMENT ON COLUMN district_seats.math_admission_score IS '数学分数线';
 COMMENT ON COLUMN district_seats.english_admission_score IS '英语分数线';
-COMMENT ON COLUMN district_seats.physics_admission_score IS '物理分数线';
-COMMENT ON COLUMN district_seats.chemistry_admission_score IS '化学分数线';
 COMMENT ON COLUMN district_seats.politics_admission_score IS '道法分数线';
 COMMENT ON COLUMN district_seats.history_admission_score IS '历史分数线';
+COMMENT ON COLUMN district_seats.pe_admission_score IS '体育分数线';
 COMMENT ON COLUMN district_seats.created_at IS '创建时间';
 COMMENT ON COLUMN district_seats.updated_at IS '更新时间';
 
@@ -206,10 +202,9 @@ CREATE TABLE IF NOT EXISTS parallel_admission_scores (
     chinese_admission_score DECIMAL(5,1),
     math_admission_score DECIMAL(5,1),
     english_admission_score DECIMAL(5,1),
-    physics_admission_score DECIMAL(5,1),
-    chemistry_admission_score DECIMAL(5,1),
     politics_admission_score DECIMAL(5,1),
     history_admission_score DECIMAL(5,1),
+    pe_admission_score DECIMAL(5,1),
     year INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -225,10 +220,9 @@ COMMENT ON COLUMN parallel_admission_scores.total_admission_score IS '平行志�
 COMMENT ON COLUMN parallel_admission_scores.chinese_admission_score IS '语文分数线';
 COMMENT ON COLUMN parallel_admission_scores.math_admission_score IS '数学分数线';
 COMMENT ON COLUMN parallel_admission_scores.english_admission_score IS '英语分数线';
-COMMENT ON COLUMN parallel_admission_scores.physics_admission_score IS '物理分数线';
-COMMENT ON COLUMN parallel_admission_scores.chemistry_admission_score IS '化学分数线';
 COMMENT ON COLUMN parallel_admission_scores.politics_admission_score IS '道法分数线';
 COMMENT ON COLUMN parallel_admission_scores.history_admission_score IS '历史分数线';
+COMMENT ON COLUMN parallel_admission_scores.pe_admission_score IS '体育分数线';
 COMMENT ON COLUMN parallel_admission_scores.year IS '年份';
 COMMENT ON COLUMN parallel_admission_scores.created_at IS '创建时间';
 COMMENT ON COLUMN parallel_admission_scores.updated_at IS '更新时间';
@@ -293,10 +287,9 @@ CREATE TABLE IF NOT EXISTS mock_exams (
     chinese_score DECIMAL(5,1),
     math_score DECIMAL(5,1),
     english_score DECIMAL(5,1),
-    physics_score DECIMAL(5,1),
-    chemistry_score DECIMAL(5,1),
     politics_score DECIMAL(5,1),
     history_score DECIMAL(5,1),
+    pe_score DECIMAL(5,1),
     total_score DECIMAL(5,1) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -312,10 +305,9 @@ COMMENT ON COLUMN mock_exams.exam_date IS '考试日期';
 COMMENT ON COLUMN mock_exams.chinese_score IS '语文成绩';
 COMMENT ON COLUMN mock_exams.math_score IS '数学成绩';
 COMMENT ON COLUMN mock_exams.english_score IS '英语成绩';
-COMMENT ON COLUMN mock_exams.physics_score IS '物理成绩';
-COMMENT ON COLUMN mock_exams.chemistry_score IS '化学成绩';
 COMMENT ON COLUMN mock_exams.politics_score IS '道法成绩';
 COMMENT ON COLUMN mock_exams.history_score IS '历史成绩';
+COMMENT ON COLUMN mock_exams.pe_score IS '体育成绩';
 COMMENT ON COLUMN mock_exams.total_score IS '总分';
 COMMENT ON COLUMN mock_exams.created_at IS '创建时间';
 COMMENT ON COLUMN mock_exams.updated_at IS '更新时间';

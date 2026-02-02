@@ -29,5 +29,5 @@ This file defines global constraints for AI-assisted changes in this repo.
 - Web app root: `src`
 - API app root: `app`
 - API entrypoints: `app/main.py`, `api/index.py`
-- DB scripts: `db_init.sql`, `update_db_structure.sql`, `schools_data_init.sql`
+- DB scripts: `db_init.sql`
 - Shared UI components: `src/components/ui`

@@ -5,9 +5,19 @@ import { Button } from '@/components/ui/button';
 
 interface NavbarProps {
   showAuthButtons?: boolean;
+  title?: string;
+  subtitle?: string;
+  onBack?: () => void;
+  showBackButton?: boolean;
 }
 
-export function Navbar({ showAuthButtons = true }: NavbarProps) {
+export function Navbar({ 
+  showAuthButtons = true, 
+  title, 
+  subtitle, 
+  onBack, 
+  showBackButton = false 
+}: NavbarProps) {
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
   const isRegisterPage = location.pathname === '/register';
@@ -23,15 +33,23 @@ export function Navbar({ showAuthButtons = true }: NavbarProps) {
             </Avatar>
             <div className="flex flex-col gap-0.5">
               <span className="text-base font-bold leading-none tracking-tight">
-                上海中考择校
+                {title || '上海中考择校'}
               </span>
               <span className="text-[11px] text-muted-foreground leading-none">
-                智能择校，精准规划
+                {subtitle || '智能择校，精准规划'}
               </span>
             </div>
           </Link>
         </div>
-        {showAuthButtons && (
+        {showBackButton && onBack ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+          >
+            返回
+          </Button>
+        ) : showAuthButtons && (
           <div className="flex items-center gap-2">
             {!isLoginPage && (
               <Button

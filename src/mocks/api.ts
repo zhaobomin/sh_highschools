@@ -257,7 +257,8 @@ export async function mockGetSchoolDetail(schoolId: string): Promise<HighSchool 
   stats.quotaAutonomous = autonomousQuota;
 
   // 7. Probability (Mock)
-  stats.probability = Math.floor(Math.random() * 40) + 50; // 50-90%
+  const probability = Math.floor(Math.random() * 40) + 50; // 50-90%
+  stats.probability = probability;
 
   // Set defaults for missing values
   if (stats.scoreToDistrict === undefined) stats.scoreToDistrict = stats.scoreUnified;
@@ -285,5 +286,31 @@ export async function mockGetSchoolDetail(schoolId: string): Promise<HighSchool 
     stats.quotaToSchool = schoolQuota;
   }
 
-  return { ...school, stats };
+  // New fields for the updated API
+  const enrollment = {
+    autonomous: stats.quotaAutonomous || 0,
+    toDistrict: stats.quotaToDistrict || 0,
+    toSchool: stats.quotaToSchool || 0,
+    year: 2025
+  };
+
+  const scores = {
+    toDistrict: [Math.round((stats.scoreToDistrict || 0) - 5), stats.scoreToDistrict || 0] as [number, number],
+    toSchool: [Math.round((stats.scoreToSchool || 0) - 5), stats.scoreToSchool || 0] as [number, number],
+    unified: stats.scoreUnified || 0,
+    parallel: Math.round((stats.scoreUnified || 0) - 10)
+  };
+
+  const introduction = `${school.name}是一所位于上海市${school.district}的${school.type}，致力于为学生提供优质的教育资源和学习环境。学校拥有一支高素质的教师队伍，注重学生的全面发展，培养学生的创新能力和实践能力。学校设施齐全，为学生提供良好的学习和生活条件。`;
+
+  const note = school.type === '市重点' ? '上海市实验性示范性高中' : undefined;
+
+  return { 
+    ...school, 
+    stats, 
+    enrollment, 
+    scores, 
+    introduction, 
+    note 
+  };
 }

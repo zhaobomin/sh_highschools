@@ -7,6 +7,7 @@ import { mockExamsApi } from '@/lib/api';
 import MockStatsSection from '@/features/mocks/components/MockStatsSection';
 import MockListSection from '@/features/mocks/components/MockListSection';
 import LoadingStateCard from '@/components/Shared/LoadingStateCard';
+import StateContainer from '@/components/Shared/states/StateContainer';
 
 function computeTotal(scores: MockExam['scores']): number {
   const values = Object.values(scores).filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
@@ -155,9 +156,9 @@ export default function MocksPage() {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       {loading ? (
-        <div className="space-y-3">
+        <StateContainer>
           <LoadingStateCard message="加载中..." />
-        </div>
+        </StateContainer>
       ) : (
         <div>
           <div className="space-y-4">

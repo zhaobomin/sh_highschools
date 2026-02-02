@@ -9,6 +9,9 @@ interface FormFieldProps {
   error?: string;
   children: React.ReactNode;
   className?: string;
+  labelClassName?: string;
+  helpClassName?: string;
+  errorClassName?: string;
 }
 
 export function FormField({ 
@@ -17,17 +20,20 @@ export function FormField({
   helpText, 
   error, 
   children, 
-  className 
+  className,
+  labelClassName,
+  helpClassName,
+  errorClassName,
 }: FormFieldProps) {
   return (
     <div className={cn("grid gap-2", className)}>
-      <Label className={cn("text-xs text-muted-foreground font-normal", error && "text-destructive")}>
+      <Label className={cn("text-xs text-muted-foreground font-normal", error && "text-destructive", labelClassName)}>
         {label}
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>
       {children}
-      {helpText && !error && <p className="text-sm text-muted-foreground">{helpText}</p>}
-      {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+      {helpText && !error && <p className={cn("text-sm text-muted-foreground", helpClassName)}>{helpText}</p>}
+      {error && <p className={cn("text-sm font-medium text-destructive", errorClassName)}>{error}</p>}
     </div>
   );
 }

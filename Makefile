@@ -1,5 +1,13 @@
 .PHONY: check web-check api-check db-init db-update
 
+b: build
+
+build:
+	npm run build; npx cap sync
+
+flask:
+	python -m app.main
+
 check: web-check api-check
 
 web-check:
@@ -14,7 +22,6 @@ api-check:
 # DB scripts exist but no automated migration tool is configured in repo sources.
 db-init:
 	@echo "Manual DB init script: db_init.sql"
-	@echo "Manual data init script: schools_data_init.sql"
 
 db-update:
-	@echo "Manual DB update script: update_db_structure.sql"
+	@echo "DB structure updates are now included in db_init.sql"

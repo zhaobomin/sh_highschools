@@ -1,5 +1,6 @@
 import { SectionCard } from '@/components/Shared/SectionCard';
 import { FormField } from '@/components/Shared/FormField';
+import { FormSection } from '@/components/Shared/FormSection';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -46,6 +47,12 @@ export default function ProfileSection({
   searchPhase,
   isSaving,
 }: ProfileSectionProps) {
+  const submitLabel = searchPhase === 'saving'
+    ? '保存画像中'
+    : searchPhase === 'searching'
+      ? '推荐搜索中'
+      : '搜索推荐';
+
   return (
     <SectionCard gap="xs" className="profile-card" contentClassName="px-4 pb-4">
       <SectionHeader
@@ -60,7 +67,15 @@ export default function ProfileSection({
 
       <Separator className="mb-3 opacity-50" />
 
-      <div className="space-y-1.5">
+      <FormSection
+        onSubmit={handleSearch}
+        submitText={submitLabel}
+        isSubmitting={isSaving}
+        actionsClassName="pt-1.5 w-full"
+        submitClassName="w-full"
+        className="space-y-4"
+        bodyClassName="space-y-1.5"
+      >
         <FormField label="所在区" required>
           <Select
             value={profile.district ?? ''}
@@ -125,87 +140,72 @@ export default function ProfileSection({
             </SelectContent>
           </Select>
         </FormField>
-      </div>
 
-      <div className="mt-1.5 grid gap-1.5 grid-cols-3">
-        <div className="profile-score-card">
-          <div className="profile-score-label">稳定分（估计）</div>
-          <Input
-            inputMode="numeric"
-            type="number"
-            className="profile-input text-lg"
-            value={profile.stableScore ?? ''}
-            onChange={(e) =>
-              updateProfile({
-                stableScore: e.target.value === '' ? null : Number(e.target.value),
-              })
-            }
-          />
+        <div className="mt-1.5 grid gap-1.5 grid-cols-3">
+          <div className="profile-score-card">
+            <div className="profile-score-label">稳定分（估计）</div>
+            <Input
+              inputMode="numeric"
+              type="number"
+              className="profile-input text-lg"
+              value={profile.stableScore ?? ''}
+              onChange={(e) =>
+                updateProfile({
+                  stableScore: e.target.value === '' ? null : Number(e.target.value),
+                })
+              }
+            />
+          </div>
+          <div className="profile-score-card">
+            <div className="profile-score-label">上限分（估计）</div>
+            <Input
+              inputMode="numeric"
+              type="number"
+              className="profile-input text-lg"
+              value={profile.highScore ?? ''}
+              onChange={(e) =>
+                updateProfile({
+                  highScore: e.target.value === '' ? null : Number(e.target.value),
+                })
+              }
+            />
+          </div>
+          <div className="profile-score-card">
+            <div className="profile-score-label">下限分（估计）</div>
+            <Input
+              inputMode="numeric"
+              type="number"
+              className="profile-input text-lg"
+              value={profile.lowScore ?? ''}
+              onChange={(e) =>
+                updateProfile({
+                  lowScore: e.target.value === '' ? null : Number(e.target.value),
+                })
+              }
+            />
+          </div>
         </div>
-        <div className="profile-score-card">
-          <div className="profile-score-label">上限分（估计）</div>
-          <Input
-            inputMode="numeric"
-            type="number"
-            className="profile-input text-lg"
-            value={profile.highScore ?? ''}
-            onChange={(e) =>
-              updateProfile({
-                highScore: e.target.value === '' ? null : Number(e.target.value),
-              })
-            }
-          />
-        </div>
-        <div className="profile-score-card">
-          <div className="profile-score-label">下限分（估计）</div>
-          <Input
-            inputMode="numeric"
-            type="number"
-            className="profile-input text-lg"
-            value={profile.lowScore ?? ''}
-            onChange={(e) =>
-              updateProfile({
-                lowScore: e.target.value === '' ? null : Number(e.target.value),
-              })
-            }
-          />
-        </div>
-      </div>
 
-      <div className="mt-1.5 space-y-1.5">
-        <ErrorList errors={errors} />
+        <div className="mt-1.5 space-y-1.5">
+          <ErrorList errors={errors} />
 
-        <FormField label="筛选：学校类型">
-          <Select value={filters.type} onValueChange={(v) => setFilters((p) => ({ ...p, type: v as any }))}>
-            <SelectTrigger>
-              <SelectValue placeholder="全部" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="全部">全部</SelectItem>
-              {highSchoolTypes.map((tp) => (
-                <SelectItem key={tp} value={tp}>
-                  {tp}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormField>
-
-        <div className="pt-1.5">
-          <Button
-            className="w-full"
-            size="default"
-            onClick={handleSearch}
-            disabled={isSaving}
-          >
-            {searchPhase === 'saving'
-              ? '保存画像中'
-              : searchPhase === 'searching'
-                ? '推荐搜索中'
-                : '搜索推荐'}
-          </Button>
+          <FormField label="筛选：学校类型">
+            <Select value={filters.type} onValueChange={(v) => setFilters((p) => ({ ...p, type: v as any }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="全部" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="全部">全部</SelectItem>
+                {highSchoolTypes.map((tp) => (
+                  <SelectItem key={tp} value={tp}>
+                    {tp}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
         </div>
-      </div>
+      </FormSection>
     </SectionCard>
   );
 }

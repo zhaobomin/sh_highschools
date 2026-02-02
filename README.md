@@ -59,3 +59,10 @@ Any time the frontend changes, rebuild `dist/` before restarting the Flask serve
 
 - CORS is configured on the Flask app (`flask-cors`) to allow the still-possible scenario of running the React dev server while the API lives on another port.
 - The backend still relies on the existing `app/core/db.py` adapter, so you can keep using Supabase or switch to PostgreSQL by editing that module.
+
+## AI Working Agreement
+
+- See `docs/ai/rules.md` for AI change constraints and workflow.
+- Doc entrypoints:
+  - `docs/prd/00-index.md`
+  - `docs/architecture/00-index.md`

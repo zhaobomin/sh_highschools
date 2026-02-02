@@ -7,11 +7,13 @@ interface FilterBarProps {
   onReset?: () => void;
   onApply?: () => void;
   className?: string;
+  sticky?: boolean;
 }
 
-export function FilterBar({ children, onReset, onApply, className }: FilterBarProps) {
+export function FilterBar({ children, onReset, onApply, className, sticky = false }: FilterBarProps) {
+  const stickyClass = "bg-background shadow-sm border-none sticky top-[88px] z-30 mx-[-1rem] px-4 rounded-none md:static md:mx-0 md:rounded-lg md:border";
   return (
-    <div className={`flex flex-col gap-4 p-4 border rounded-lg bg-muted/30 md:flex-row md:items-end ${className}`}>
+    <div className={`flex flex-col gap-4 p-4 border rounded-lg bg-muted/30 md:flex-row md:items-end ${sticky ? stickyClass : ''} ${className}`}>
       <div className="flex-1 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         {children}
       </div>

@@ -113,7 +113,7 @@ export default function RecommendationSection({
             </div>
           ) : totalSchools === 0 ? (
             <div className="rounded-lg border border-dashed p-4">
-              <EmptyState message="暂无匹配的推荐学校，请调整条件后再试。" className="py-0 text-center" />
+              <EmptyState message="暂无匹配的推荐学校，请调整条件后再试。" variant="compact" />
             </div>
           ) : (
             pagedSchools.map((s) => {
@@ -124,7 +124,7 @@ export default function RecommendationSection({
               const p = probability / 100;
               const level = levelFromProbability(p);
               return (
-                <ListCard key={s.id} className="shadow-sm" contentClassName="space-y-2">
+                <ListCard key={s.id} stack>
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-base truncate">{s.name}</div>

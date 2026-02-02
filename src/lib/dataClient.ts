@@ -108,7 +108,25 @@ export async function getLatestScoreLine(params: {
 
 export async function getSchoolDetail(schoolId: string): Promise<ApiResponse<HighSchool | null>> {
   return fallback(
-    () => fetcher.get(`/schools/${encodeURIComponent(schoolId)}`),
+    async () => {
+      const schoolData = await fetcher.get(`/schools/${encodeURIComponent(schoolId)}/detail`);
+      
+      if (schoolData.data) {
+        // 转换为旧接口格式，确保兼容性
+        // 注意：分数区间需要特殊处理，使用最高值作为旧接口的单一分数
+        schoolData.data.stats = {
+          scoreToDistrict: Array.isArray(schoolData.data.scores?.toDistrict) ? schoolData.data.scores.toDistrict[1] : schoolData.data.scores?.toDistrict,
+          scoreToSchool: Array.isArray(schoolData.data.scores?.toSchool) ? schoolData.data.scores.toSchool[1] : schoolData.data.scores?.toSchool,
+          scoreUnified: schoolData.data.scores?.unified,
+          quotaAutonomous: schoolData.data.enrollment?.autonomous,
+          quotaToDistrict: schoolData.data.enrollment?.toDistrict,
+          quotaToSchool: schoolData.data.enrollment?.toSchool,
+          probability: schoolData.data.probability,
+        };
+      }
+      
+      return schoolData;
+    },
     async () => {
       const data = await mockGetSchoolDetail(schoolId);
       return { data };

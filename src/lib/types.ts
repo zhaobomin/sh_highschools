@@ -28,6 +28,7 @@ export interface HighSchool {
   type: HighSchoolType;
   fullType?: string;
   accommodation?: string;
+  note?: string;
   isTarget?: boolean;
   stats?: {
     scoreToDistrict?: number | null;
@@ -37,6 +38,19 @@ export interface HighSchool {
     quotaToDistrict?: number | null;
     quotaToSchool?: number | null;
     probability?: number;
+  };
+  enrollment?: {
+    autonomous: number;
+    toDistrict: number;
+    toSchool: number;
+    year: number;
+  };
+  introduction?: string;
+  scores?: {
+    toDistrict: [number, number];
+    toSchool: [number, number];
+    unified: number;
+    parallel: number;
   };
 }
 

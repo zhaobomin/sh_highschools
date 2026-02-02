@@ -2,12 +2,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getSchoolDetail } from '@/lib/dataClient';
 import { levelFromProbability } from '@/lib/evaluation';
-import SchoolHeaderSection from '@/features/schools/components/SchoolHeaderSection';
+import { Navbar } from '@/components/Shared/Navbar';
 import SchoolScoresSection from '@/features/schools/components/SchoolScoresSection';
 import SchoolProbabilitySection from '@/features/schools/components/SchoolProbabilitySection';
+import SchoolEnrollmentSection from '@/features/schools/components/SchoolEnrollmentSection';
+import SchoolIntroductionSection from '@/features/schools/components/SchoolIntroductionSection';
 import AdmissionGuideSection from '@/components/Shared/AdmissionGuideSection';
 import SchoolDetailLoadingSection from '@/features/schools/components/SchoolDetailLoadingSection';
 import SchoolDetailErrorSection from '@/features/schools/components/SchoolDetailErrorSection';
+import StateContainer from '@/components/Shared/states/StateContainer';
 
 export default function SchoolDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,11 +28,7 @@ export default function SchoolDetailPage() {
 
   if (isLoading) {
     return (
-      <div>
-        <div className="space-y-3">
-          <SchoolDetailLoadingSection onBack={handleBack} />
-        </div>
-      </div>
+      <SchoolDetailLoadingSection onBack={handleBack} />
     );
   }
 
@@ -37,11 +36,7 @@ export default function SchoolDetailPage() {
 
   if (error || !school) {
     return (
-      <div>
-        <div className="space-y-3">
-          <SchoolDetailErrorSection onBack={handleBack} />
-        </div>
-      </div>
+      <SchoolDetailErrorSection onBack={handleBack} />
     );
   }
 
@@ -52,22 +47,33 @@ export default function SchoolDetailPage() {
   const barColor = level === 'high' ? 'bg-emerald-500' : level === 'mid' ? 'bg-amber-500' : 'bg-rose-500';
 
   return (
-    <div>
-      <div className="space-y-3">
-        <SchoolHeaderSection school={school} onBack={handleBack} />
+    <div className="min-h-screen min-h-[100dvh] bg-background font-sans antialiased flex flex-col">
+      <Navbar
+        title={school.name}
+        subtitle={`${school.district} · ${school.type}`}
+        onBack={handleBack}
+        showBackButton={true}
+        showAuthButtons={false}
+      />
+      <main className="flex-1 bg-muted/20">
+        <div className="py-4 mx-auto px-2 sm:px-3 md:px-4 md:py-6">
+          <StateContainer>
+            <SchoolIntroductionSection school={school} />
+            <SchoolEnrollmentSection enrollment={school.enrollment} />
+            <SchoolScoresSection stats={stats} />
 
-        <SchoolScoresSection stats={stats} />
+            {probability > 0 && (
+              <SchoolProbabilitySection
+                probability={probability}
+                level={level}
+                barColor={barColor}
+              />
+            )}
 
-        {probability > 0 && (
-          <SchoolProbabilitySection
-            probability={probability}
-            level={level}
-            barColor={barColor}
-          />
-        )}
-
-        <AdmissionGuideSection />
-      </div>
+            <AdmissionGuideSection />
+          </StateContainer>
+        </div>
+      </main>
     </div>
   );
 }

@@ -4,12 +4,16 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 interface SectionCardProps {
-  title?: string;
-  description?: string;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
   children: React.ReactNode;
   divider?: boolean;
   gap?: 'xs' | 'sm' | 'md' | 'lg';
+  variant?: 'default' | 'plain';
   className?: string;
+  headerClassName?: string;
+  titleClassName?: string;
+  descriptionClassName?: string;
   contentClassName?: string;
 }
 
@@ -26,16 +30,21 @@ export function SectionCard({
   children,
   divider = false,
   gap = 'md',
+  variant = 'default',
   className,
+  headerClassName,
+  titleClassName,
+  descriptionClassName,
   contentClassName
 }: SectionCardProps) {
+  const variantClassName = variant === 'plain' ? 'bg-transparent border-none shadow-none p-0' : '';
   return (
-    <Card className={className}>
+    <Card className={cn(variantClassName, className)}>
       {(title || description) && (
         <>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">{title}</CardTitle>
-            <CardDescription className="text-xs">{description}</CardDescription>
+          <CardHeader className={cn("pb-2", headerClassName)}>
+            <CardTitle className={cn("text-sm font-semibold", titleClassName)}>{title}</CardTitle>
+            <CardDescription className={cn("text-xs", descriptionClassName)}>{description}</CardDescription>
           </CardHeader>
           {divider && <Separator />}
         </>

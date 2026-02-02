@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import PullToRefresh from '@/components/Shared/PullToRefresh';
 import LoadingStateCard from '@/components/Shared/LoadingStateCard';
+import StateContainer from '@/components/Shared/states/StateContainer';
 import ProfileSection from '@/features/filter/components/ProfileSection';
 import RecommendationSection from '@/features/filter/components/RecommendationSection';
 import type { District, HighSchool, HighSchoolType, MiddleSchool, StudentProfile } from '@/lib/types';
@@ -318,9 +319,9 @@ export default function FilterPage() {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       {(isProfileLoading || isOptionsLoading) ? (
-        <div className="space-y-3">
+        <StateContainer>
           <LoadingStateCard message="加载中..." />
-        </div>
+        </StateContainer>
       ) : (
         <div>
           <div className="space-y-3">
