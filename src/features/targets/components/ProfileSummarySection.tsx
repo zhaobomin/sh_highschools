@@ -37,8 +37,8 @@ export default function ProfileSummarySection({
       <Separator className="mb-3 opacity-50" />
 
       {hasNoData ? (
-        <div className="flex flex-col items-center justify-center py-6">
-          <div className="text-sm text-muted-foreground mb-4">
+        <div className="flex flex-col items-center justify-center py-4">
+          <div className="text-xs text-muted-foreground mb-3">
             学生画像暂无数据，请先更新
           </div>
           <Button variant="default" size="sm" asChild>
@@ -46,26 +46,22 @@ export default function ProfileSummarySection({
           </Button>
         </div>
       ) : (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
-            <div className="text-sm text-muted-foreground">所在区</div>
-            <div className="text-sm font-semibold">{district || '未设置'}</div>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-2.5 py-1.5">
+            <div className="text-xs text-muted-foreground">所在区</div>
+            <div className="text-xs">{district || '未设置'}</div>
           </div>
-          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
-            <div className="text-sm text-muted-foreground">当前初中</div>
-            <div className="text-sm font-semibold truncate max-w-[60%]">{middleSchoolName || '未设置'}</div>
+          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-2.5 py-1.5">
+            <div className="text-xs text-muted-foreground">当前初中</div>
+            <div className="text-xs truncate max-w-[60%]">{middleSchoolName || '未设置'}</div>
           </div>
-          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
-            <div className="text-sm text-muted-foreground">稳定分</div>
-            <div className="text-sm font-semibold">{stableScore || '未设置'}</div>
-          </div>
-          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
-            <div className="text-sm text-muted-foreground">上限分</div>
-            <div className="text-sm font-semibold">{highScore || '未设置'}</div>
-          </div>
-          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
-            <div className="text-sm text-muted-foreground">下限分</div>
-            <div className="text-sm font-semibold">{lowScore || '未设置'}</div>
+          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-2.5 py-1.5">
+            <div className="text-xs text-muted-foreground">分数区间</div>
+            <div className="flex items-center gap-3">
+              <div className="text-xs">稳定: {stableScore || '未设置'}</div>
+              <div className="text-xs">上限: {highScore || '未设置'}</div>
+              <div className="text-xs">下限: {lowScore || '未设置'}</div>
+            </div>
           </div>
         </div>
       )}
