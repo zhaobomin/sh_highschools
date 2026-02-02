@@ -39,6 +39,63 @@ def level_from_probability(probability: Optional[float]) -> str:
     return "low"
 
 
+def calculate_gaps(score: Optional[float], model: Dict[str, Any]) -> Dict[str, Optional[float]]:
+    """计算差距的最好、最差值"""
+    mean = model.get("mean")
+    if score is None or mean is None:
+        return {"best": None, "worst": None}
+    
+    # 基于模型的最高和最低值计算差距
+    best_gap = round(model.get("max", mean) - score, 1)  # 最好情况：使用最高模考成绩
+    worst_gap = round(model.get("min", mean) - score, 1)  # 最差情况：使用最低模考成绩
+    
+    return {
+        "best": best_gap,
+        "worst": worst_gap
+    }
+
+
+def calculate_gap_status(score: Optional[float], min_score: Optional[float], max_score: Optional[float]) -> Optional[str]:
+    """根据渠道分数和最低/最高成绩计算状态"""
+    if score is None or min_score is None or max_score is None:
+        return None
+    if score < min_score:  # 渠道分数 < 最低成绩 => 绿灯
+        return "green"
+    elif score > max_score:  # 渠道分数 > 最高 => 红灯
+        return "red"
+    else:  # 其他 => 黄灯
+        return "yellow"
+
+
+def calculate_overall_status(channels: Dict[str, Dict[str, Any]]) -> str:
+    """根据渠道状态计算综合状态"""
+    # 收集所有渠道的状态
+    channel_statuses = []
+    for channel_key, channel_data in channels.items():
+        status = channel_data.get("status")
+        if status:
+            channel_statuses.append(status)
+    
+    if not channel_statuses:
+        return "red"  # 无状态信息时默认为红灯
+    
+    # 只要有一个绿灯，综合状态为绿灯
+    if "green" in channel_statuses:
+        return "green"
+    # 无绿灯但有黄灯，综合状态为黄灯
+    elif "yellow" in channel_statuses:
+        return "yellow"
+    # 其他情况为红灯
+    else:
+        return "red"
+
+
+def is_single_mock_situation(model: Dict[str, Any]) -> bool:
+    """判断是否为单模考情况"""
+    # 基于模型信息判断
+    return model.get("source") == "mocks" and model.get("count") == 1
+
+
 def compute_mock_stats(scores: List[float]) -> Tuple[int, Optional[float], Optional[float]]:
     if not scores:
         return 0, None, None
@@ -57,7 +114,10 @@ def derive_model(
 ) -> Dict[str, Any]:
     count, mean, std = compute_mock_stats(mock_scores)
     if count >= 2 and mean is not None and std is not None and std > 0:
-        return {"mean": mean, "std": std, "count": count, "source": "mocks"}
+        # 使用实际的模考成绩计算max和min
+        mock_max = max(mock_scores) if mock_scores else mean
+        mock_min = min(mock_scores) if mock_scores else mean
+        return {"mean": mean, "std": std, "count": count, "source": "mocks", "max": mock_max, "min": mock_min}
     if (
         stable_score is not None
         and high_score is not None
@@ -69,8 +129,10 @@ def derive_model(
             "std": max(5.0, (high_score - low_score) / 4),
             "count": count,
             "source": "estimate",
+            "max": high_score,
+            "min": low_score,
         }
-    return {"mean": None, "std": None, "count": count, "source": "none"}
+    return {"mean": None, "std": None, "count": count, "source": "none", "max": None, "min": None}
 
 
 def build_target_evaluations(
@@ -80,6 +142,7 @@ def build_target_evaluations(
     mean = model.get("mean")
     std = model.get("std")
     evaluations: List[Dict[str, Any]] = []
+    
     for school in enriched_schools:
         stats = school.get("stats") or {}
         unified_score = safe_float(stats.get("scoreUnified"))
@@ -100,7 +163,53 @@ def build_target_evaluations(
             for p in available_probs:
                 product *= (1 - p)
             overall_prob = clamp(1 - product, 0.0, 1.0)
-
+        
+        # 计算各渠道的差距
+        channels = {
+            "autonomous": {
+                "score": None,
+                "quota": autonomous_quota,
+                "gap": None,
+                "gaps": None,
+            },
+            "district": {
+                "score": district_score,
+                "quota": district_quota,
+                "gap": None if district_score is None or mean is None else round(mean - district_score, 1),
+                "gaps": calculate_gaps(district_score, model),
+            },
+            "school": {
+                "score": school_score,
+                "quota": school_quota,
+                "gap": None if school_score is None or mean is None else round(mean - school_score, 1),
+                "gaps": calculate_gaps(school_score, model),
+            },
+            "unified": {
+                "score": unified_score,
+                "quota": None,
+                "gap": None if unified_score is None or mean is None else round(mean - unified_score, 1),
+                "gaps": calculate_gaps(unified_score, model),
+            },
+        }
+        
+        # 计算各渠道的状态
+        for channel_key, channel_data in channels.items():
+            score = channel_data.get("score")
+            min_score = model.get("min")
+            max_score = model.get("max")
+            channels[channel_key]["status"] = calculate_gap_status(score, min_score, max_score)
+        
+        # 处理单模考情况
+        if is_single_mock_situation(model):
+            # 单模考情况：直接使用gap字段作为模考差距
+            for channel_key, channel_data in channels.items():
+                if channel_data.get("gap") is not None:
+                    # 单模考时，gaps字段设置为与gap相同的值
+                    channels[channel_key]["gaps"] = {
+                        "best": channel_data["gap"],
+                        "worst": channel_data["gap"]
+                    }
+        
         evaluations.append(
             {
                 "id": school.get("id"),
@@ -108,34 +217,8 @@ def build_target_evaluations(
                 "district": school.get("district"),
                 "type": school.get("type"),
                 "fullType": school.get("fullType"),
-                "channels": {
-                    "autonomous": {
-                        "score": None,
-                        "quota": autonomous_quota,
-                        "probability": None,
-                        "gap": None,
-                    },
-                    "district": {
-                        "score": district_score,
-                        "quota": district_quota,
-                        "probability": district_prob,
-                        "gap": None if district_score is None or mean is None else round(mean - district_score, 1),
-                    },
-                    "school": {
-                        "score": school_score,
-                        "quota": school_quota,
-                        "probability": school_prob,
-                        "gap": None if school_score is None or mean is None else round(mean - school_score, 1),
-                    },
-                    "unified": {
-                        "score": unified_score,
-                        "quota": None,
-                        "probability": unified_prob,
-                        "gap": None if unified_score is None or mean is None else round(mean - unified_score, 1),
-                    },
-                },
+                "channels": channels,
                 "overall": {
-                    "probability": overall_prob,
                     "level": level_from_probability(overall_prob),
                 },
             }

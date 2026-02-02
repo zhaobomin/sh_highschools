@@ -128,8 +128,12 @@ export interface TargetEvaluationProfile {
 export interface TargetEvaluationChannel {
   score: number | null;
   quota: number | null;
-  probability: number | null;
   gap: number | null;
+  gaps?: {
+    best: number | null;
+    worst: number | null;
+  };
+  status?: string | null;
 }
 
 export interface TargetEvaluationSchool {
@@ -145,7 +149,6 @@ export interface TargetEvaluationSchool {
     unified: TargetEvaluationChannel;
   };
   overall: {
-    probability: number | null;
     level: 'high' | 'mid' | 'low' | 'na';
   };
 }

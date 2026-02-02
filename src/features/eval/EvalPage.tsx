@@ -30,8 +30,6 @@ export default function EvalPage() {
   const model = evaluation?.model ?? { mean: null, std: null, count: 0, source: 'none' };
   const targets = evaluation?.targets ?? [];
 
-  const hasModel = model.mean != null && model.std != null;
-
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       {isLoading ? (
@@ -68,7 +66,6 @@ export default function EvalPage() {
                       key={school.id}
                       school={school}
                       model={model}
-                      hasModel={hasModel}
                       t={t}
                     />
                   ))}
