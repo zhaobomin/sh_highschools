@@ -64,10 +64,8 @@ def _build_stats(
     stats["quotaToDistrict"] = district_quota
     stats["quotaToSchool"] = school_quota
     stats["quotaAutonomous"] = autonomous_quota
-    benchmark_scores = [
-        score for score in [unified_score, district_score, school_score] if score is not None
-    ]
-    benchmark = min(benchmark_scores) if benchmark_scores else None
+    # 使用平行志愿录取分数线作为基准分
+    benchmark = unified_score
     probability = None
     if benchmark is not None:
         probability = probability_from_profile(benchmark, stable_score, high_score, low_score)

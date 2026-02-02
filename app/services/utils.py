@@ -32,13 +32,14 @@ def probability_from_profile(
         return None
     if high_score < low_score:
         return None
-    if low_score >= benchmark:
-        return 85
-    if stable_score >= benchmark:
-        return 65
-    if high_score >= benchmark:
-        return 40
-    return 15
+    # 使用平行志愿录取分数线作为基准分
+    if low_score > benchmark:
+        return 85  # 拿捏
+    if low_score < benchmark and high_score > benchmark:
+        return 50  # 可冲
+    if high_score < benchmark:
+        return 15  # 难
+    return None
 
 
 def calculate_probability(
