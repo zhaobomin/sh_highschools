@@ -12,6 +12,7 @@ from app.services.schools_service import (
     fetch_enriched_schools,
     get_evaluation_profile_payload,
     get_user_school_context,
+    evaluate_single_school,
     list_target_schools_payload,
     parse_list_schools_params,
     get_school_detail_all,
@@ -212,6 +213,24 @@ def evaluate_target_schools():
             "targets": evaluations,
         }
     )
+
+
+@schools_bp.route("/<string:school_id>/evaluation", methods=["GET"])
+@require_auth
+def evaluate_school(school_id: str):
+    current_user = get_current_user()
+    if not current_user:
+        raise CustomException(
+            status_code=401,
+            code="UNAUTHORIZED",
+            message="User context missing.",
+        )
+
+    payload = evaluate_single_school(db, current_user["id"], school_id)
+    if payload is None:
+        return api_response(None, {"error": "School not found"}, 404)
+
+    return api_response(payload)
 
 
 @schools_bp.route("/targets/<school_code>", methods=["DELETE"])

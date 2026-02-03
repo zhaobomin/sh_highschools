@@ -6,9 +6,17 @@ interface EvalTargetCardProps {
   school: TargetEvaluationSchool;
   model: TargetEvaluationModel;
   t: TFunction;
+  showHeader?: boolean;
+  note?: string;
 }
 
-export default function EvalTargetCard({ school, model, t }: EvalTargetCardProps) {
+export default function EvalTargetCard({
+  school,
+  model,
+  t,
+  showHeader = true,
+  note,
+}: EvalTargetCardProps) {
   const channels: Array<{ key: 'autonomous' | 'district' | 'school' | 'unified'; label: string }> = [
     { key: 'autonomous', label: t('ui.eval.channel.autonomous') },
     { key: 'district', label: t('ui.eval.channel.district') },
@@ -21,14 +29,16 @@ export default function EvalTargetCard({ school, model, t }: EvalTargetCardProps
 
   return (
     <ListCard size="lg" contentClassName="space-y-3">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="font-semibold text-base">{school.name}</div>
-          <div className="text-xs text-muted-foreground mt-0.5">
-            {school.district} · {school.type}
+      {showHeader && (
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="font-semibold text-base">{school.name}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">
+              {school.district} · {school.type}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="grid gap-2">
         {/* 使用响应式网格布局，根据屏幕宽度自动适配 */}
@@ -87,6 +97,11 @@ export default function EvalTargetCard({ school, model, t }: EvalTargetCardProps
           );
         })}
       </div>
+      {note && (
+        <div className="text-xs text-muted-foreground">
+          {note}
+        </div>
+      )}
     </ListCard>
   );
 }

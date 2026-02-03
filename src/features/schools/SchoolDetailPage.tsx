@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getSchoolDetail, getStudentProfile, listSchools } from '@/lib/dataClient';
+import { getSchoolDetail, getSchoolEvaluation, getStudentProfile, listSchools } from '@/lib/dataClient';
 import SchoolScoresSection from '@/features/schools/components/SchoolScoresSection';
 import SchoolEnrollmentSection from '@/features/schools/components/SchoolEnrollmentSection';
 import SchoolIntroductionSection from '@/features/schools/components/SchoolIntroductionSection';
@@ -9,10 +9,12 @@ import SchoolDetailErrorSection from '@/features/schools/components/SchoolDetail
 import StateContainer from '@/components/Shared/states/StateContainer';
 import SchoolProfileSection from '@/features/schools/components/SchoolProfileSection';
 import { Navbar } from '@/components/Shared/Navbar';
+import { useTranslation } from 'react-i18next';
 
 export default function SchoolDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const { data: schoolResp, isLoading, error } = useQuery({
     queryKey: ['schools:detail', id],
@@ -48,6 +50,11 @@ export default function SchoolDetailPage() {
       }),
     enabled: Boolean(profileData),
   });
+  const { data: evalResp, isLoading: isEvalLoading, error: evalError } = useQuery({
+    queryKey: ['schools:evaluation', id],
+    queryFn: () => getSchoolEvaluation(id || ''),
+    enabled: !!id,
+  });
 
   const handleBack = () => {
     navigate(-1);
@@ -69,6 +76,9 @@ export default function SchoolDetailPage() {
   const studentProfile = profileData;
   const middleSchoolName = studentProfile?.middle_school_name ?? '';
   const recommendedSchool = schoolsResp?.data?.find((s) => s.id === school.id) ?? null;
+  const evaluation = evalResp?.data ?? null;
+  const model = evaluation?.model ?? { mean: null, std: null, count: 0, source: 'none' };
+  const evalSchool = evaluation?.targets?.[0] ?? null;
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-background font-sans antialiased flex flex-col">
@@ -92,6 +102,12 @@ export default function SchoolDetailPage() {
               highScore={studentProfile?.high_score}
               lowScore={studentProfile?.low_score}
               recommendedSchool={recommendedSchool}
+              evalSchool={evalSchool}
+              evalModel={model}
+              isEvalLoading={isEvalLoading}
+              evalError={Boolean(evalError)}
+              evalNote="基于模拟考试评估"
+              t={t}
             />
           </StateContainer>
         </div>

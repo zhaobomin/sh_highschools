@@ -78,6 +78,25 @@ export async function getTargetEvaluation(): Promise<ApiResponse<TargetEvaluatio
   );
 }
 
+export async function getSchoolEvaluation(schoolId: string): Promise<ApiResponse<TargetEvaluationResponse>> {
+  return fallback(
+    () => fetcher.get(`/schools/${encodeURIComponent(schoolId)}/evaluation`),
+    () => Promise.resolve({
+      data: {
+        profile: {
+          district: null,
+          middleSchoolId: null,
+          stableScore: null,
+          highScore: null,
+          lowScore: null,
+        },
+        model: { mean: null, std: null, count: 0, source: 'none' },
+        targets: [],
+      },
+    })
+  );
+}
+
 export async function removeTargetSchool(params: { schoolId: string }): Promise<ApiResponse<{ school_code: string; isTarget: boolean }>> {
   return fallback(
     () => fetcher.delete(`/schools/targets/${encodeURIComponent(params.schoolId)}`),

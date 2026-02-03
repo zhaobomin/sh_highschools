@@ -1,6 +1,7 @@
 import math
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from app.core.db import SupabaseAdapter
 from app.services.utils import safe_float, safe_int, probability_from_profile, calculate_probability
 
 
@@ -332,6 +333,47 @@ def get_evaluation_profile_payload(db: Any, user_id: str) -> Tuple[Dict[str, Any
         "high_score": high_score,
         "low_score": low_score,
         "mock_scores": mock_scores,
+    }
+
+
+def evaluate_single_school(
+    db: Any,
+    user_id: str,
+    school_id: str,
+) -> Optional[Dict[str, Any]]:
+    profile_payload, target_district, middle_school_id, score_context = get_evaluation_profile_payload(db, user_id)
+    model = derive_model(
+        score_context["stable_score"],
+        score_context["high_score"],
+        score_context["low_score"],
+        score_context["mock_scores"],
+    )
+
+    enriched_schools, _ = fetch_enriched_schools(
+        db,
+        SupabaseAdapter,
+        q="",
+        type_=None,
+        target_district=target_district,
+        middle_school_id=middle_school_id,
+        page=1,
+        per_page=None,
+        school_codes=[school_id],
+        target_school_codes={school_id},
+        mock_best_score=None,
+        stable_score=score_context["stable_score"],
+        high_score=score_context["high_score"],
+        low_score=score_context["low_score"],
+    )
+
+    if not enriched_schools:
+        return None
+
+    evaluations = build_target_evaluations(enriched_schools, model)
+    return {
+        "profile": profile_payload,
+        "model": model,
+        "targets": evaluations,
     }
 
 

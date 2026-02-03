@@ -26,7 +26,7 @@ export default function SchoolEnrollmentSection({ enrollment }: SchoolEnrollment
     <ProfileSectionCard contentClassName="px-6 py-4">
       <SectionHeader
         icon={<Users2 className="h-4 w-4 text-foreground" />}
-        title="最近一年招生情况"
+        title="招生情况"
         description={`数据年份：${yearLabel}`}
       />
 

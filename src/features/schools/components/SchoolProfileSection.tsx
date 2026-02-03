@@ -5,6 +5,9 @@ import SectionHeader from '@/components/Shared/SectionHeader';
 import ListCard from '@/components/Shared/ListCard';
 import { levelFromProbability } from '@/lib/evaluation';
 import type { HighSchool } from '@/lib/types';
+import type { TFunction } from 'i18next';
+import type { TargetEvaluationModel, TargetEvaluationSchool } from '@/lib/dataClient';
+import EvalTargetCard from '@/features/eval/components/EvalTargetCard';
 
 interface SchoolProfileSectionProps {
   district: string | null | undefined;
@@ -13,6 +16,12 @@ interface SchoolProfileSectionProps {
   highScore: number | null | undefined;
   lowScore: number | null | undefined;
   recommendedSchool?: HighSchool | null;
+  evalSchool?: TargetEvaluationSchool | null;
+  evalModel?: TargetEvaluationModel | null;
+  isEvalLoading?: boolean;
+  evalError?: boolean;
+  evalNote?: string;
+  t?: TFunction;
 }
 
 export default function SchoolProfileSection({
@@ -22,12 +31,21 @@ export default function SchoolProfileSection({
   highScore,
   lowScore,
   recommendedSchool,
+  evalSchool,
+  evalModel,
+  isEvalLoading = false,
+  evalError = false,
+  evalNote = '基于模拟考试评估结果',
+  t,
 }: SchoolProfileSectionProps) {
   const hasNoData = !district && !middleSchoolName && !stableScore && !highScore && !lowScore;
   const stats = recommendedSchool?.stats;
   const probability = stats?.probability ?? 0;
   const p = probability / 100;
   const level = levelFromProbability(p);
+  const evalMessage = t ? t('ui.eval.hint.noEvaluation') : '暂无该学校的评估结果。';
+  const loadingMessage = t ? t('ui.states.loading') : '加载中...';
+  const errorMessage = t ? t('ui.states.error.default') : '发生错误';
 
   return (
     <ProfileSectionCard>
@@ -66,9 +84,6 @@ export default function SchoolProfileSection({
       )}
 
       <div className="mt-3">
-        <div className="text-xs text-muted-foreground mb-2">
-          基于学生画像的学校
-        </div>
         {recommendedSchool ? (
           <ListCard stack>
             <div className="flex items-start justify-between gap-2">
@@ -123,6 +138,35 @@ export default function SchoolProfileSection({
           </div>
         )}
       </div>
+
+      {(isEvalLoading || evalError || evalSchool) && (
+        <div className="mt-4">
+          {isEvalLoading ? (
+            <ListCard size="lg" contentClassName="space-y-2">
+              <div className="text-sm text-muted-foreground">{loadingMessage}</div>
+              <div className="text-xs text-muted-foreground">{evalNote}</div>
+            </ListCard>
+          ) : evalError ? (
+            <ListCard size="lg" contentClassName="space-y-2">
+              <div className="text-sm text-muted-foreground">{errorMessage}</div>
+              <div className="text-xs text-muted-foreground">{evalNote}</div>
+            </ListCard>
+          ) : evalSchool && evalModel && t ? (
+            <EvalTargetCard
+              school={evalSchool}
+              model={evalModel}
+              t={t}
+              showHeader={false}
+              note={evalNote}
+            />
+          ) : (
+            <ListCard size="lg" contentClassName="space-y-2">
+              <div className="text-sm text-muted-foreground">{evalMessage}</div>
+              <div className="text-xs text-muted-foreground">{evalNote}</div>
+            </ListCard>
+          )}
+        </div>
+      )}
     </ProfileSectionCard>
   );
 }
