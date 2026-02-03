@@ -117,7 +117,7 @@ export async function getSchoolDetail(schoolId: string): Promise<ApiResponse<Hig
         schoolData.data.stats = {
           scoreToDistrict: Array.isArray(schoolData.data.scores?.toDistrict) ? schoolData.data.scores.toDistrict[1] : schoolData.data.scores?.toDistrict,
           scoreToSchool: Array.isArray(schoolData.data.scores?.toSchool) ? schoolData.data.scores.toSchool[1] : schoolData.data.scores?.toSchool,
-          scoreUnified: schoolData.data.scores?.unified,
+          scoreUnified: schoolData.data.scores?.unified ?? schoolData.data.scores?.parallel,
           quotaAutonomous: schoolData.data.enrollment?.autonomous,
           quotaToDistrict: schoolData.data.enrollment?.toDistrict,
           quotaToSchool: schoolData.data.enrollment?.toSchool,

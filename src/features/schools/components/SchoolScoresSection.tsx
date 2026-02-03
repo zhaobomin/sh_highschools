@@ -4,25 +4,38 @@ import { School } from 'lucide-react';
 import ProfileSectionCard from '@/components/Shared/ProfileSectionCard';
 import SectionHeader from '@/components/Shared/SectionHeader';
 
-interface SchoolStats {
-  scoreToDistrict?: number | null;
-  scoreToSchool?: number | null;
-  scoreUnified?: number | null;
-  quotaToDistrict?: number | null;
-  quotaToSchool?: number | null;
-  quotaAutonomous?: number | null;
-}
-
 interface SchoolScoresSectionProps {
-  stats: SchoolStats;
+  scores?: {
+    toDistrict?: [number | null, number | null] | null;
+    toSchool?: [number | null, number | null] | null;
+    unified?: number | null;
+    parallel?: number | null;
+  };
+  year?: number | null;
 }
 
-export default function SchoolScoresSection({ stats }: SchoolScoresSectionProps) {
+const formatScore = (value?: number | null) => {
+  if (value === null || value === undefined) return '无数据';
+  return value;
+};
+
+const formatRange = (range?: [number | null, number | null] | null) => {
+  if (!range) return '无数据';
+  const [min, max] = range;
+  if (min == null && max == null) return '无数据';
+  if (min != null && max != null) {
+    return min === max ? `${min}` : `${min} - ${max}`;
+  }
+  return `${min ?? max}`;
+};
+
+export default function SchoolScoresSection({ scores, year }: SchoolScoresSectionProps) {
   return (
     <ProfileSectionCard contentClassName="px-6 py-4">
       <SectionHeader
         icon={<School className="h-4 w-4 text-foreground" />}
         title="录取分数线"
+        description={year ? `数据年份：${year}` : '数据年份：暂无'}
       />
 
       <Separator className="mb-3 opacity-50" />
@@ -30,12 +43,10 @@ export default function SchoolScoresSection({ stats }: SchoolScoresSectionProps)
       <div className="space-y-2">
         <div className="grid grid-cols-1 gap-2">
           <DataCardGrid>
-            <DataCard title="到区分数线" value={stats.scoreToDistrict || '无数据'} />
-            <DataCard title="到校分数线" value={stats.scoreToSchool || '无数据'} />
-            <DataCard title="统招分数线" value={stats.scoreUnified || '无数据'} />
-            <DataCard title="到区名额" value={stats.quotaToDistrict || '无数据'} />
-            <DataCard title="到校名额" value={stats.quotaToSchool || '无数据'} />
-            <DataCard title="自招名额" value={stats.quotaAutonomous || '无数据'} />
+            <DataCard title="到区分数线" value={formatRange(scores?.toDistrict)} />
+            <DataCard title="到校分数线" value={formatRange(scores?.toSchool)} />
+            <DataCard title="统招分数线" value={formatScore(scores?.unified)} />
+            <DataCard title="平行志愿分数线" value={formatScore(scores?.parallel)} />
           </DataCardGrid>
         </div>
 
@@ -44,27 +55,19 @@ export default function SchoolScoresSection({ stats }: SchoolScoresSectionProps)
           <div className="space-y-2">
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">到区分数线</span>
-              <span className="font-semibold">{stats.scoreToDistrict ?? '无数据'}</span>
+              <span className="font-semibold">{formatRange(scores?.toDistrict)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">到校分数线</span>
-              <span className="font-semibold">{stats.scoreToSchool ?? '无数据'}</span>
+              <span className="font-semibold">{formatRange(scores?.toSchool)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">统一招生分数线</span>
-              <span className="font-semibold">{stats.scoreUnified ?? '无数据'}</span>
+              <span className="font-semibold">{formatScore(scores?.unified)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">到区名额</span>
-              <span className="font-semibold">{stats.quotaToDistrict ?? '无数据'}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">到校名额</span>
-              <span className="font-semibold">{stats.quotaToSchool ?? '无数据'}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">自招名额</span>
-              <span className="font-semibold">{stats.quotaAutonomous ?? '无数据'}</span>
+              <span className="text-muted-foreground">平行志愿分数线</span>
+              <span className="font-semibold">{formatScore(scores?.parallel)}</span>
             </div>
           </div>
         </div>

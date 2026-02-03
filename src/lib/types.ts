@@ -43,14 +43,14 @@ export interface HighSchool {
     autonomous: number;
     toDistrict: number;
     toSchool: number;
-    year: number;
+    year: number | null;
   };
   introduction?: string;
   scores?: {
-    toDistrict: [number, number];
-    toSchool: [number, number];
-    unified: number;
-    parallel: number;
+    toDistrict?: [number | null, number | null] | null;
+    toSchool?: [number | null, number | null] | null;
+    unified?: number | null;
+    parallel?: number | null;
   };
 }
 

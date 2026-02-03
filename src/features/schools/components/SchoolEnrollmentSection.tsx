@@ -7,11 +7,12 @@ interface SchoolEnrollmentSectionProps {
     autonomous: number;
     toDistrict: number;
     toSchool: number;
-    year: number;
+    year: number | null;
   };
 }
 
 export default function SchoolEnrollmentSection({ enrollment }: SchoolEnrollmentSectionProps) {
+  const yearLabel = enrollment?.year ? `${enrollment.year}` : '暂无';
   return (
     <SectionCard divider={false} contentClassName="px-6 py-4">
       <div className="flex items-center gap-3 mb-3">
@@ -36,7 +37,7 @@ export default function SchoolEnrollmentSection({ enrollment }: SchoolEnrollment
         </div>
       </div>
       <div className="text-xs text-muted-foreground text-center mt-2">
-        数据年份：{enrollment?.year || '2025'}
+        数据年份：{yearLabel}
       </div>
     </SectionCard>
   );

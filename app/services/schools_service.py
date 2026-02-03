@@ -435,41 +435,68 @@ def get_school_detail_all(db, school_id, year=None):
     """
     获取学校详情所有数据，使用JOIN操作一次性查询所有相关数据，减少数据库查询次数
     """
-    import datetime
-    
+    def _latest_year_from(table: str, key: str) -> Optional[int]:
+        try:
+            records = db.select(table, ["year"], {key: school_id})
+        except Exception:
+            return None
+        years = [safe_int(record.get("year")) for record in records if record.get("year") is not None]
+        return max(years) if years else None
+
+    def _sum_seats(records: List[Dict[str, Any]]) -> int:
+        seats = [safe_int(record.get("seats")) for record in records if record.get("seats") is not None]
+        return sum(seat for seat in seats if seat is not None) if seats else 0
+
+    def _min_max_scores(records: List[Dict[str, Any]]) -> Tuple[Optional[float], Optional[float]]:
+        scores = [
+            safe_float(record.get("total_admission_score"))
+            for record in records
+            if record.get("total_admission_score") is not None
+        ]
+        scores = [score for score in scores if score is not None]
+        if not scores:
+            return None, None
+        return min(scores), max(scores)
+
+    def _avg_score(records: List[Dict[str, Any]]) -> Optional[float]:
+        scores = [
+            safe_float(record.get("total_admission_score"))
+            for record in records
+            if record.get("total_admission_score") is not None
+        ]
+        scores = [score for score in scores if score is not None]
+        if not scores:
+            return None
+        return round(sum(scores) / len(scores), 1)
+
+    def _sum_autonomous_quota(records: List[Dict[str, Any]]) -> int:
+        quotas = [
+            safe_int(record.get("total_quota"))
+            for record in records
+            if record.get("total_quota") is not None
+        ]
+        quotas = [quota for quota in quotas if quota is not None]
+        if not quotas:
+            return 0
+        return max(quotas)
+
     # 获取最近一年
     if not year:
-        try:
-            # 尝试从district_seats表获取最近年份
-            year_result = db.select(
-                "district_seats",
-                ["MAX(year) as max_year"],
-                {"high_school_code": school_id}
-            )
-            if year_result:
-                year = year_result[0]["max_year"]
-            else:
-                # 如果district_seats表中没有数据，尝试从school_seats表获取
-                year_result = db.select(
-                    "school_seats",
-                    ["MAX(year) as max_year"],
-                    {"high_school_code": school_id}
-                )
-                if year_result:
-                    year = year_result[0]["max_year"]
-                else:
-                    # 如果都没有数据，使用默认值
-                    year = datetime.datetime.now().year - 1
-        except Exception:
-            # 如果数据库操作失败，使用默认值
-            year = datetime.datetime.now().year - 1
+        year_candidates = [
+            _latest_year_from("district_seats", "high_school_code"),
+            _latest_year_from("school_seats", "high_school_code"),
+            _latest_year_from("parallel_admission_scores", "high_school_code"),
+            _latest_year_from("self_enrollment_quota", "school_code"),
+        ]
+        year_candidates = [value for value in year_candidates if value is not None]
+        year = max(year_candidates) if year_candidates else None
     
     # 使用JOIN操作和子查询一次性查询所有相关数据
     # 1. 查询学校基本信息
     try:
         school = db.select(
             "schools",
-            ["code", "name", "district", "type", "full_type", "note", "address"],
+            ["code", "name", "district", "type", "full_type", "note"],
             {"code": school_id}
         )
         
@@ -486,7 +513,7 @@ def get_school_detail_all(db, school_id, year=None):
             }]
         
         school = school[0]
-    except Exception as e:
+    except Exception:
         # 如果数据库操作失败，返回一个模拟的学校对象
         school = {
             "code": school_id,
@@ -501,155 +528,61 @@ def get_school_detail_all(db, school_id, year=None):
     # 2. 查询招生数据和分数线数据（使用子查询和聚合函数，减少数据库查询次数）
     # 查询到区名额和分数线数据
     try:
+        district_conditions = {"high_school_code": school_id}
+        if year is not None:
+            district_conditions["year"] = year
         district_seats = db.select(
             "district_seats",
-            ["SUM(seats) as total_seats", "MIN(total_admission_score) as min_score", "MAX(total_admission_score) as max_score"],
-            {"high_school_code": school_id, "year": year}
+            ["seats", "total_admission_score"],
+            district_conditions,
         )
-        
-        if district_seats:
-            to_district_seats = district_seats[0]["total_seats"] or 0
-            to_district_score_min = district_seats[0]["min_score"] or 0
-            to_district_score_max = district_seats[0]["max_score"] or 0
-        else:
-            # 如果没有数据，尝试查询所有年份的数据
-            district_seats_all = db.select(
-                "district_seats",
-                ["SUM(seats) as total_seats", "MIN(total_admission_score) as min_score", "MAX(total_admission_score) as max_score"],
-                {"high_school_code": school_id}
-            )
-            if district_seats_all:
-                to_district_seats = district_seats_all[0]["total_seats"] or 0
-                to_district_score_min = district_seats_all[0]["min_score"] or 0
-                to_district_score_max = district_seats_all[0]["max_score"] or 0
-            else:
-                # 如果还是没有数据，使用默认值
-                # 根据学校类型设置合理的默认值
-                if school.get("type") == "市重点":
-                    to_district_seats = 50
-                    to_district_score_min = 680
-                    to_district_score_max = 700
-                elif school.get("type") == "区重点":
-                    to_district_seats = 30
-                    to_district_score_min = 650
-                    to_district_score_max = 679
-                else:
-                    to_district_seats = 20
-                    to_district_score_min = 600
-                    to_district_score_max = 649
     except Exception:
-        # 如果数据库操作失败，根据学校类型设置合理的默认值
-        if school.get("type") == "市重点":
-            to_district_seats = 50
-            to_district_score_min = 680
-            to_district_score_max = 700
-        elif school.get("type") == "区重点":
-            to_district_seats = 30
-            to_district_score_min = 650
-            to_district_score_max = 679
-        else:
-            to_district_seats = 20
-            to_district_score_min = 600
-            to_district_score_max = 649
+        district_seats = []
+    to_district_seats = _sum_seats(district_seats)
+    to_district_score_min, to_district_score_max = _min_max_scores(district_seats)
     
     # 查询到校名额和分数线数据
     try:
+        school_conditions = {"high_school_code": school_id}
+        if year is not None:
+            school_conditions["year"] = year
         school_seats = db.select(
             "school_seats",
-            ["SUM(seats) as total_seats", "MIN(total_admission_score) as min_score", "MAX(total_admission_score) as max_score"],
-            {"high_school_code": school_id, "year": year}
+            ["seats", "total_admission_score"],
+            school_conditions,
         )
-        
-        if school_seats:
-            to_school_seats = school_seats[0]["total_seats"] or 0
-            to_school_score_min = school_seats[0]["min_score"] or 0
-            to_school_score_max = school_seats[0]["max_score"] or 0
-        else:
-            # 如果没有数据，尝试查询所有年份的数据
-            school_seats_all = db.select(
-                "school_seats",
-                ["SUM(seats) as total_seats", "MIN(total_admission_score) as min_score", "MAX(total_admission_score) as max_score"],
-                {"high_school_code": school_id}
-            )
-            if school_seats_all:
-                to_school_seats = school_seats_all[0]["total_seats"] or 0
-                to_school_score_min = school_seats_all[0]["min_score"] or 0
-                to_school_score_max = school_seats_all[0]["max_score"] or 0
-            else:
-                # 如果还是没有数据，使用默认值
-                # 根据学校类型设置合理的默认值
-                if school.get("type") == "市重点":
-                    to_school_seats = 100
-                    to_school_score_min = 670
-                    to_school_score_max = 690
-                elif school.get("type") == "区重点":
-                    to_school_seats = 60
-                    to_school_score_min = 640
-                    to_school_score_max = 669
-                else:
-                    to_school_seats = 40
-                    to_school_score_min = 590
-                    to_school_score_max = 639
     except Exception:
-        # 如果数据库操作失败，根据学校类型设置合理的默认值
-        if school.get("type") == "市重点":
-            to_school_seats = 100
-            to_school_score_min = 670
-            to_school_score_max = 690
-        elif school.get("type") == "区重点":
-            to_school_seats = 60
-            to_school_score_min = 640
-            to_school_score_max = 669
-        else:
-            to_school_seats = 40
-            to_school_score_min = 590
-            to_school_score_max = 639
+        school_seats = []
+    to_school_seats = _sum_seats(school_seats)
+    to_school_score_min, to_school_score_max = _min_max_scores(school_seats)
     
     # 查询平行志愿分数线数据
     try:
+        parallel_conditions = {"high_school_code": school_id}
+        if year is not None:
+            parallel_conditions["year"] = year
         parallel_scores = db.select(
             "parallel_admission_scores",
-            ["AVG(total_admission_score) as avg_score"],
-            {"high_school_code": school_id, "year": year}
+            ["total_admission_score"],
+            parallel_conditions,
         )
-        
-        if parallel_scores:
-            parallel_score = parallel_scores[0]["avg_score"] or 0
-        else:
-            # 如果没有数据，尝试查询所有年份的数据
-            parallel_scores_all = db.select(
-                "parallel_admission_scores",
-                ["AVG(total_admission_score) as avg_score"],
-                {"high_school_code": school_id}
-            )
-            if parallel_scores_all:
-                parallel_score = parallel_scores_all[0]["avg_score"] or 0
-            else:
-                # 如果还是没有数据，使用默认值
-                # 根据学校类型设置合理的默认值
-                if school.get("type") == "市重点":
-                    parallel_score = 685
-                elif school.get("type") == "区重点":
-                    parallel_score = 655
-                else:
-                    parallel_score = 615
     except Exception:
-        # 如果数据库操作失败，根据学校类型设置合理的默认值
-        if school.get("type") == "市重点":
-            parallel_score = 685
-        elif school.get("type") == "区重点":
-            parallel_score = 655
-        else:
-            parallel_score = 615
+        parallel_scores = []
+    parallel_score = _avg_score(parallel_scores)
     
     # 自主招生数据（暂时使用默认值，因为我们没有自主招生的表）
-    # 根据学校类型设置合理的默认值
-    if school.get("type") == "市重点":
-        autonomous = 30
-    elif school.get("type") == "区重点":
-        autonomous = 20
-    else:
-        autonomous = 10
+    try:
+        autonomous_conditions = {"school_code": school_id}
+        if year is not None:
+            autonomous_conditions["year"] = year
+        autonomous_records = db.select(
+            "self_enrollment_quota",
+            ["total_quota"],
+            autonomous_conditions,
+        )
+    except Exception:
+        autonomous_records = []
+    autonomous = _sum_autonomous_quota(autonomous_records)
     
     # 3. 生成默认学校介绍
     introduction = f"{school['name']}是一所位于上海市{school['district']}的{school['type']}，致力于为学生提供优质的教育资源和学习环境。学校拥有一支高素质的教师队伍，注重学生的全面发展，培养学生的创新能力和实践能力。学校设施齐全，为学生提供良好的学习和生活条件。"
@@ -665,7 +598,7 @@ def get_school_detail_all(db, school_id, year=None):
         "type": school["type"],
         "fullType": school["full_type"],
         "note": school["note"],
-        "accommodation": school.get("accommodation", ""),
+        "accommodation": school.get("accommodation"),
         "introduction": introduction,
         "enrollment": {
             "autonomous": autonomous,
@@ -676,7 +609,7 @@ def get_school_detail_all(db, school_id, year=None):
         "scores": {
             "toDistrict": [to_district_score_min, to_district_score_max],  # 到区分数线区间（最低值，最高值）
             "toSchool": [to_school_score_min, to_school_score_max],    # 到校分数线区间（最低值，最高值）
-            "unified": to_district_score_max,  # 统一分数线使用最高值
+            "unified": parallel_score,
             "parallel": parallel_score
         },
         "probability": probability
@@ -709,4 +642,3 @@ def get_school_detail(db, school_id):
             "quotaToSchool": detail_data["enrollment"]["toSchool"]
         }
     }
-

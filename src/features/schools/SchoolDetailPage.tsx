@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getSchoolDetail } from '@/lib/dataClient';
 import { levelFromProbability } from '@/lib/evaluation';
-import { Navbar } from '@/components/Shared/Navbar';
+import SchoolHeaderSection from '@/features/schools/components/SchoolHeaderSection';
 import SchoolScoresSection from '@/features/schools/components/SchoolScoresSection';
 import SchoolProbabilitySection from '@/features/schools/components/SchoolProbabilitySection';
 import SchoolEnrollmentSection from '@/features/schools/components/SchoolEnrollmentSection';
@@ -48,19 +48,13 @@ export default function SchoolDetailPage() {
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-background font-sans antialiased flex flex-col">
-      <Navbar
-        title={school.name}
-        subtitle={`${school.district} · ${school.type}`}
-        onBack={handleBack}
-        showBackButton={true}
-        showAuthButtons={false}
-      />
       <main className="flex-1 bg-muted/20">
         <div className="py-4 mx-auto px-2 sm:px-3 md:px-4 md:py-6">
-          <StateContainer>
-            <SchoolIntroductionSection school={school} />
+          <StateContainer className="pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] space-y-4">
+            <SchoolHeaderSection school={school} onBack={handleBack} />
             <SchoolEnrollmentSection enrollment={school.enrollment} />
-            <SchoolScoresSection stats={stats} />
+            <SchoolIntroductionSection school={school} />
+            <SchoolScoresSection scores={school.scores} year={school.enrollment?.year ?? null} />
 
             {probability > 0 && (
               <SchoolProbabilitySection

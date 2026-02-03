@@ -227,7 +227,37 @@ COMMENT ON COLUMN parallel_admission_scores.year IS '年份';
 COMMENT ON COLUMN parallel_admission_scores.created_at IS '创建时间';
 COMMENT ON COLUMN parallel_admission_scores.updated_at IS '更新时间';
 
--- 8. 创建学生信息表（student_profiles）
+-- 8. 创建自主招生名额表（self_enrollment_quota）
+CREATE TABLE IF NOT EXISTS self_enrollment_quota (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    school_code VARCHAR(20) NOT NULL,
+    boarding_status VARCHAR(20),
+    total_quota INTEGER NOT NULL,
+    sports_quota INTEGER DEFAULT 0,
+    art_quota INTEGER DEFAULT 0,
+    to_school_total INTEGER DEFAULT 0,
+    to_district_total INTEGER DEFAULT 0,
+    year INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (school_code) REFERENCES schools(code) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- 添加自主招生名额表字段注释
+COMMENT ON TABLE self_enrollment_quota IS '自主招生名额表';
+COMMENT ON COLUMN self_enrollment_quota.id IS 'ID（主键）';
+COMMENT ON COLUMN self_enrollment_quota.school_code IS '学校代码（外键）';
+COMMENT ON COLUMN self_enrollment_quota.boarding_status IS '住宿情况';
+COMMENT ON COLUMN self_enrollment_quota.total_quota IS '总名额';
+COMMENT ON COLUMN self_enrollment_quota.sports_quota IS '市级优秀体育学生名额';
+COMMENT ON COLUMN self_enrollment_quota.art_quota IS '市级艺术骨干学生名额';
+COMMENT ON COLUMN self_enrollment_quota.to_school_total IS '到校总人数';
+COMMENT ON COLUMN self_enrollment_quota.to_district_total IS '到区总人数';
+COMMENT ON COLUMN self_enrollment_quota.year IS '年份';
+COMMENT ON COLUMN self_enrollment_quota.created_at IS '创建时间';
+COMMENT ON COLUMN self_enrollment_quota.updated_at IS '更新时间';
+
+-- 10. 创建学生信息表（student_profiles）
 CREATE TABLE IF NOT EXISTS student_profiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL UNIQUE,
@@ -256,7 +286,7 @@ COMMENT ON COLUMN student_profiles.low_score IS '下限分';
 COMMENT ON COLUMN student_profiles.created_at IS '创建时间';
 COMMENT ON COLUMN student_profiles.updated_at IS '更新时间';
 
--- 9. 创建目标学校表（target_schools）
+-- 11. 创建目标学校表（target_schools）
 CREATE TABLE IF NOT EXISTS target_schools (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
@@ -278,7 +308,7 @@ COMMENT ON COLUMN target_schools.school_name IS '学校名称（冗余存储）'
 COMMENT ON COLUMN target_schools.created_at IS '创建时间';
 COMMENT ON COLUMN target_schools.updated_at IS '更新时间';
 
--- 10. 创建模考记录表（mock_exams）
+-- 12. 创建模考记录表（mock_exams）
 CREATE TABLE IF NOT EXISTS mock_exams (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
@@ -312,7 +342,7 @@ COMMENT ON COLUMN mock_exams.total_score IS '总分';
 COMMENT ON COLUMN mock_exams.created_at IS '创建时间';
 COMMENT ON COLUMN mock_exams.updated_at IS '更新时间';
 
--- 11. 创建索引
+-- 13. 创建索引
 -- 高中学校表索引
 CREATE INDEX IF NOT EXISTS idx_schools_district_type ON schools(district, type);
 
@@ -341,6 +371,10 @@ CREATE INDEX IF NOT EXISTS idx_target_schools_user_school ON target_schools(user
 -- 模考记录表索引
 CREATE INDEX IF NOT EXISTS idx_mock_exams_user_date ON mock_exams(user_id, exam_date);
 CREATE INDEX IF NOT EXISTS idx_mock_exams_total_score ON mock_exams(total_score);
+
+-- 自主招生名额表索引
+CREATE INDEX IF NOT EXISTS idx_self_enrollment_school_year ON self_enrollment_quota(school_code, year);
+CREATE INDEX IF NOT EXISTS idx_self_enrollment_year ON self_enrollment_quota(year);
 
 -- 提交事务
 COMMIT;
