@@ -40,38 +40,11 @@ export default function SchoolScoresSection({ scores, year }: SchoolScoresSectio
 
       <Separator className="mb-3 opacity-50" />
 
-      <div className="space-y-2">
-        <div className="grid grid-cols-1 gap-2">
-          <DataCardGrid>
-            <DataCard title="到区分数线" value={formatRange(scores?.toDistrict)} />
-            <DataCard title="到校分数线" value={formatRange(scores?.toSchool)} />
-            <DataCard title="统招分数线" value={formatScore(scores?.unified)} />
-            <DataCard title="平行志愿分数线" value={formatScore(scores?.parallel)} />
-          </DataCardGrid>
-        </div>
-
-        <div className="bg-muted/30 rounded-lg p-1.5">
-          <h4 className="text-sm font-medium mb-2">分数线详情</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">到区分数线</span>
-              <span className="font-semibold">{formatRange(scores?.toDistrict)}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">到校分数线</span>
-              <span className="font-semibold">{formatRange(scores?.toSchool)}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">统一招生分数线</span>
-              <span className="font-semibold">{formatScore(scores?.unified)}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">平行志愿分数线</span>
-              <span className="font-semibold">{formatScore(scores?.parallel)}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DataCardGrid className="gap-2 grid-cols-3">
+        <DataCard title="统招分数线" value={formatScore(scores?.unified)} valueClassName="text-sm font-normal" />
+        <DataCard title="到区分数线" value={formatRange(scores?.toDistrict)} valueClassName="text-sm font-normal" />
+        <DataCard title="到校分数线" value={formatRange(scores?.toSchool)} valueClassName="text-sm font-normal" />
+      </DataCardGrid>
     </ProfileSectionCard>
   );
 }

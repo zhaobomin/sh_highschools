@@ -4,13 +4,21 @@ interface DataCardProps {
   title: string;
   value: React.ReactNode;
   className?: string;
+  titleClassName?: string;
+  valueClassName?: string;
 }
 
-export function DataCard({ title, value, className }: DataCardProps) {
+export function DataCard({
+  title,
+  value,
+  className,
+  titleClassName,
+  valueClassName,
+}: DataCardProps) {
   return (
     <div className={`bg-muted/30 rounded-lg p-1.5 text-center ${className}`}>
-      <div className="text-[8px] text-muted-foreground">{title}</div>
-      <div className="text-base font-bold mt-0.5">{value}</div>
+      <div className={`text-[8px] text-muted-foreground ${titleClassName || ''}`}>{title}</div>
+      <div className={`text-base font-bold mt-0.5 ${valueClassName || ''}`}>{value}</div>
     </div>
   );
 }

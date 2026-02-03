@@ -469,17 +469,6 @@ def get_school_detail_all(db, school_id, year=None):
             return None
         return round(sum(scores) / len(scores), 1)
 
-    def _sum_autonomous_quota(records: List[Dict[str, Any]]) -> int:
-        quotas = [
-            safe_int(record.get("total_quota"))
-            for record in records
-            if record.get("total_quota") is not None
-        ]
-        quotas = [quota for quota in quotas if quota is not None]
-        if not quotas:
-            return 0
-        return max(quotas)
-
     # 获取最近一年
     if not year:
         year_candidates = [
@@ -570,19 +559,41 @@ def get_school_detail_all(db, school_id, year=None):
         parallel_scores = []
     parallel_score = _avg_score(parallel_scores)
     
-    # 自主招生数据（暂时使用默认值，因为我们没有自主招生的表）
+    # 自主招生数据（从 self_enrollment_quota 获取完整字段）
     try:
         autonomous_conditions = {"school_code": school_id}
         if year is not None:
             autonomous_conditions["year"] = year
         autonomous_records = db.select(
             "self_enrollment_quota",
-            ["total_quota"],
+            [
+                "total_quota",
+                "sports_quota",
+                "art_quota",
+                "to_district_total",
+                "to_school_total",
+                "boarding_status",
+            ],
             autonomous_conditions,
         )
     except Exception:
         autonomous_records = []
-    autonomous = _sum_autonomous_quota(autonomous_records)
+
+    if autonomous_records:
+        autonomous_data = autonomous_records[0]
+        total_quota = safe_int(autonomous_data.get("total_quota")) or 0
+        sports_quota = safe_int(autonomous_data.get("sports_quota")) or 0
+        art_quota = safe_int(autonomous_data.get("art_quota")) or 0
+        to_district_total = safe_int(autonomous_data.get("to_district_total")) or 0
+        to_school_total = safe_int(autonomous_data.get("to_school_total")) or 0
+        boarding_status = autonomous_data.get("boarding_status") or ""
+    else:
+        total_quota = 0
+        sports_quota = 0
+        art_quota = 0
+        to_district_total = 0
+        to_school_total = 0
+        boarding_status = ""
     
     # 3. 生成默认学校介绍
     introduction = f"{school['name']}是一所位于上海市{school['district']}的{school['type']}，致力于为学生提供优质的教育资源和学习环境。学校拥有一支高素质的教师队伍，注重学生的全面发展，培养学生的创新能力和实践能力。学校设施齐全，为学生提供良好的学习和生活条件。"
@@ -601,9 +612,12 @@ def get_school_detail_all(db, school_id, year=None):
         "accommodation": school.get("accommodation"),
         "introduction": introduction,
         "enrollment": {
-            "autonomous": autonomous,
-            "toDistrict": to_district_seats,
-            "toSchool": to_school_seats,
+            "totalQuota": total_quota,
+            "sportsQuota": sports_quota,
+            "artQuota": art_quota,
+            "toDistrictTotal": to_district_total,
+            "toSchoolTotal": to_school_total,
+            "boardingStatus": boarding_status,
             "year": year
         },
         "scores": {
@@ -637,8 +651,8 @@ def get_school_detail(db, school_id):
         "accommodation": detail_data["accommodation"],
         "note": detail_data["note"],
         "stats": {
-            "quotaAutonomous": detail_data["enrollment"]["autonomous"],
-            "quotaToDistrict": detail_data["enrollment"]["toDistrict"],
-            "quotaToSchool": detail_data["enrollment"]["toSchool"]
+            "quotaAutonomous": detail_data["enrollment"]["totalQuota"],
+            "quotaToDistrict": detail_data["enrollment"]["toDistrictTotal"],
+            "quotaToSchool": detail_data["enrollment"]["toSchoolTotal"]
         }
     }

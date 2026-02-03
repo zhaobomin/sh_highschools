@@ -40,9 +40,12 @@ export interface HighSchool {
     probability?: number;
   };
   enrollment?: {
-    autonomous: number;
-    toDistrict: number;
-    toSchool: number;
+    totalQuota: number;
+    sportsQuota: number;
+    artQuota: number;
+    toDistrictTotal: number;
+    toSchoolTotal: number;
+    boardingStatus?: string | null;
     year: number | null;
   };
   introduction?: string;
@@ -51,6 +54,15 @@ export interface HighSchool {
     toSchool?: [number | null, number | null] | null;
     unified?: number | null;
     parallel?: number | null;
+  };
+  studentProfile?: {
+    district?: string | null;
+    middleSchool?: string | null;
+    scores?: {
+      stable?: number | null;
+      high?: number | null;
+      low?: number | null;
+    };
   };
 }
 

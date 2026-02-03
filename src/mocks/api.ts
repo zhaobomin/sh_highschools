@@ -288,10 +288,13 @@ export async function mockGetSchoolDetail(schoolId: string): Promise<HighSchool 
 
   // New fields for the updated API
   const enrollment = {
-    autonomous: stats.quotaAutonomous || 0,
-    toDistrict: stats.quotaToDistrict || 0,
-    toSchool: stats.quotaToSchool || 0,
-    year: 2025
+    totalQuota: stats.quotaAutonomous || 0,
+    artQuota: Math.round((stats.quotaAutonomous || 0) * 0.3),
+    sportsQuota: Math.round((stats.quotaAutonomous || 0) * 0.2),
+    toDistrictTotal: stats.quotaToDistrict || 0,
+    toSchoolTotal: stats.quotaToSchool || 0,
+    boardingStatus: school.type === '市重点' ? '部分寄宿' : '走读为主',
+    year: 2025,
   };
 
   const scores = {
